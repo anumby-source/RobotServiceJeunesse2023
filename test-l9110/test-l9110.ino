@@ -1,15 +1,17 @@
 /****************************************************
    Deux moteurs à courant continu contrôlés par une
-   carte Arduino avec un module L9110S.
+   carte esp avec un module L9110S.
    
    http://electroniqueamateur.blogspot.com/2017/12/controle-de-deux-moteurs-avec-l9110s-et.html
+
+   Version A REICHART 2022 avec esp
    
  ****************************************************/
 
-#define moteur1A  3
-#define moteur1B 9
-#define moteur2A 10
-#define moteur2B 11
+#define moteur1A D1
+#define moteur1B D2
+#define moteur2A D3
+#define moteur2B D4
 
 int vitesse = 255;  // 0 à 255
 
