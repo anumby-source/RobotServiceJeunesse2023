@@ -31,7 +31,7 @@ void loop() {
   //moteur 2
   analogWrite(moteur2A, 0);
   analogWrite(moteur2B, vitesse);
-  delay(2000); // on attend 3 secondes
+  delay(2000); // on attend 2 secondes
 
   // le moteur 1 s'arrête complètement, et
   // le moteur 2 part en sens inverse à faible vitesse
@@ -44,9 +44,9 @@ void loop() {
 
   analogWrite(moteur2A, vitesse);
   analogWrite(moteur2B, 0);
-  delay(1000); // on attend 2 secondes
+  delay(1000); // on attend 1 seconde
 
-  // le moteur 1 s'arrête complètement, et
+  // le moteur 2 s'arrête complètement, et
   // le moteur 1 part en sens inverse à faible vitesse
 
     vitesse = 150;
@@ -57,7 +57,7 @@ void loop() {
 
   analogWrite(moteur2A, 0);
   analogWrite(moteur2B, 0);
-  delay(1000); // pendant 3 secondes
+  delay(1000); // pendant 1 seconde
 
 
 
