@@ -36,6 +36,7 @@ Nous aurons des éléments et fonctionnalités suivants:
 - reconnaissance des formes et des couleurs
 - fabrication du damier selon le choix de conception des pièces
 - suivi et pilotage du déplacement du robot sur la grille du damier
+- logiciel (règle du jeu, déplacements, reconnaissance visuelle, ...)
 
 ## Version véhicule
 
@@ -45,7 +46,7 @@ Le principe est que le véhicule va directement rouler su le damier
 - le robot doit pouvoir se positionner (x, y) sur le damier sur chacone des cases du damier soit pour comprendre la pièce existante, soit pour déposer une nouvelle pièce
 - la taille du damier doit être suffisante pour contenir toutes les phases de la partie
 - les capteurs (caméra, et suiveur de ligne) sont situées sur la face ventrale du robot
-- le pièces, quand elles sont déposées ne doivent pas dépasser en épaisseur pour laisser le véhicule rouler librement
+- le pièces, quand elles sont déposées ne doivent pas dépasser en épaisseur pour laisser le véhicule rouler librementindépendants étudiant chacune des techno
 - les déplacements doivent autoriser des positionnements selon un repérage 2D (ligne, colonne)
 - la saisie des pièces se fait en positionnant le véhicule soit sur la réserve, soit sur un emplacement du damier
 
@@ -59,6 +60,14 @@ Le principe consiste à construire un cadre parallélipidique dont la face supé
 - il faut étudier la technologie appropriée pour assurer la synchronicité des déplacements gauche/droite (x) et haut/bas (y)
 - le cadre peut être construit en profilés alu vissés
 - les principes de reconnaissance des formes/couleurs et du positionnement sur le damier sont identiques pour les deux versions (véhicule/pont-roulant)
+
+## Plan d'action
+
+Il s'agit maintenant:
+- de lancer des études individuelles pour chacun des points technologiques (faisabilité, coût, durée, ...)
+- on peut se répartir le travail sous forme de plusieurs prototypes indépendants
+- puis on travaillera sur l'intégration finale avec les choix d'implémentation réaliste
+- définir un calendrier jusqu'au mois de mai
 
 
 
