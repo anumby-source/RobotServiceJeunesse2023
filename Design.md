@@ -23,7 +23,7 @@ Nous aurons des éléments et fonctionnalités suivants:
 - pour simplifier l'impléméntation on peut se limiter à un jeu de 3 x 3 x 3 formes/couleurs (=> 27 pièces)
 - un damier préfabriqué capable de recevoir les pièces jouées
 - un robot proprement dit
-- deux technologies de déplacement du robot sont à l'étude: une vresion pont-roulant et une version véhicule
+- deux technologies de déplacement du robot sont à l'étude: une vresion pont-roulant et une version véhicule:
 - dans les deux cas, le robot doit reconnaître (par caméra) les formes et les couleurs des pièces
 - dans les deux cas, le robot doit saisir les pièces et les déposer sur le damier de jeu
 - la technologie sélectionnée pour la saisie des pièces est un électro-aimant actionnable
@@ -51,7 +51,7 @@ Le principe est que le véhicule va directement rouler su le damier
 - la saisie des pièces se fait en positionnant le véhicule soit sur la réserve, soit sur un emplacement du damier
 
 
-## Version pont-roulant
+## Version pont-roulantle
 
 Le principe consiste à construire un cadre parallélipidique dont la face supérieure fournira les rails de déplacement du robot.
 
@@ -69,6 +69,10 @@ Il s'agit maintenant:
 - puis on travaillera sur l'intégration finale avec les choix d'implémentation réaliste
 - définir un calendrier jusqu'au mois de mai
 
+## Discussion sur le mode pour le robot
 
+- le positionnement caméra plus simple avec pont-roulant ?
+- mais la contrainte d'obtenir un objet ludique et assemblable par les jeunes en 2 heures semble plaider pour la techno véhicule
+- 
 
 
