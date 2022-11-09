@@ -73,6 +73,15 @@ Il s'agit maintenant:
 
 - le positionnement caméra plus simple avec pont-roulant ?
 - mais la contrainte d'obtenir un objet ludique et assemblable par les jeunes en 2 heures semble plaider pour la techno véhicule
-- 
+ - la voiture a un avantage, car on a l'experience de sa fabrication.
+- le pont roulant, il va falloir le concevoir, l'expérimenter, le tester, évaluer  son coût...en un temps record. (Noël). Son avantage est qu'il est plus précis dans ses déplacements.
+- L'idée d'hier d'utiliser 2 moteurs d'imprimante 3D et des vis sans fin pour un déplacement x et y peut se tester rapidement. 
+- quelle est  la taille du plateau de jeu ? Faut-il retenir le principe 3*3*3=27 ?  
+    - La version avec 3 formes et 3 couleurs (et 3 jeux de pièces) permet:
+        - à la fois un minimum de complexité
+        - pas trop de complexité de fabrication (nombre de pièces)
+        - contraintes mémoires limitées pour l'algo
+        - 
+
 
 
