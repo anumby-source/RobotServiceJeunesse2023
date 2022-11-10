@@ -101,5 +101,15 @@ La taille forcément limitée du damier nous a poussé à limiter à 3 le nombre
 ## Remarque: 
 Dans le cas où le robot joue contre 1 ou plusieurs autres joueurs, il pourrait observer les pions posés par les joueurs et gérer en direct le score de la partie
 
+## Etude sur l'adressage (Ligne, Colonne) avec un robot 3 roues
+
+- on part du robot 3 roues (2 roues motrices, une roulette libre) capable de rotations sur place
+- on y ajoute un capteur suiveur de ligne
+- on dessine une grille uniforme N x M sur une grande feuille de papier
+- on programme l'étape unitaire: à partir d'une position (L1, C1) être capable de se déplacer vers une autre position (L2, C2)
+- programmation de la séquence répétitive: [à partir d'une position (L0, C0), effectuer N déplacements aléatoires vers des position (LN, CN)]
+
+Ceci devrait convenir à notre notre robot joueur.
+
 
 
