@@ -51,7 +51,7 @@ Le principe est que le véhicule va directement rouler su le damier
 - la saisie des pièces se fait en positionnant le véhicule soit sur la réserve, soit sur un emplacement du damier
 
 
-## Version pont-roulantle
+## Version pont-roulant
 
 Le principe consiste à construire un cadre parallélipidique dont la face supérieure fournira les rails de déplacement du robot.
 
@@ -76,7 +76,7 @@ Il s'agit maintenant:
  - la voiture a un avantage, car on a l'experience de sa fabrication.
 - le pont roulant, il va falloir le concevoir, l'expérimenter, le tester, évaluer  son coût...en un temps record. (Noël). Son avantage est qu'il est plus précis dans ses déplacements.
 - L'idée d'hier d'utiliser 2 moteurs d'imprimante 3D et des vis sans fin pour un déplacement x et y peut se tester rapidement. 
-- quelle est  la taille du plateau de jeu ? Faut-il retenir le principe 3*3*3=27 ?  
+- quelle est  la taille du plateau de jeu ? Faut-il retenir le principe 3 * 3 * 3 = 27 ?   
     - La version avec 3 formes et 3 couleurs (et 3 jeux de pièces) permet:
         - à la fois un minimum de complexité
         - pas trop de complexité de fabrication (nombre de pièces)
