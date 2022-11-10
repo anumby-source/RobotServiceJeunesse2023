@@ -96,7 +96,7 @@ le robot doit pouvoir jouer avec d'autres joueurs. Il faut donc que ceux-ci aien
 La taille forcément limitée du damier nous a poussé à limiter à 3 le nombre des couleurs et des formes ce qui risque de donner au jeu un côté un peu simpliste. Il me semble intéressant de garder une version 3 correspondant à un véhicule sans damier, où les pions seraient posés directement sur un support plan (avec un fond quadrillé représentant la zone de dépose des pions). Le jeu n'est plus limité par la taille d'un damier. Mais le robot devra ne pas bouger les pions déjà posés. Il devra par ailleurs être suffisamment précis dans le positionnement des pions.
 
 - peut-être dans ce cas les pions sont très fins (en papier, carton fin, plastique, ...) 
-- dans tous les cas, la grille doit être matérialisée par une grille de ligne nécessaire au repérage x, y des déplacements du robot
+- dans tous les cas, la grille doit être matérialisée par une grille de lignes nécessaire au repérage x, y des déplacements du robot
 
 ## Remarque: 
 Dans le cas où le robot joue contre 1 ou plusieurs autres joueurs, il pourrait observer les pions posés par les joueurs et gérer en direct le score de la partie
