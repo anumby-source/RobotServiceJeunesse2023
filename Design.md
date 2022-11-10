@@ -82,6 +82,24 @@ Il s'agit maintenant:
         - pas trop de complexité de fabrication (nombre de pièces)
         - contraintes mémoires limitées pour l'algo
         - 
+## Remarque sur la pioche: 
+Elle est indépendante de la version choisie.
+
+Quand on joue au Qwirkle en version matérielle, chaque joueur pioche des pions dans un sac de façon à ne pas voir les pions choisis.
+
+Le robot, lui, devra les attraper un à un dans une boite et les posera sur une zone libre devant lui. Pour éviter d'avoir à retourner des pions, le plus simple est que chaque pion soit marqué sur chaque face. Cela complique un peu la réalisation des pions! Sinon il faut rajouter une fonction "retourner un pion" pour le rendre visible.
+
+## Remarque: 
+le robot doit pouvoir jouer avec d'autres joueurs. Il faut donc que ceux-ci aient un accès aisé au damier. La version voiture parait plus adaptée, de ce point de vue, que la version pont roulant.
+
+## Remarque: 
+La taille forcément limitée du damier nous a poussé à limiter à 3 le nombre des couleurs et des formes ce qui risque de donner au jeu un côté un peu simpliste. Il me semble intéressant de garder une version 3 correspondant à un véhicule sans damier, où les pions seraient posés directement sur un support plan (avec un fond quadrillé représentant la zone de dépose des pions). Le jeu n'est plus limité par la taille d'un damier. Mais le robot devra ne pas bouger les pions déjà posés. Il devra par ailleurs être suffisamment précis dans le positionnement des pions.
+
+- peut-être dans ce cas les pions sont très fins (en papier, carton fin, plastique, ...) 
+- dans tous les cas, la grille doit être matérialisée par une grille de ligne nécessaire au repérage x, y des déplacements du robot
+
+## Remarque: 
+Dans le cas où le robot joue contre 1 ou plusieurs autres joueurs, il pourrait observer les pions posés par les joueurs et gérer en direct le score de la partie
 
 
 
