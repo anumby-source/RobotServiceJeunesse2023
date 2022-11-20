@@ -1018,6 +1018,14 @@ class WorkingGrille {
     }
     }
 
+    /*
+    - il faut commencer à mémoriser la liste des tuiles jouées lors du tour courant pour le joueur
+    - une tuile qu n'est pas la première de la liste du tour courant doit faire partie d'une "ligne" puis toutes les
+      tuiles suivantes doivent appartenir à la même ligne définie dès la deuxième tuile du tour
+
+    - on devrait commencer à accumuler les points du tour courant.
+    */
+
     return true;
 
 
