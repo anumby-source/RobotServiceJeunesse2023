@@ -1073,6 +1073,80 @@ class WorkingGrille {
   }
 }
 
+class PanneauCommandes {
+  constructor() {
+  }
+
+  findCommande(x, y) {
+    let commandesXoffset = offsetJeu() + 8*getCellSize();
+    let commandesYoffset = yoffsetJoueurs();
+    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
+    let commandesYmax = commandesYoffset + getCellSize();
+
+    if (x >= commandesXoffset && x <= commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
+      let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
+      console.log ("Jeu::findCommande> in", commande);
+      return true;
+    }
+    return false;
+  }
+
+  draw() {
+    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
+    for (let c = 0; c < 5; c++) {
+      let x = offsetJeu() + 8*getCellSize() + c*(getCellSize() + 7);
+      let y = yoffsetJoueurs();
+      let commande = commandes[c];
+      //console.log("commande=", commande, x, y);
+      commande.draw(x, y);
+    }
+  }
+
+  executeCommande(e) {
+    let x = e.clientX - 8;
+    let y = e.clientY - 8;
+
+    // [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
+
+    let commandesXoffset = offsetJeu() + 8*getCellSize();
+    let commandesYoffset = yoffsetJoueurs();
+    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
+    let commandesYmax = commandesYoffset + getCellSize();
+
+
+    let xc = commandesXoffset;
+    let yc = commandesYoffset;
+    if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(getCellSize() + 7)))
+      if ((y >= commandesYoffset) && (y <= commandesYoffset + getCellSize())) {
+        let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
+        console.log("executeCommande> x=" + x + " commande=" + commande);
+        switch (commande) {
+          case 0:
+            // zoomin
+            cellSize = getCellSize() + 5;
+            clear();
+            break;
+          case 1:
+            // zoomout
+            console.log("zoomout", getCellSize());
+            cellSize = getCellSize() - 5;;
+            clear();
+            break;
+          case 2:
+            // undo
+            break;
+          case 3:
+            // ok
+            Jeu.ok();
+            break;
+          case 4:
+            // swap
+            break;
+        }
+      }
+  }
+}
+
 class PlateauJeu {
   constructor() {
     // Le jeu complet des 6x6x3 tuiles à disposition
@@ -1096,6 +1170,8 @@ class PlateauJeu {
     // On considère une grille de travail dont la taille va augmenter au cours du jeu
     // cette grille contient exactement toutes les tuiles qui ont été jouées plus une marge de 1 tout autour
     this.working = new WorkingGrille();
+
+    this.commandes = new PanneauCommandes();
 
     this.init();
   }
@@ -1157,37 +1233,13 @@ class PlateauJeu {
     return index;
   }
 
-  findCommande(x, y) {
-    let commandesXoffset = offsetJeu() + 8*getCellSize();
-    let commandesYoffset = yoffsetJoueurs();
-    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
-    let commandesYmax = commandesYoffset + getCellSize();
-
-    if (x >= commandesXoffset && x <= commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
-      let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
-      console.log ("Jeu::findCommande> in", commande);
-      return true;
-    }
-    return false;
-  }
-
-  drawCommandes() {
-    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
-    for (let c = 0; c < 5; c++) {
-      let x = offsetJeu() + 8*getCellSize() + c*(getCellSize() + 7);
-      let y = yoffsetJoueurs();
-      let commande = commandes[c];
-      //console.log("commande=", commande, x, y);
-      commande.draw(x, y);
-    }
-  }
-
   draw() {
     // Dessin initial du plateau sans aucune tuile
     const ctx = canvas.getContext('2d');
 
     // dessine working
     this.working.draw();
+    this.commandes.draw();
   }
 
   drawCellFrame(c0, r0, color) {
@@ -1266,7 +1318,6 @@ Users.push(new User(0, "Chris"));
 
 Jeu.draw();
 // Jeu.drawTuiles();
-Jeu.drawCommandes();
 
 /*
 
@@ -1303,55 +1354,10 @@ function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   Jeu.draw();
   // Jeu.drawTuiles();
-  Jeu.drawCommandes();
 
   for (u = 0; u < Users.length; u++) Users[u].draw();
 
   info();
-}
-
-function executeCommande(e) {
-    let x = e.clientX - 8;
-    let y = e.clientY - 8;
-
-    // [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
-
-    let commandesXoffset = offsetJeu() + 8*getCellSize();
-    let commandesYoffset = yoffsetJoueurs();
-    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
-    let commandesYmax = commandesYoffset + getCellSize();
-
-
-    let xc = commandesXoffset;
-    let yc = commandesYoffset;
-    if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(getCellSize() + 7)))
-      if ((y >= commandesYoffset) && (y <= commandesYoffset + getCellSize())) {
-        commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
-        console.log("executeCommande> x=" + x + " commande=" + commande);
-        switch (commande) {
-          case 0:
-            // zoomin
-            cellSize = getCellSize() + 5;
-            clear();
-            break;
-          case 1:
-            // zoomout
-            console.log("zoomout", getCellSize());
-            cellSize = getCellSize() - 5;;
-            clear();
-            break;
-          case 2:
-            // undo
-            break;
-          case 3:
-            // ok
-            Jeu.ok();
-            break;
-          case 4:
-            // swap
-            break;
-        }
-      }
 }
 
 function observation(x, y) {
@@ -1369,7 +1375,7 @@ function observation(x, y) {
         done = true;
         where = "working";
   }
-  else if (Jeu.findCommande(x, y)) {
+  else if (Jeu.commandes.findCommande(x, y)) {
         // détection de la grille de commandes
         found = true;
         done = true;
@@ -1450,7 +1456,7 @@ canvas.addEventListener('mousedown', (e) => {
       Jeu.setMode("déplacement");
     }
   }
-  executeCommande(e);
+  Jeu.commandes.executeCommande(e);
 })
 
 canvas.addEventListener('mouseup', (e) => {
