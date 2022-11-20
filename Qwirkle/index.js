@@ -1,4 +1,35 @@
 
+/*
+
+Logique événementielle:
+
+mode initial "observation"
+
+1) mousemouve:
+    si mode "observation":
+      on détecte si on est sur une tuile d'un joueur => on marque (u, position, tuile) = UPD
+    si mode "déplacement":
+      - efface la tuile en mouvement
+      - redessine la tuile en mouvement = la nouvelle position
+
+2) mousedown:
+    si mode "observation":
+      si on a UPD alors on passe en mode deplacement de la tuile marquée:
+        - remplacement de la tuile à la position marquée par une tuileVide
+        - mode "déplacement"
+
+2) mouseup:
+    si mode "déplacement":
+      si on a UPD :
+        - vérification que l'on est sur une cellule valide selon les règles du jeu
+            - si valide:
+              - installation de la tuile sur la grille
+            - sinon:
+              - réinstallation de la tuile à la position marquée du joueur
+        - mode "observation"
+
+*/
+
 // Constantes générales
 
 const canvas = document.getElementById('canvas');
@@ -47,6 +78,24 @@ class Tuile {
 
   toText() {
     return "{" + this.forme + "|" + this.color + "}";
+  }
+
+  drawFrame(ctx, x, y, color) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + getCellSize(), y);
+
+      ctx.moveTo(x, y + getCellSize());
+      ctx.lineTo(x + getCellSize(), y + getCellSize());
+
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + getCellSize());
+
+      ctx.moveTo(x + getCellSize(), y);
+      ctx.lineTo(x + getCellSize(), y + getCellSize());
+
+      ctx.stroke();
   }
 
   draw(x, y) {
@@ -112,6 +161,8 @@ class Tuile {
   zoomin(ctx, x, y) {
     //console.log("zoomin", x, y);
 
+    this.drawFrame(ctx, x, y, "red");
+
     ctx.fillStyle = "DimGray";
     ctx.beginPath();
     ctx.fillRect(x, y, getCellSize(), getCellSize());
@@ -129,6 +180,8 @@ class Tuile {
   zoomout(ctx, x, y) {
     //console.log("zoomout", x, y);
 
+    this.drawFrame(ctx, x, y, "red");
+
     ctx.beginPath();
     ctx.fillRect(x, y, getCellSize(), getCellSize());
     ctx.fill();
@@ -141,21 +194,39 @@ class Tuile {
   }
 
   undo(ctx, x, y) {
+    this.drawFrame(ctx, x, y, "red");
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fill();
+
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("z", x, y + getCellSize()/2);
+    ctx.fillText("z", x + getCellSize()*0.3, y + getCellSize()*0.7);
   }
 
   ok(ctx, x, y) {
+    this.drawFrame(ctx, x, y, "red");
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fill();
+
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("ok", x, y + getCellSize()/2);
+    ctx.fillText("ok", x + getCellSize()*0.15, y + getCellSize()*0.7);
   }
 
   swap(ctx, x, y) {
+    this.drawFrame(ctx, x, y, "red");
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fill();
+
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("swap", x, y + getCellSize()/2);
+    ctx.fillText("swap", x, y + getCellSize()*0.7);
   }
 
   vide(ctx, x, y) {
@@ -1318,37 +1389,6 @@ Users.push(new User(0, "Chris"));
 
 Jeu.draw();
 // Jeu.drawTuiles();
-
-/*
-
-Logique événementielle:
-
-mode initial "observation"
-
-1) mousemouve:
-    si mode "observation":
-      on détecte si on est sur une tuile d'un joueur => on marque (u, position, tuile) = UPD
-    si mode "déplacement":
-      - efface la tuile en mouvement
-      - redessine la tuile en mouvement = la nouvelle position
-
-2) mousedown:
-    si mode "observation":
-      si on a UPD alors on passe en mode deplacement de la tuile marquée:
-        - remplacement de la tuile à la position marquée par une tuileVide
-        - mode "déplacement"
-
-2) mouseup:
-    si mode "déplacement":
-      si on a UPD :
-        - vérification que l'on est sur une cellule valide selon les règles du jeu
-            - si valide:
-              - installation de la tuile sur la grille
-            - sinon:
-              - réinstallation de la tuile à la position marquée du joueur
-        - mode "observation"
-
-*/
 
 function clear() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
