@@ -330,7 +330,7 @@ let TuileSwap = new Tuile ("silver", "swap");
 let infos = [];
 function info (text) {
   let xoffset = 0;
-  let yoffset = Jeu.working.yoffset + (Jeu.working.cmax + 6)*getCellSize();
+  let yoffset = yoffsetJoueurs() + (Jeu.working.cmax + 6) * getCellSize();
 
   if (text) {
     let lines = (canvas.height - yoffset)/getCellSize();
@@ -634,7 +634,7 @@ class WorkingGrille {
   }
 
   draw() {
-    let xoffset = this.xoffset;
+    let xoffset = 0;
     let yoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
     for (let c = this.cmin; c <= this.cmax; c++)
       for (let r = this.rmin; r <= this.rmax; r++) {
@@ -649,8 +649,8 @@ class WorkingGrille {
   }
 
   findWCell(x, y) {
-    let workingXoffset = this.xoffset;
-    let workingYoffset = this.yoffset;
+    let workingXoffset = 0;
+    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
     let workingXmax = workingXoffset + (this.cmax + 1)*getCellSize();
     let workingYmax = workingYoffset + (this.rmax + 1)*getCellSize();
 
@@ -672,8 +672,8 @@ class WorkingGrille {
   }
 
   drawCellFrame(c0, r0, color) {
-    let workingXoffset = this.xoffset;
-    let workingYoffset = this.yoffset;
+    let workingXoffset = 0;
+    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
     let workingXmax = workingXoffset + (this.cmax + 1)*getCellSize();
     let workingYmax = workingYoffset + (this.rmax + 1)*getCellSize();
 
@@ -1411,7 +1411,7 @@ function observation(x, y) {
 
 function déplacement(x, y) {
   if (Jeu.positionSelected >= 0) {
-    // console.log("déplacement> ");
+    // console.log("déplacement> ", x, y);
     clear();
 
     if (Jeu.working.findWCell(x, y)) {
@@ -1422,7 +1422,7 @@ function déplacement(x, y) {
 
       Jeu.working.drawCellFrame(c, r, "yellow");
 
-      // console.log("déplacement> ", c, r);
+      console.log("déplacement> ", c, r);
       found = true;
       done = true;
     }
@@ -1438,7 +1438,7 @@ canvas.addEventListener('mousemove', (e) => {
   let x = e.clientX - 8;
   let y = e.clientY - 8;
 
-  // console.log("addEventListener> 1", x, y);
+  // console.log("mousemove> 1", x, y);
 
   if (Jeu.getMode() == "observation") observation(x, y);
   else if (Jeu.getMode() == "déplacement") {
