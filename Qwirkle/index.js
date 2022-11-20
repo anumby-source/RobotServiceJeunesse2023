@@ -1156,7 +1156,7 @@ class PanneauCommandes {
 
     if (x >= commandesXoffset && x <= commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
       let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
-      console.log ("Jeu::findCommande> in", commande);
+      // console.log ("Jeu::findCommande> in", commande);
       return true;
     }
     return false;
@@ -1190,7 +1190,7 @@ class PanneauCommandes {
     if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(getCellSize() + 7)))
       if ((y >= commandesYoffset) && (y <= commandesYoffset + getCellSize())) {
         let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
-        console.log("executeCommande> x=" + x + " commande=" + commande);
+        // console.log("executeCommande> x=" + x + " commande=" + commande);
         switch (commande) {
           case 0:
             // zoomin
@@ -1462,7 +1462,7 @@ function déplacement(x, y) {
 
       Jeu.working.drawCellFrame(c, r, "yellow");
 
-      console.log("déplacement> ", c, r);
+      // console.log("déplacement> ", c, r);
       found = true;
       done = true;
     }
