@@ -30,7 +30,7 @@ mode initial "observation"
 
 */
 
-// Constantes générales
+// Constantes générales et accesseurs
 
 const canvas = document.getElementById('canvas');
 let cellSize = 20;
@@ -59,13 +59,13 @@ const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile"];
 const formesCmd = ["vide", "zoomin", "zoomout", "undo", "ok", "swap"];
 
 const ctx = canvas.getContext('2d');
-let raf;
 
 // Définition de la classe pour les Tuiles
 class Tuile {
-  constructor(color, forme) {
+  constructor(color, forme, layer) {
     this.color = color;
     this.forme = forme;
+    this.layer = layer;
     this.pioche = true;
     this.joueur = 0;
     this.column = 0;
@@ -73,7 +73,7 @@ class Tuile {
   }
 
   testVide() {
-    return this.forme == "vide";0
+    return this.forme == "vide";
   }
 
   toText() {
@@ -432,31 +432,28 @@ class User {
     this.name = name;
     this.jeu = [];
     for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
-    this.xoffset = offsetJeu();
-    this.yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
   }
 
   draw() {
-    let offset = this.yoffset;
-    let xoff = offsetJeu();
-    let yoff = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let xoffset = offsetJeu();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
 
     ctx.fillStyle = 'green';
     ctx.font = '30px san-serif';
-    ctx.fillText(this.name, 0, yoff + getCellSize());
+    ctx.fillText(this.name, 0, yoffset + getCellSize());
 
     for (let c = 0; c < 6; c++)
     {
         let t = this.jeu[c];
-        //console.log(t, "xoff=", xoff + c*getCellSize(), yoff, c);
-        t.draw(xoff + c*getCellSize(), yoff);
+        //console.log(t, "xoffset=", xoffset + c*getCellSize(), yoffset, c);
+        t.draw(xoffset + c*getCellSize(), yoffset);
     }
   }
 
   play() {
     // offset pour positionner les utilisateurs après la grille
-    let xoff = offsetJeu();
-    let yoff = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let xoffset = offsetJeu();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
 
     for (let t = 0; t < 6; t++) {
       let n = Jeu.pioche[0];
@@ -469,8 +466,8 @@ class User {
 
       this.jeu[t] = tuile;
 
-      let x = xoff + t*getCellSize();
-      let y = yoff;
+      let x = xoffset + t*getCellSize();
+      let y = yoffset;
       //console.log('play> tuile=', tuile, tuile.forme, tuile.color, x, y);
       tuile.draw(x, y);
     }
@@ -480,7 +477,7 @@ class User {
   findUCell(x, y) {
     let usersXoffset = offsetJeu();
     let usersYoffset = yoffsetJoueurs();
-    let usersXmax = usersXoffset + 6*getCellSize();
+    let usersXmax = usersXoffset + 6 * getCellSize();
     let usersYmax = usersYoffset + getCellSize();
 
     if (x >= usersXoffset && x <= usersXmax && y >= usersYoffset && y <= usersYmax) {
@@ -518,8 +515,8 @@ class User {
   }
 
   pioche() {
-    let xoff = offsetJeu();
-    let yoff = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let xoffset = offsetJeu();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
 
     for (let t = 0; t < 6; t++) {
       let tuile = this.jeu[t];
@@ -534,8 +531,8 @@ class User {
 
         this.jeu[t] = tuile;
 
-        let x = xoff + t*getCellSize();
-        let y = yoff;
+        let x = xoffset + t*getCellSize();
+        let y = yoffset;
         //console.log('play> tuile=', tuile, tuile.forme, tuile.color, x, y);
         tuile.draw(x, y);
       }
@@ -695,13 +692,12 @@ class WorkingGrille {
     this.cmax = 2;
     this.rmin = 0;
     this.rmax = 2;
+    this.c0 = 1;
+    this.r0 = 1;
 
     this.grid = new Matrix();
     this.grid.fill (3, 3, TuileVide);
     this.first = true;
-
-    this.xoffset = 0;
-    this.yoffset = 0;
   }
 
   draw() {
@@ -1264,7 +1260,7 @@ class PlateauJeu {
   }
 
   init() {
-    // création de toutes les 108 tuiles ordonnées
+    // création de toutes les 3 x 6 x 6 tuiles ordonnées
     for (let layer = 0; layer < 3; layer++)
         for (let c = 0; c < colors.length; c++) {
           for (let f = 0; f < formes.length; f++) {
@@ -1368,7 +1364,7 @@ class PlateauJeu {
           let y = r * getCellSize();
           ctx.strokeStyle = "red";
           ctx.beginPath();
-          ctx.strokeRect(offset + x, y, getCellSize(), getCellSize());
+          ctx.strokeRect(xoffset + x, yoffset + y, getCellSize(), getCellSize());
           ctx.stroke();
         }
       }
