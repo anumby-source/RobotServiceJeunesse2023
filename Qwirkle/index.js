@@ -425,6 +425,15 @@ function info (text) {
   }
 }
 
+class Evenement {
+  constructor(tuile, c, r) {
+    // console.log("Evenement", tuile, c, r);
+    this.tuile = tuile;
+    this.c = c;
+    this.r = r;
+  }
+}
+
 // Définition de la classe pour les utilisateurs
 class User {
   constructor(numéro, name) {
@@ -432,6 +441,7 @@ class User {
     this.name = name;
     this.jeu = [];
     for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
+    this.historique = [];
   }
 
   draw() {
@@ -537,6 +547,10 @@ class User {
         tuile.draw(x, y);
       }
     }
+  }
+
+  addEvenement(tuile, c, r) {
+    this.historique.push(new Evenement(tuile, c, r));
   }
 }
 
@@ -1046,7 +1060,7 @@ class WorkingGrille {
       this.grid.setElement(1, 1, tuile);
       this.first = false;
 
-      return;
+      return [column, row];
     }
 
     // on suppose que la tuile que l'on ajoute va être ajoutée contre une tuile existante dans la grille
@@ -1059,7 +1073,7 @@ class WorkingGrille {
     if (i >= 0) {
       // La tuile est ajoutée sans changement de taille de la grille de travail
       this.grid.elements[i] = tuile;
-      return;
+      return [column, row];
     }
 
     // on doit augmenter la grille de travail
@@ -1069,6 +1083,8 @@ class WorkingGrille {
     let dh = 0;
     let c = 0;
     let r = 0;
+
+    // les différents d'augmentation
     switch (i) {
       case -1: // Haut/Gauche
             this.cmin -= 1;
@@ -1127,13 +1143,19 @@ class WorkingGrille {
             r = 0;
             break;
     }
+
     // console.log("WorkingGrille:addTuile> need to extend", column, row, "oldW=", oldW, "oldH=", oldH, "i=", i, "dh=", dh, "dw=", dw, "c=", c, "r=", r);
+
+    // on crée une nuvelle de grille de travail, agrandie
+    // l'ancienne sera "insérée" sur la nouvelle à la position calculée précédemment
     let newgrid = new Matrix();
     newgrid.fill(oldW + dw, oldH + dh, TuileVide);
     newgrid.insert(this.grid, c, r);
     // this.grid.show("old");
     // newgrid.show("new");
     this.grid = newgrid;
+
+    // on installe la tuile à la bonne position dans la nouvelle grille de travail
     i = this.index(column, row);
     // console.log("WorkingGrille:addTuile> after extend", column, row, i, tuile);
     if (i >= 0) this.grid.elements[i] = tuile;
@@ -1146,8 +1168,14 @@ class WorkingGrille {
       let width = this.cmax - this.cmin;
       let height = this.rmax - this.rmin;
 
-      if (this.cmin < 0) this.c0 += 1;
-      if (this.rmin < 0) this.r0 += 1;
+      if (this.cmin < 0) {
+        this.c0 += 1;
+        column += 1;
+      }
+      if (this.rmin < 0) {
+        this.r0 += 1;
+        row += 1;
+      }
 
       this.cmin = 0;
       this.cmax = width;
@@ -1155,8 +1183,9 @@ class WorkingGrille {
       this.rmin = 0;
       this.rmax = height;
 
-      // console.log("addTuile> " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax);
+      // console.log("addTuile> " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax, "c0=", this.c0, "r0=", this.r0, "c=", column, "r=", row);
     }
+    return [column, row];
   }
 }
 
@@ -1530,7 +1559,12 @@ canvas.addEventListener('mouseup', (e) => {
         // console.log("mouseup> check=", check);
         if (check) {
           user.jeu[Jeu.positionSelected] = TuileVide;
-          Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
+          let cc;
+          let rr;
+          [cc, rr] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
+          // on va ajouter cet événement dans l'historique du joueur
+          // console.log("addEvenement>", "c=", Jeu.cSelected, "c0=", Jeu.working.c0, "dx=", Jeu.cSelected - Jeu.working.c0, "r=", Jeu.rSelected, "r0=", Jeu.working.r0, "dr=", Jeu.rSelected - Jeu.working.r0, "cc=", cc - Jeu.working.c0, "rr=", rr - Jeu.working.r0);
+          user.addEvenement(tuile, cc - Jeu.working.c0, rr - Jeu.working.r0);
           clear();
         }
       }
