@@ -692,8 +692,8 @@ class WorkingGrille {
     this.cmax = 2;
     this.rmin = 0;
     this.rmax = 2;
-    this.c0 = 1;
-    this.r0 = 1;
+    this.c0 = 1; // position(c) relative de la cellule de départ
+    this.r0 = 1; // position(r) relative de la cellule de départ
 
     this.grid = new Matrix();
     this.grid.fill (3, 3, TuileVide);
@@ -1033,34 +1033,44 @@ class WorkingGrille {
   // cette zone de travail est dessinée librement sur la grille dur plateau de jeu
   addTuile(tuile, column, row) {
     if (this.first) {
-      //console.log("WorkingGrille:addTuile>", column, row, tuile);
+      // console.log("WorkingGrille:addTuile>", column, row, tuile);
       // Première fois du jeu
       this.cmin = 0;
       this.cmax = 2;
       this.rmin = 0;
       this.rmax = 2;
+      this.c0 = 1;
+      this.r0 = 1;
       this.grid.fill(3, 3, TuileVide);
       // console.log("WorkingGrille:addTuile>", column, row, tuile);
       this.grid.setElement(1, 1, tuile);
       this.first = false;
+
+      return;
     }
-    else {
-      // on suppose que la tuile que l'on ajoute va être ajoutée contre une tuile existante dans la grille
-      // donc l'augmentation de taille ne peut être que de "1" lorsque la tuile sera ajoutée sur le bord
-      // par ailleurs, on s'arrange pour que la grille de travail soit plus large de 1 tout autour de la zone
-      // contenant des tuiles déjà jouées
-      let i = this.index(column, row);
-      // console.log("WorkingGrille:addTuile>", column, row, i, tuile);
-      if (i >= 0) this.grid.elements[i] = tuile;
-      else {
-        let oldW = this.width();
-        let oldH = this.height();
-        let dw = 0;
-        let dh = 0;
-        let c = 0;
-        let r = 0;
-        switch (i) {
-          case -1: // Haut/Gauche
+
+    // on suppose que la tuile que l'on ajoute va être ajoutée contre une tuile existante dans la grille
+    // donc l'augmentation de taille ne peut être que de "1" lorsque la tuile sera ajoutée sur le bord
+    // par ailleurs, on s'arrange pour que la grille de travail soit plus large de 1 tout autour de la zone
+    // contenant des tuiles déjà jouées
+    let i = this.index(column, row);
+    // console.log("WorkingGrille:addTuile>", column, row, i, tuile);
+
+    if (i >= 0) {
+      // La tuile est ajoutée sans changement de taille de la grille de travail
+      this.grid.elements[i] = tuile;
+      return;
+    }
+
+    // on doit augmenter la grille de travail
+    let oldW = this.width();
+    let oldH = this.height();
+    let dw = 0;
+    let dh = 0;
+    let c = 0;
+    let r = 0;
+    switch (i) {
+      case -1: // Haut/Gauche
             this.cmin -= 1;
             this.rmin -= 1;
             dw = 1;
@@ -1068,7 +1078,7 @@ class WorkingGrille {
             c = 1;
             r = 1;
             break;
-          case -2: // Bas/Gauche
+      case -2: // Bas/Gauche
             this.cmax += 1;
             this.rmax += 1;
             dw = 1;
@@ -1076,7 +1086,7 @@ class WorkingGrille {
             c = 1;
             r = 0;
             break;
-          case -3: // Haut/Droite
+      case -3: // Haut/Droite
             this.rmin -= 1;
             this.rmin -= 1;
             dw = 1;
@@ -1084,7 +1094,7 @@ class WorkingGrille {
             c = 0;
             r = 1;
             break;
-          case -4: // Bas/Droite
+      case -4: // Bas/Droite
             this.rmax += 1;
             this.rmax += 1;
             dw = 1;
@@ -1092,58 +1102,60 @@ class WorkingGrille {
             c = 0;
             r = 0;
             break;
-          case -5: // Gauche
+      case -5: // Gauche
             this.cmin -= 1;
             dw = 1;
             c = 1;
             r = 0;
             break;
-          case -6: // Droite
+      case -6: // Droite
             this.cmax += 1;
             dw = 1;
             c = 0;
             r = 0;
             break;
-          case -7: // Haut
+      case -7: // Haut
             this.rmin -= 1;
             dh = 1;
             c = 0;
             r = 1;
             break;
-          case -8: // Bas
+      case -8: // Bas
             this.rmax += 1;
             dh = 1;
             c = 0;
             r = 0;
             break;
-        }
-        // console.log("WorkingGrille:addTuile> need to extend", column, row, "oldW=", oldW, "oldH=", oldH, "i=", i, "dh=", dh, "dw=", dw, "c=", c, "r=", r);
-        let newgrid = new Matrix();
-        newgrid.fill(oldW + dw, oldH + dh, TuileVide);
-        newgrid.insert(this.grid, c, r);
-        // this.grid.show("old");
-        // newgrid.show("new");
-        this.grid = newgrid;
-        i = this.index(column, row);
-        // console.log("WorkingGrille:addTuile> after extend", column, row, i, tuile);
-        if (i >= 0) this.grid.elements[i] = tuile;
-        // this.grid.show("new installed");
+    }
+    // console.log("WorkingGrille:addTuile> need to extend", column, row, "oldW=", oldW, "oldH=", oldH, "i=", i, "dh=", dh, "dw=", dw, "c=", c, "r=", r);
+    let newgrid = new Matrix();
+    newgrid.fill(oldW + dw, oldH + dh, TuileVide);
+    newgrid.insert(this.grid, c, r);
+    // this.grid.show("old");
+    // newgrid.show("new");
+    this.grid = newgrid;
+    i = this.index(column, row);
+    // console.log("WorkingGrille:addTuile> after extend", column, row, i, tuile);
+    if (i >= 0) this.grid.elements[i] = tuile;
+    // this.grid.show("new installed");
 
-        // console.log("addTuile> check position de la zone après extend " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax);
+    // console.log("addTuile> check position de la zone après extend " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax);
 
-        if (this.cmin < 0 || this.rmin < 0) {
-          let width = this.cmax - this.cmin;
-          let height = this.rmax - this.rmin;
+    if (this.cmin < 0 || this.rmin < 0) {
+      // on ajoute une ligne en haut ou/et une ligne à gauche
+      let width = this.cmax - this.cmin;
+      let height = this.rmax - this.rmin;
 
-          this.cmin = 0;
-          this.cmax = width;
+      if (this.cmin < 0) this.c0 += 1;
+      if (this.rmin < 0) this.r0 += 1;
 
-          this.rmin = 0;
-          this.rmax = height;
+      this.cmin = 0;
+      this.cmax = width;
 
-          // console.log("addTuile> " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax);
-        }
-      }
+      this.rmin = 0;
+      this.rmax = height;
+
+      // console.log("addTuile> " + " cmin=" + this.cmin + " cmax=" + this.cmax + " rmin=" + this.rmin + " rmax=" + this.rmax);
     }
   }
 }
