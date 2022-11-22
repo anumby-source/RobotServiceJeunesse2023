@@ -60,8 +60,8 @@ function margin() {
 }
 //              0       1            2       3          4         5         6
 const colors = ["red", "darkviolet", "lime", "skyblue", "orange", "yellow", "silver"];
-//              0       1        2          3        4         5         6       7         8          9       10    11      12
-const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile", "vide", "zoomin", "zoomout", "undo", "ok", "swap", "poubelle"];
+//              0       1        2          3        4         5         6       7         8          9       10    11
+const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile", "vide", "zoomin", "zoomout", "undo", "ok", "poubelle"];
 
 const ctx = canvas.getContext('2d');
 
@@ -126,9 +126,6 @@ function TuileDraw(id, x, y) {
       drawOk(ctx, x, y);
       break;
     case 11:
-      drawSwap(ctx, x, y);
-      break;
-    case 12:
       drawPoubelle(ctx, x, y);
       break;
   }
@@ -226,19 +223,6 @@ function drawOk(ctx, x, y) {
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
     ctx.fillText("ok", x + cell*0.15, y + cell*0.7);
-  }
-
-function drawSwap(ctx, x, y) {
-  let cell = getCellSize();
-    drawFrame(ctx, x, y, "red");
-    ctx.fillStyle = "yellow";
-    ctx.beginPath();
-    ctx.fillRect(x, y, cell, cell);
-    ctx.fill();
-
-    ctx.fillStyle = 'green';
-    ctx.font = '15px san-serif';
-    ctx.fillText("swap", x, y + cell*0.7);
   }
 
 function drawPoubelle(ctx, x, y) {
@@ -449,8 +433,7 @@ let TuileZoomin = TuileId (6, 7, 0);
 let TuileZoomout = TuileId (6, 8, 0);
 let TuileUndo = TuileId (6, 9, 0);
 let TuileOk = TuileId (6, 10, 0);
-let TuileSwap = TuileId (6, 11, 0);
-let TuilePoubelle = TuileId (6, 12, 0);
+let TuilePoubelle = TuileId (6, 11, 0);
 
 // Définition de la classe pour la zone d'info
 let infos = [];
@@ -574,11 +557,6 @@ class User {
     }
   }
 
-  swap() {
-    console.log("User:swap>")
-    this.undo();
-  }
-
   ok() {
     let histo = [];
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
@@ -599,7 +577,7 @@ class User {
       for (let p = 0; p < 6; p++) {
         this.poubelle[p] = TuileVide;
       }
-      console.log("has poubelle>");
+      // console.log("has poubelle>");
     }
 
   }
@@ -610,7 +588,7 @@ class User {
     if (!TuileTestVide(t)) {
       this.poubelle[position] = t;
       this.jeu[position] = TuileVide;
-      console.log("User:addPoubelle>", position, this.jeu, this.poubelle);
+      // console.log("User:addPoubelle>", position, this.jeu, this.poubelle);
     }
 
     clear();
@@ -639,7 +617,7 @@ class User {
     let usersYmax = usersYoffset + cell;
 
     if (x >= usersXoffset && x <= usersXmax && y >= usersYoffset && y <= usersYmax) {
-      console.log ("UserGrille::findUPoubelle> in");
+      // console.log ("UserGrille::findUPoubelle> in");
       return true;
     }
     return false;
@@ -1374,7 +1352,7 @@ class PanneauCommandes {
     let x;
     let y;
 
-    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
+    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk];
     for (let c = 0; c < commandes.length; c++) {
       x = commandesXoffset + c*(cell + 7);
       y = yoffsetCommandes();
@@ -1395,7 +1373,7 @@ class PanneauCommandes {
     let x = e.clientX - 8;
     let y = e.clientY - 8;
 
-    // [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
+    // [TuileZoomin, TuileZoomout, TuileUndo, TuileOk];
 
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
@@ -1426,10 +1404,6 @@ class PanneauCommandes {
           case 3:
             // ok
             Jeu.ok();
-            break;
-          case 4:
-            // swap
-            Users[0].swap();
             break;
         }
         clear();
@@ -1518,7 +1492,7 @@ class PlateauJeu {
       }
     }
 
-    console.log("extendPioche>", "pioche.length=", this.pioche.length, "numbers.length=", numbers.length, tuiles);
+    // console.log("extendPioche>", "pioche.length=", this.pioche.length, "numbers.length=", numbers.length, tuiles);
 
     // puis, on tire aléatoirement ces indices, que l'on va utiliser pour les tuiles
     // correspondantes
@@ -1611,7 +1585,7 @@ class PlateauJeu {
   }
 
   selectUserPoubelle(user) {
-    console.log("selectUserPoubelle>", user);
+    //console.log("selectUserPoubelle>", user);
     this.userSelected = user;
     this.poubelleSelected = true;
   }
