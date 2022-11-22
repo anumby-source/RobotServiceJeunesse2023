@@ -600,7 +600,12 @@ class Matrix {
   }
 
   vide() {
-    return this.elements.length == 0;
+    if (this.elements.length == 0) return true;
+    for (let i = 0; i < this.elements.length; i++) {
+      let t = this.elements[i];
+      if (!t.testVide()) return false;
+    }
+    return true;
   }
 
   zeros(columns, rows) {
@@ -881,7 +886,7 @@ class WorkingGrille {
     info("------------ check rules ---------- c=" + column + " r=" + row);
 
     //info("chekrules> test first");
-    if (this.first) {
+    if (this.grid.vide()) {
       info("first");
       return true;
     }
