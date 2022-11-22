@@ -1,5 +1,19 @@
 
-<p dir="auto">Robot Service Jeunesse 2023</p>
+# Développement du jeu Qwirkle en ligne dans le dépôt RobotServiceJeunesse2023
+
+https://github.com/anumby-source/RobotServiceJeunesse2023
+
+- ./Qwirkle/index.html
+- ./Qwirkle/index.js
+- ./Qwirkle/qwirkle.jpg (image de toutes les tuiles du jeu)
+
+Pour lancer le jeu, lancer la page HTML *index.html* à partir d'un navigateur (Chrome par exemple)
+
+![image](https://github.com/anumby-source/RobotServiceJeunesse2023/blob/main/Qwirkle/qwirkle.jpg)
+
+
+# Robot Service Jeunesse 2023
+
 <p dir="auto">essai de la fonction motorisation seule avec un pont en H du commerce L9110</p>
 <p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://user-images.githubusercontent.com/90700891/193750407-729c8d7c-6ae4-4856-b8fd-47e33ec5174e.png"><img src="https://user-images.githubusercontent.com/90700891/193750407-729c8d7c-6ae4-4856-b8fd-47e33ec5174e.png" alt="image" style="max-width: 100%;"></a></p>
 <p dir="auto">Les roues tournent en avant puis en arrière à vitesse réduite</p>
