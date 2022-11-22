@@ -430,8 +430,9 @@ function info (text) {
 }
 
 class Evenement {
-  constructor(tuile, c, r) {
-    // console.log("Evenement", tuile, c, r);
+  constructor(position, tuile, c, r) {
+    // console.log("Evenement", position, tuile, c, r);
+    this.position = position;
     this.tuile = tuile;
     this.c = c;
     this.r = r;
@@ -487,6 +488,23 @@ class User {
       tuile.draw(x, y);
     }
     // console.log('play> pioche=', Jeu.pioche.length);
+  }
+
+  undo() {
+    console.log("User:undo>")
+
+    for (let h = 0; h < this.historique.length; h++) {
+      let histo = this.historique[h];
+
+      let c = histo.c + Jeu.working.c0;
+      let r = histo.r + Jeu.working.r0;
+      let i = Jeu.working.index(c, r);
+
+      console.log("User:undo>", histo, Jeu.working.c0, Jeu.working.r0, c, r, i);
+
+      this.jeu[histo.position] = histo.tuile;
+      Jeu.working.grid.setElement(c, r, TuileVide)
+    }
   }
 
   ok() {
@@ -562,8 +580,8 @@ class User {
     }
   }
 
-  addEvenement(tuile, c, r) {
-    this.historique.push(new Evenement(tuile, c, r));
+  addEvenement(position, tuile, c, r) {
+    this.historique.push(new Evenement(position, tuile, c, r));
   }
 }
 
@@ -1276,6 +1294,7 @@ class PanneauCommandes {
             break;
           case 2:
             // undo
+            Users[0].undo();
             break;
           case 3:
             // ok
@@ -1591,7 +1610,7 @@ canvas.addEventListener('mouseup', (e) => {
           [cc, rr] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
           // on va ajouter cet événement dans l'historique du joueur
           // console.log("addEvenement>", "c=", Jeu.cSelected, "c0=", Jeu.working.c0, "dx=", Jeu.cSelected - Jeu.working.c0, "r=", Jeu.rSelected, "r0=", Jeu.working.r0, "dr=", Jeu.rSelected - Jeu.working.r0, "cc=", cc - Jeu.working.c0, "rr=", rr - Jeu.working.r0);
-          user.addEvenement(tuile, cc - Jeu.working.c0, rr - Jeu.working.r0);
+          user.addEvenement(Jeu.positionSelected, tuile, cc - Jeu.working.c0, rr - Jeu.working.r0);
           clear();
         }
       }
