@@ -47,6 +47,10 @@ function offsetJeu() {
   return 5 * getCellSize();
 }
 
+function yoffsetCommandes() {
+  return 5;
+}
+
 function yoffsetJoueurs() {
   return 2 * getCellSize();
 }
@@ -441,6 +445,7 @@ class User {
     this.name = name;
     this.jeu = [];
     for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
+    this.partie = [];
     this.historique = [];
   }
 
@@ -482,6 +487,14 @@ class User {
       tuile.draw(x, y);
     }
     //console.log('play> pioche=', Jeu.pioche.length);
+  }
+
+  ok() {
+    let histo = [];
+    for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
+    this.partie.push(histo);
+    this.historique = [];
+    this.pioche();
   }
 
   findUCell(x, y) {
@@ -1194,8 +1207,8 @@ class PanneauCommandes {
   }
 
   findCommande(x, y) {
-    let commandesXoffset = offsetJeu() + 8*getCellSize();
-    let commandesYoffset = yoffsetJoueurs();
+    let commandesXoffset = 0;
+    let commandesYoffset = yoffsetCommandes();
     let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
     let commandesYmax = commandesYoffset + getCellSize();
 
@@ -1208,14 +1221,25 @@ class PanneauCommandes {
   }
 
   draw() {
+    let commandesXoffset = 0;
+    let commandesYoffset = yoffsetCommandes();
+
+    let x;
+    let y;
+
     let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
-    for (let c = 0; c < 5; c++) {
-      let x = offsetJeu() + 8*getCellSize() + c*(getCellSize() + 7);
-      let y = yoffsetJoueurs();
+    for (let c = 0; c < commandes.length; c++) {
+      x = commandesXoffset + c*(getCellSize() + 7);
+      y = yoffsetCommandes();
       let commande = commandes[c];
       //console.log("commande=", commande, x, y);
       commande.draw(x, y);
     }
+
+    x += 2 * cellSize;
+    ctx.fillStyle = 'Blue';
+    ctx.font = '15px san-serif';
+    ctx.fillText("pioche " + Jeu.pioche.length , x + getCellSize()*0.3, y + getCellSize()*0.7);
   }
 
   executeCommande(e) {
@@ -1224,8 +1248,8 @@ class PanneauCommandes {
 
     // [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
 
-    let commandesXoffset = offsetJeu() + 8*getCellSize();
-    let commandesYoffset = yoffsetJoueurs();
+    let commandesXoffset = 0;
+    let commandesYoffset = yoffsetCommandes();
     let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
     let commandesYmax = commandesYoffset + getCellSize();
 
@@ -1253,6 +1277,7 @@ class PanneauCommandes {
             break;
           case 3:
             // ok
+            clear();
             Jeu.ok();
             break;
           case 4:
@@ -1414,7 +1439,7 @@ class PlateauJeu {
 
   ok(user) {
     console.log("ok");
-    Users[0].pioche();
+    Users[0].ok();
   }
 }
 
