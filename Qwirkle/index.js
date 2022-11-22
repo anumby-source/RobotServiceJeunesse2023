@@ -58,209 +58,255 @@ function yoffsetJoueurs() {
 function margin() {
   return getCellSize()*0.1;
 }
-const colors = ["red", "darkviolet", "lime", "skyblue", "orange", "yellow"];
-const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile"];
-const formesCmd = ["vide", "zoomin", "zoomout", "undo", "ok", "swap"];
+//              0       1            2       3          4         5         6
+const colors = ["red", "darkviolet", "lime", "skyblue", "orange", "yellow", "silver"];
+//              0       1        2          3        4         5         6       7         8          9       10    11      12
+const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile", "vide", "zoomin", "zoomout", "undo", "ok", "swap", "poubelle"];
 
 const ctx = canvas.getContext('2d');
 
-// Définition de la classe pour les Tuiles
-class Tuile {
-  constructor(color, forme, layer) {
-    this.color = color;
-    this.forme = forme;
-    this.layer = layer;
-    this.pioche = true;
-    this.joueur = 0;
-    this.column = 0;
-    this.row = 0;
+function TuileId(color, forme, layer) {
+  return layer*1000 + color*100 + forme;
+}
+
+function TuileGetLayer(id) {
+  return Math.floor(id/1000);
+}
+
+function TuileGetColor(id) {
+  let layer = TuileGetLayer(id);
+  return Math.floor((id - layer*1000)/100);
+}
+
+function TuileGetForme(id) {
+  return id % 100;
+}
+
+function TuileDraw(id, x, y) {
+  let color = TuileGetColor(id);
+  let forme = TuileGetForme(id);
+  let layer = TuileGetLayer(id);
+
+  const ctx = canvas.getContext('2d');
+
+  //console.log("TuileDraw> forme=", forme);
+
+  switch (forme) {
+    case 0:
+      drawRond(ctx, colors[color], x, y);
+      break;
+    case 1:
+      drawSquare(ctx, colors[color], x, y);
+      break;
+    case 2:
+      drawLosange(ctx, colors[color], x, y);
+      break;
+    case 3:
+      drawCross(ctx, colors[color], x, y);
+      break;
+    case 4:
+      drawTrefle(ctx, colors[color], x, y);
+      break;
+    case 5:
+      drawStar(ctx, colors[color], x, y);
+      break;
+    case 6:
+      drawVide(ctx, x, y);
+      break;
+    case 7:
+      drawZoomin(ctx, x, y);
+      break;
+    case 8:
+      drawZoomout(ctx, x, y);
+      break;
+    case 9:
+      drawUndo(ctx, x, y);
+      break;
+    case 10:
+      drawOk(ctx, x, y);
+      break;
+    case 11:
+      drawSwap(ctx, x, y);
+      break;
+    case 12:
+      drawPoubelle(ctx, x, y);
+      break;
   }
+}
 
-  testVide() {
-    return this.forme == "vide";
-  }
+function TuileTestVide(id) {
+  return TuileGetForme(id) == 6;
+}
 
-  toText() {
-    return "{" + this.forme + "|" + this.color + "}";
-  }
+function TuileShow(id) {
+  // console.log("Tuile", "c=", TuileGetColor(id), "f=", TuileGetForme(id), "L=", TuileGetLayer(id));
+}
 
-  drawFrame(ctx, x, y, color) {
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + getCellSize(), y);
+function drawFrame(ctx, x, y, color) {
+  let cell = getCellSize();
 
-      ctx.moveTo(x, y + getCellSize());
-      ctx.lineTo(x + getCellSize(), y + getCellSize());
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + cell, y);
 
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + getCellSize());
+  ctx.moveTo(x, y + cell);
+  ctx.lineTo(x + cell, y + cell);
 
-      ctx.moveTo(x + getCellSize(), y);
-      ctx.lineTo(x + getCellSize(), y + getCellSize());
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + cell);
 
-      ctx.stroke();
-  }
+  ctx.moveTo(x + cell, y);
+  ctx.lineTo(x + cell, y + cell);
 
-  draw(x, y) {
-    // fonction générique de dessin des tuiles
-      const ctx = canvas.getContext('2d');
-      let f1;
-      let f2;
+  ctx.stroke();
+}
 
-      f1 = formes.indexOf(this.forme);
-      if (f1 >= 0) {
-        //console.log("Tuile::draw> f1=", f1);
-
-        switch (f1) {
-          case 0:
-            this.rond(ctx, this.color, x, y);
-            break;
-          case 1:
-            this.square(ctx, this.color, x, y);
-            break;
-          case 2:
-            this.losange(ctx, this.color, x, y);
-            break;
-          case 3:
-            this.cross(ctx, this.color, x, y);
-            break;
-          case 4:
-            this.trefle(ctx, this.color, x, y);
-            break;
-          case 5:
-            this.star(ctx, this.color, x, y);
-            break;
-          }
-      }
-      else {
-        //console.log("Tuile::draw> f1=", f1, this.forme);
-        f2 = formesCmd.indexOf(this.forme);
-        if (f2 >= 0) {
-          //console.log("Tuile::draw> f2=", f2);
-          switch (f2) {
-            case 0:
-              this.vide(ctx, x, y);
-              break;
-            case 1:
-              this.zoomin(ctx, x, y);
-              break;
-            case 2:
-              this.zoomout(ctx, x, y);
-              break;
-            case 3:
-              this.undo(ctx, x, y);
-              break;
-            case 4:
-              this.ok(ctx, x, y);
-              break;
-            case 5:
-              this.swap(ctx, x, y);
-              break;
-            }
-        }
-      }
-  }
-
-  zoomin(ctx, x, y) {
+function drawZoomin(ctx, x, y) {
     //console.log("zoomin", x, y);
 
-    this.drawFrame(ctx, x, y, "red");
+    let cell = getCellSize();
+
+    drawFrame(ctx, x, y, "red");
 
     ctx.fillStyle = "DimGray";
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     ctx.beginPath();
     ctx.strokeStyle = "white";
-    ctx.moveTo(x + getCellSize()*0.1, y + getCellSize()/2);
-    ctx.lineTo(x + getCellSize()*0.9, y + getCellSize()/2);
-    ctx.moveTo(x + getCellSize()/2, y + getCellSize()*0.1);
-    ctx.lineTo(x + getCellSize()/2, y + getCellSize()*0.9);
+    ctx.moveTo(x + cell*0.1, y + cell/2);
+    ctx.lineTo(x + cell*0.9, y + cell/2);
+    ctx.moveTo(x + cell/2, y + cell*0.1);
+    ctx.lineTo(x + cell/2, y + cell*0.9);
     ctx.stroke();
   }
 
-  zoomout(ctx, x, y) {
+function drawZoomout(ctx, x, y) {
     //console.log("zoomout", x, y);
 
-    this.drawFrame(ctx, x, y, "red");
+    let cell = getCellSize();
+
+    drawFrame(ctx, x, y, "red");
 
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     ctx.beginPath();
     ctx.strokeStyle = "white";
-    ctx.moveTo(x + getCellSize()*0.1, y + getCellSize()/2);
-    ctx.lineTo(x + getCellSize()*0.9, y + getCellSize()/2);
+    ctx.moveTo(x + cell*0.1, y + cell/2);
+    ctx.lineTo(x + cell*0.9, y + cell/2);
     ctx.stroke();
   }
 
-  undo(ctx, x, y) {
-    this.drawFrame(ctx, x, y, "red");
+function drawUndo(ctx, x, y) {
+  let cell = getCellSize();
+    drawFrame(ctx, x, y, "red");
     ctx.fillStyle = "yellow";
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("z", x + getCellSize()*0.3, y + getCellSize()*0.7);
+    ctx.fillText("z", x + cell*0.3, y + cell*0.7);
   }
 
-  ok(ctx, x, y) {
-    this.drawFrame(ctx, x, y, "red");
+function drawOk(ctx, x, y) {
+  let cell = getCellSize();
+
+    drawFrame(ctx, x, y, "red");
     ctx.fillStyle = "yellow";
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("ok", x + getCellSize()*0.15, y + getCellSize()*0.7);
+    ctx.fillText("ok", x + cell*0.15, y + cell*0.7);
   }
 
-  swap(ctx, x, y) {
-    this.drawFrame(ctx, x, y, "red");
+function drawSwap(ctx, x, y) {
+  let cell = getCellSize();
+    drawFrame(ctx, x, y, "red");
     ctx.fillStyle = "yellow";
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     ctx.fillStyle = 'green';
     ctx.font = '15px san-serif';
-    ctx.fillText("swap", x, y + getCellSize()*0.7);
+    ctx.fillText("swap", x, y + cell*0.7);
   }
 
-  vide(ctx, x, y) {
+function drawPoubelle(ctx, x, y) {
+    let cell = getCellSize();
+
+    drawFrame(ctx, x, y, "red");
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.fillRect(x, y, cell, cell);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
+    ctx.moveTo(x + 0.45 * cell, y + 0.2 * cell);
+    ctx.lineTo(x + 0.55 * cell, y + 0.2 * cell);
+    ctx.moveTo(x + 0.45 * cell, y + 0.25 * cell);
+    ctx.lineTo(x + 0.55 * cell, y + 0.25 * cell);
+
+    ctx.moveTo(x + 0.2 * cell, y + 0.3 * cell);
+    ctx.lineTo(x + 0.8 * cell, y + 0.3 * cell);
+    ctx.lineTo(x + 0.8 * cell, y + 0.9 * cell);
+    ctx.lineTo(x + 0.2 * cell, y + 0.9 * cell);
+    ctx.lineTo(x + 0.2 * cell, y + 0.3 * cell);
+    ctx.moveTo(x + 0.1 * cell, y + 0.3 * cell);
+    ctx.lineTo(x + 0.9 * cell, y + 0.3 * cell);
+
+    ctx.moveTo(x + 0.3 * cell, y + 0.6 * cell);
+    ctx.lineTo(x + 0.7 * cell, y + 0.6 * cell);
+
+    ctx.moveTo(x + 0.3 * cell, y + 0.7 * cell);
+    ctx.lineTo(x + 0.7 * cell, y + 0.7 * cell);
+
+    ctx.moveTo(x + 0.3 * cell, y + 0.8 * cell);
+    ctx.lineTo(x + 0.7 * cell, y + 0.8 * cell);
+
+    ctx.stroke();
+  }
+
+function drawVide(ctx, x, y) {
+  let cell = getCellSize();
     ctx.fillStyle = "silver";
     ctx.beginPath();
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     for (let c = 0; c <= 1; c++) {
         ctx.beginPath();
         ctx.strokeStyle = "red";
-        ctx.moveTo(x + c*getCellSize(), y);
-        ctx.lineTo(x + c*getCellSize(), y + getCellSize());
+        ctx.moveTo(x + c*cell, y);
+        ctx.lineTo(x + c*cell, y + cell);
         ctx.stroke();
     }
     for (let r = 0; r <= 1; r++) {
       ctx.beginPath();
       ctx.strokeStyle = "red";
-      ctx.moveTo(x, y + r*getCellSize());
-      ctx.lineTo(x + getCellSize(), y + r*getCellSize());
+      ctx.moveTo(x, y + r*cell);
+      ctx.lineTo(x + cell, y + r*cell);
       ctx.stroke();
     }
   }
 
-  rond(ctx, color, x, y) {
+function drawRond(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
 
     let radius = getCellSize2() - margin();
     ctx.fillStyle = color;
@@ -268,44 +314,47 @@ class Tuile {
     ctx.fill();
   }
 
-  square(ctx, color, x, y) {
+function drawSquare(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
 
-    let width = getCellSize()*0.9 - 2*margin();
+    let width = cell*0.9 - 2*margin();
 
     ctx.fillStyle = color;
-    ctx.fillRect(x + getCellSize2() - width/2, y + getCellSize2() - width/2, getCellSize()*0.9 - 2*margin(), getCellSize()*0.9 - 2*margin());
+    ctx.fillRect(x + getCellSize2() - width/2, y + getCellSize2() - width/2, cell*0.9 - 2*margin(), cell*0.9 - 2*margin());
     ctx.fill();
   }
 
-  losange(ctx, color, x, y) {
+function drawLosange(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
 
     ctx.fillStyle = color;
 
     ctx.beginPath();
     ctx.moveTo(x + margin(), y + getCellSize2());             // 1
     ctx.lineTo(x + getCellSize2(), y + margin());             // 2
-    ctx.lineTo(x + getCellSize() - margin(), y + getCellSize2());  // 3
-    ctx.lineTo(x + getCellSize2(), y + getCellSize() - margin());  // 4
+    ctx.lineTo(x + cell - margin(), y + getCellSize2());  // 3
+    ctx.lineTo(x + getCellSize2(), y + cell - margin());  // 4
     ctx.lineTo(x + margin(), y + getCellSize2());
     ctx.fill();
   }
 
-  cross(ctx, color, x, y) {
+function drawCross(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
 
     ctx.fillStyle = color;
 
@@ -313,22 +362,23 @@ class Tuile {
     ctx.beginPath();
     ctx.moveTo(x + margin(), y + margin()); // 1
     ctx.lineTo(x + getCellSize2(), y + getCellSize2() - radius); // 2
-    ctx.lineTo(x + getCellSize() - margin(), y + margin()); // 3
+    ctx.lineTo(x + cell - margin(), y + margin()); // 3
     ctx.lineTo(x + getCellSize2() + radius, y + getCellSize2()); // 4
-    ctx.lineTo(x + getCellSize() - margin(), y + getCellSize() - margin()); // 5
+    ctx.lineTo(x + cell - margin(), y + cell - margin()); // 5
     ctx.lineTo(x + getCellSize2(), y + getCellSize2() + radius); // 6
-    ctx.lineTo(x + margin(), y + getCellSize() - margin()); // 7
+    ctx.lineTo(x + margin(), y + cell - margin()); // 7
     ctx.lineTo(x + getCellSize2() - radius, y + getCellSize2()); // 8
     ctx.lineTo(x + margin(), y + margin()); // 1
     ctx.fill();
   }
 
-  trefle(ctx, color, x, y) {
+function drawTrefle(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
     ctx.fill();
 
     let core = getCellSize2() * 0.3;
@@ -351,15 +401,16 @@ class Tuile {
     }
   }
 
-  star(ctx, color, x, y) {
+function drawStar(ctx, color, x, y) {
+  let cell = getCellSize();
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.fillStyle = "black";
 
 
-    ctx.fillRect(x, y, getCellSize(), getCellSize());
+    ctx.fillRect(x, y, cell, cell);
 
-    let radius = getCellSize()*0.15;
+    let radius = cell*0.15;
     let a = (getCellSize2() - margin())/Math.SQRT2;
 
     ctx.strokeStyle = color;
@@ -391,24 +442,25 @@ class Tuile {
 
     ctx.fill();
   }
-}
 
 // Une instance de Tuile unique pour installer sur des cellules particulières: La cellule vide, les cellules pour les commandes
-let TuileVide = new Tuile ("silver", "vide");
-let TuileZoomin = new Tuile ("silver", "zoomin");
-let TuileZoomout = new Tuile ("silver", "zoomout");
-let TuileUndo = new Tuile ("silver", "undo");
-let TuileOk = new Tuile ("silver", "ok");;
-let TuileSwap = new Tuile ("silver", "swap");
+let TuileVide = TuileId (6, 6, 0);
+let TuileZoomin = TuileId (6, 7, 0);
+let TuileZoomout = TuileId (6, 8, 0);
+let TuileUndo = TuileId (6, 9, 0);
+let TuileOk = TuileId (6, 10, 0);
+let TuileSwap = TuileId (6, 11, 0);
+let TuilePoubelle = TuileId (6, 12, 0);
 
 // Définition de la classe pour la zone d'info
 let infos = [];
 function info (text) {
+  let cell = getCellSize();
   let xoffset = 0;
-  let yoffset = yoffsetJoueurs() + (Jeu.working.cmax + 6) * getCellSize();
+  let yoffset = yoffsetJoueurs() + (Jeu.working.cmax + 6) * cell;
 
   if (text) {
-    let lines = (canvas.height - yoffset)/getCellSize();
+    let lines = (canvas.height - yoffset)/cell;
     if (infos.length < lines) {
     }
     else {
@@ -420,12 +472,12 @@ function info (text) {
   for (let line = 0; line < infos.length; line++) {
       ctx.fillStyle = "white";
       ctx.beginPath();
-      ctx.fillRect(0, yoffset - getCellSize() + line*getCellSize(), canvas.width, getCellSize());
+      ctx.fillRect(0, yoffset - cell + line*cell, canvas.width, cell);
       ctx.fill();
 
       ctx.fillStyle = 'red';
       ctx.font = '20px san-serif';
-      ctx.fillText(infos[line], 0, yoffset  + line*getCellSize());
+      ctx.fillText(infos[line], 0, yoffset  + line*cell);
   }
 }
 
@@ -446,30 +498,45 @@ class User {
     this.name = name;
     this.jeu = [];
     for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
+    this.poubelle = [];
+    for (let t = 0; t < 6; t++) this.poubelle.push(TuileVide);
     this.partie = [];
     this.historique = [];
   }
 
   draw() {
+    let cell = getCellSize();
+
     let xoffset = offsetJeu();
-    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * cell;
 
     ctx.fillStyle = 'green';
     ctx.font = '30px san-serif';
-    ctx.fillText(this.name, 0, yoffset + getCellSize());
+    ctx.fillText(this.name, 0, yoffset + cell);
 
     for (let c = 0; c < 6; c++)
     {
-        let t = this.jeu[c];
-        //console.log(t, "xoffset=", xoffset + c*getCellSize(), yoffset, c);
-        t.draw(xoffset + c*getCellSize(), yoffset);
+      let t = this.jeu[c];
+      // console.log(t, "xoffset=", xoffset + c*cell, yoffset, c);
+      TuileDraw(t, xoffset + c*cell, yoffset);
     }
+
+    let poubelles = 0;
+    for (let t = 0; t < 6; t++) {
+      if (!TuileTestVide(this.poubelle[t])) poubelles++;
+    }
+
+    TuileDraw(TuilePoubelle, xoffset + 7*cell, yoffset);
+    ctx.fillStyle = 'Blue';
+    ctx.font = '15px san-serif';
+    ctx.fillText("[" + poubelles + "]", xoffset + 8.5*cell, yoffset + 0.7 * cell);
   }
 
   play() {
+    let cell = getCellSize();
     // offset pour positionner les utilisateurs après la grille
     let xoffset = offsetJeu();
-    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * cell;
 
     for (let t = 0; t < 6; t++) {
       let n = Jeu.pioche[0];
@@ -477,15 +544,15 @@ class User {
       //console.log('User:play> ', n);
 
       let tuile = Jeu.tuiles[n];
-      //console.log('play> tuile=', tuile);
-      tuile.pioche = false;
+      // console.log('play> tuile=', tuile);
+      TuileShow(tuile);
 
       this.jeu[t] = tuile;
 
-      let x = xoffset + t*getCellSize();
+      let x = xoffset + t*cell;
       let y = yoffset;
-      //console.log('play> tuile=', tuile, tuile.forme, tuile.color, x, y);
-      tuile.draw(x, y);
+      // console.log('play> tuile=', tuile, TuileGetForme(tuile), TuileGetColor(tuile), x, y);
+      TuileDraw(tuile, x, y);
     }
     // console.log('play> pioche=', Jeu.pioche.length);
   }
@@ -517,27 +584,71 @@ class User {
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
     this.partie.push(histo);
     this.historique = [];
+    let hasPoubelle = false;
+    for (let p = 0; p < 6; p++) {
+      this.poubelle[p]
+      if (!TuileTestVide(this.poubelle[p])) {
+        hasPoubelle = true;
+        break;
+      }
+    }
     this.pioche();
+
+    if (hasPoubelle) {
+      Jeu.extendPioche(this.poubelle);      // on va rajouter la tuiles de la poubelle dans la pioche
+      for (let p = 0; p < 6; p++) {
+        this.poubelle[p] = TuileVide;
+      }
+      console.log("has poubelle>");
+    }
+
+  }
+
+  addPoubelle(position) {
+    // console.log("User:addPoubelle>", position, this.jeu);
+    let t = this.jeu[position];
+    if (!TuileTestVide(t)) {
+      this.poubelle[position] = t;
+      this.jeu[position] = TuileVide;
+      console.log("User:addPoubelle>", position, this.jeu, this.poubelle);
+    }
+
+    clear();
   }
 
   findUCell(x, y) {
+    let cell = getCellSize()
     let usersXoffset = offsetJeu();
     let usersYoffset = yoffsetJoueurs();
-    let usersXmax = usersXoffset + 6 * getCellSize();
-    let usersYmax = usersYoffset + getCellSize();
+    let usersXmax = usersXoffset + 6 * cell;
+    let usersYmax = usersYoffset + cell;
 
     if (x >= usersXoffset && x <= usersXmax && y >= usersYoffset && y <= usersYmax) {
-      let tuileIndice = Math.floor((x - usersXoffset)/getCellSize());
+      let tuileIndice = Math.floor((x - usersXoffset)/cell);
       // console.log ("UserGrille::findUCell> in", tuileIndice);
       return tuileIndice;
     }
     return -1;
   }
 
-  selectTuile(tuileIndice) {
+  findUPoubelle(x, y) {
+    let cell = getCellSize();
+    let usersXoffset = offsetJeu() + 7 * cell;
+    let usersYoffset = yoffsetJoueurs();
+    let usersXmax = usersXoffset + cell;
+    let usersYmax = usersYoffset + cell;
 
-    let x = offsetJeu() + tuileIndice * getCellSize();
-    let y = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    if (x >= usersXoffset && x <= usersXmax && y >= usersYoffset && y <= usersYmax) {
+      console.log ("UserGrille::findUPoubelle> in");
+      return true;
+    }
+    return false;
+  }
+
+  selectTuile(tuileIndice) {
+    let cell = getCellSize();
+    let x = offsetJeu() + tuileIndice * cell;
+    let y = yoffsetJoueurs() + 2 * this.numéro * cell;
 
     // on sauvegarde la tuile
     let savedTuile = this.jeu[tuileIndice]
@@ -546,41 +657,41 @@ class User {
 
     // console.log("selectTuile>", "tuile=", tuileIndice, "user=", this.numéro, "savedtuile=", savedTuile);
 
-    // TuileVide.draw(x, y);
+    // TuileDraw(TuileVide, x, y);
 
-    // this.jeu[savedTuile].draw(x, y);
+    // TuileDraw(this.jeu[savedTuile], x, y);
 
     /*
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = "silver";
     ctx.beginPath();
-    ctx.fillRect(xoff + tuile*getCellSize(), yoff, getCellSize(), getCellSize());
+    ctx.fillRect(xoff + tuile*cell, yoff, cell, cell);
     ctx.fill();
     */
 
   }
 
   pioche() {
+    let cell = getCellSize();
     let xoffset = offsetJeu();
-    let yoffset = yoffsetJoueurs() + 2 * this.numéro * getCellSize();
+    let yoffset = yoffsetJoueurs() + 2 * this.numéro * cell;
 
     for (let t = 0; t < 6; t++) {
       let tuile = this.jeu[t];
-      if (tuile.testVide()) {
+      if (TuileTestVide(tuile)) {
         let n = Jeu.pioche[0];
         Jeu.pioche.splice(0, 1);
         //console.log('User:play> ', n);
 
         let tuile = Jeu.tuiles[n];
         //console.log('play> tuile=', tuile);
-        tuile.pioche = false;
 
         this.jeu[t] = tuile;
 
-        let x = xoffset + t*getCellSize();
+        let x = xoffset + t*cell;
         let y = yoffset;
         //console.log('play> tuile=', tuile, tuile.forme, tuile.color, x, y);
-        tuile.draw(x, y);
+        TuileDraw(tuile, x, y);
       }
     }
   }
@@ -608,7 +719,7 @@ class Matrix {
     if (this.elements.length == 0) return true;
     for (let i = 0; i < this.elements.length; i++) {
       let t = this.elements[i];
-      if (!t.testVide()) return false;
+      if (!TuileTestVide(t)) return false;
     }
     return true;
   }
@@ -756,25 +867,27 @@ class WorkingGrille {
   }
 
   draw() {
+    let cell = getCellSize();
     let xoffset = 0;
-    let yoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
+    let yoffset = yoffsetJoueurs() + 2 * Users.length * cell;
     for (let c = this.cmin; c <= this.cmax; c++)
       for (let r = this.rmin; r <= this.rmax; r++) {
           let tuile = this.grid.getElement(c - this.cmin, r - this.rmin);
           if (tuile) {
-            let x = xoffset + c*getCellSize();
-            let y = yoffset + r*getCellSize();
+            let x = xoffset + c*cell;
+            let y = yoffset + r*cell;
             //console.log("WorkingGrille:draw>", x, y, tuile);
-            tuile.draw(x, y);
+            TuileDraw(tuile, x, y);
           }
       }
   }
 
   findWCell(x, y) {
+    let cell = getCellSize();
     let workingXoffset = 0;
-    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
-    let workingXmax = workingXoffset + (this.cmax + 1)*getCellSize();
-    let workingYmax = workingYoffset + (this.rmax + 1)*getCellSize();
+    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * cell;
+    let workingXmax = workingXoffset + (this.cmax + 1)*cell;
+    let workingYmax = workingYoffset + (this.rmax + 1)*cell;
 
     if (x >= workingXoffset && x <= workingXmax && y >= workingYoffset && y <= workingYmax) {
 
@@ -782,8 +895,8 @@ class WorkingGrille {
 
       x -= workingXoffset;
       y -= workingYoffset;
-      let c = Math.floor(x/getCellSize());
-      let r = Math.floor(y/getCellSize());
+      let c = Math.floor(x/cell);
+      let r = Math.floor(y/cell);
       // console.log("WorkingGrille:findWCell> cellule=", c, r);
       Jeu.cSelected = c;
       Jeu.rSelected = r;
@@ -794,23 +907,24 @@ class WorkingGrille {
   }
 
   drawCellFrame(c0, r0, color) {
+    let cell = getCellSize();
     let workingXoffset = 0;
-    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * getCellSize();
-    let workingXmax = workingXoffset + (this.cmax + 1)*getCellSize();
-    let workingYmax = workingYoffset + (this.rmax + 1)*getCellSize();
+    let workingYoffset = yoffsetJoueurs() + 2 * Users.length * cell;
+    let workingXmax = workingXoffset + (this.cmax + 1)*cell;
+    let workingYmax = workingYoffset + (this.rmax + 1)*cell;
 
     for (let c = c0; c <= c0 + 1; c++)
     {
       ctx.beginPath();
       ctx.strokeStyle = color;
-      ctx.moveTo(workingXoffset + c*getCellSize(), workingYoffset + r0*getCellSize());
-      ctx.lineTo(workingXoffset + c*getCellSize(), workingYoffset + (r0+1)*getCellSize());
+      ctx.moveTo(workingXoffset + c*cell, workingYoffset + r0*cell);
+      ctx.lineTo(workingXoffset + c*cell, workingYoffset + (r0+1)*cell);
       ctx.stroke();
       for (let r = r0; r <= r0 + 1; r++) {
         ctx.beginPath();
         ctx.strokeStyle = color;
-        ctx.moveTo(workingXoffset + c0*getCellSize(), workingYoffset + r*getCellSize());
-        ctx.lineTo(workingXoffset + (c0+1)*getCellSize(), workingYoffset + r*getCellSize());
+        ctx.moveTo(workingXoffset + c0*cell, workingYoffset + r*cell);
+        ctx.lineTo(workingXoffset + (c0+1)*cell, workingYoffset + r*cell);
         ctx.stroke();
       }
     }
@@ -869,7 +983,7 @@ class WorkingGrille {
   // teste si la case contient une cellule vide
   vide(column, row){
     let i = this.index(column, row);
-    return (i < 0) || this.grid.elements[i].testVide();
+    return (i < 0) || TuileTestVide(this.grid.elements[i]);
   }
 
   // teste si la case dans la grille de travail est de même type (forme, color)
@@ -877,7 +991,7 @@ class WorkingGrille {
     let i = this.index(column, row);
     if (i < 0) return false;
     let tuile = this.grid.elements[i];
-    return (i >= 0) && (tuile.forme == forme || tuile.color == color);
+    return (i >= 0) && (TuileGetForme(tuile) == forme || TuileGetColor(tuile) == color);
   }
 
   // application des règles du jeu
@@ -910,7 +1024,7 @@ class WorkingGrille {
     let index = this.index(column, row);
     if (index > 0) {
       let t = this.grid.elements[index];
-      if (!t.testVide()) {
+      if (!TuileTestVide(t)) {
         info("la case est déjà occupée");
         return false;
       }
@@ -929,7 +1043,7 @@ class WorkingGrille {
       let c = column + 2*dc - 1;
       if (!this.vide(c, row)) {
         info("case c=" + c + " non vide");
-        if (!this.sameType(c, row, tuile.forme, tuile.color)) {
+        if (!this.sameType(c, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
           info("case voisine différente " + GD[dc]);
           return false;
         }
@@ -943,7 +1057,7 @@ class WorkingGrille {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
         info("case r=" + r + " non vide");
-        if (!this.sameType(column, r, tuile.forme, tuile.color)) {
+        if (!this.sameType(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
           info("case voisine différente " + HB[dr]);
           return false;
         }
@@ -958,10 +1072,10 @@ class WorkingGrille {
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
         info("case c=" + c + " non vide");
-        if (this.sameType(c, row, tuile.forme, tuile.color))
+        if (this.sameType(c, row, TuileGetForme(tuile), TuileGetColor(tuile)))
           if (!this.vide(c1, row)) {
             info("case c=" + c1 + " non vide");
-            if (!this.sameType(c1, row, tuile.forme, tuile.color)) {
+            if (!this.sameType(c1, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
               info("case voisine +2 différente " + GD[dc]);
               return false;
             }
@@ -974,8 +1088,8 @@ class WorkingGrille {
     for (let dr = 0; dr < 2; dr++) {
         let r = row + 2*dr - 1;
         let r1 = row + 4*dr - 2;
-        if (!this.vide(column, r) && this.sameType(column, r, tuile.forme, tuile.color) &&
-            !this.vide(column, r1) && !this.sameType(column, r1, tuile.forme, tuile.color)) {
+        if (!this.vide(column, r) && this.sameType(column, r, TuileGetForme(tuile), TuileGetColor(tuile)) &&
+            !this.vide(column, r1) && !this.sameType(column, r1, TuileGetForme(tuile), TuileGetColor(tuile))) {
           info("case voisine +2 différente " + HB[dr]);
           return false;
         }
@@ -987,86 +1101,86 @@ class WorkingGrille {
     // c'est-à-dire qu'il n'y a pas de doublon
 
     for (let coord = 0; coord < 2; coord++) {
-    // coord = 0 pour les lignes horizontales
-    // coord = 1 pour les lignes verticales
-    info("coord = " + coord);
-    for (let d = 0; d < 2; d++) {
-      // d = 0 pour parcourir à gauche/en haut
-      // d = 1 pour parcourir à droite/en bas
-      let formes = [tuile.forme];
-      let colors = [tuile.color];
-      let mode;
-      let doc;
-      for (let position = 1; position < 6; position++) {
-        let i;
-        if (coord == 0) {
-          // on travaille sur un row donné et la column varie
-          doc = GD[d];
-          let c = column + position*(2*d - 1);
-          info("Ligne " + doc + " coord=" + coord + " c=" + c + " r=" + row);
-          if (this.vide(c, row)) {
-            break;
-          }
-          i = this.index(c, row);
-        }
-        else {
-          // on travaille sur une colonne donnée et le row varie
-          doc = HB[d];
-          let r = row + position*(2*d - 1);
-          info("Ligne " + doc + " coord=" + coord + " c=" + column + " r=" + r);
-          if (this.vide(column, r)) {
-            break;
-          }
-          i = this.index(column, r);
-        }
-
-        let t = this.grid.elements[i];
-        if ((t.forme != tuile.forme) && (t.color != tuile.color)) {
-          info("la ligne " + doc + " n'est pas conforme len=" + formes.length + " : ni forme ni color conforme");
-          return false;
-        }
-
-        // ici, on a une conformité soit sur les formes soit sur les couleurs
-        // on mémorise la conformité dans la variable mode
-
-        if (position == 1) {
-          if (t.forme == tuile.forme) {
-            mode = "forme";
+      // coord = 0 pour les lignes horizontales
+      // coord = 1 pour les lignes verticales
+      info("coord = " + coord);
+      for (let d = 0; d < 2; d++) {
+        // d = 0 pour parcourir à gauche/en haut
+        // d = 1 pour parcourir à droite/en bas
+        let formes = [TuileGetForme(tuile)];
+        let colors = [TuileGetColor(tuile)];
+        let mode;
+        let doc;
+        for (let position = 1; position < 6; position++) {
+          let i;
+          if (coord == 0) {
+            // on travaille sur un row donné et la column varie
+            doc = GD[d];
+            let c = column + position*(2*d - 1);
+            info("Ligne " + doc + " coord=" + coord + " c=" + c + " r=" + row);
+            if (this.vide(c, row)) {
+              break;
+            }
+            i = this.index(c, row);
           }
           else {
-            mode = "color";
+            // on travaille sur une colonne donnée et le row varie
+            doc = HB[d];
+            let r = row + position*(2*d - 1);
+            info("Ligne " + doc + " coord=" + coord + " c=" + column + " r=" + r);
+            if (this.vide(column, r)) {
+              break;
+            }
+            i = this.index(column, r);
           }
-        }
 
-        if (mode == "forme") {
-          // mode formes
-          if (t.forme != tuile.forme) {
-            info("la ligne " + doc + " n'est pas conforme len=" + formes.length);
+          let t = this.grid.elements[i];
+          if ((TuileGetForme(t) != TuileGetForme(tuile)) && (TuileGetColor(t) != TuileGetColor(tuile))) {
+            info("A la ligne " + doc + " n'est pas conforme len=" + formes.length + " : ni forme ni color conforme");
             return false;
           }
-          let i = colors.indexOf(t.color);
-          if (i > -1) {
-            info("la ligne " + doc + " n'est pas conforme len=" + formes.length);
-            return false;
+
+          // ici, on a une conformité soit sur les formes soit sur les couleurs
+          // on mémorise la conformité dans la variable mode
+
+          if (position == 1) {
+            if (TuileGetForme(t) == TuileGetForme(tuile)) {
+              mode = "forme";
+            }
+            else {
+              mode = "color";
+            }
           }
-          colors.push(t.color);
+
+          if (mode == "forme") {
+            // mode formes
+            if (TuileGetForme(t) != TuileGetForme(tuile)) {
+              info("B la ligne " + doc + " n'est pas conforme len=" + formes.length);
+              return false;
+            }
+            let i = colors.indexOf(TuileGetColor(t));
+            if (i > -1) {
+              info("C la ligne " + doc + " n'est pas conforme len=" + formes.length);
+              return false;
+            }
+            colors.push(TuileGetColor(t));
+          }
+          else {
+            // mode color
+            if (TuileGetColor(t) != TuileGetColor(tuile)) {
+              info("D la ligne " + doc + " n'est pas conforme len=" + colors.length);
+              return false;
+            }
+            let i = formes.indexOf(TuileGetForme(t));
+            if (i > -1) {
+              info("E la ligne " + doc + " n'est pas conforme len=" + colors.length);
+              return false;
+            }
+            formes.push(TuileGetForme(t));
+          }
         }
-        else {
-          // mode color
-          if (t.color != tuile.color) {
-            info("la ligne " + doc + " n'est pas conforme len=" + colors.length);
-            return false;
-          }
-          let i = formes.indexOf(t.forme);
-          if (i > -1) {
-            info("la ligne " + doc + " n'est pas conforme len=" + colors.length);
-            return false;
-          }
-          formes.push(t.forme);
-        }
+        info("F la ligne " + doc + " est conforme len=" + formes.length);
       }
-      info("la ligne " + doc + " est conforme len=" + formes.length);
-    }
     }
 
     /*
@@ -1235,13 +1349,14 @@ class PanneauCommandes {
   }
 
   findCommande(x, y) {
+    let cell = getCellSize();
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
-    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
-    let commandesYmax = commandesYoffset + getCellSize();
+    let commandesXmax = commandesXoffset + 5*(cell + 7);
+    let commandesYmax = commandesYoffset + cell;
 
     if (x >= commandesXoffset && x <= commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
-      let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
+      let commande = Math.floor((x - commandesXoffset)/(cell + 7));
       // console.log ("Jeu::findCommande> in", commande);
       return true;
     }
@@ -1249,6 +1364,7 @@ class PanneauCommandes {
   }
 
   draw() {
+    let cell = getCellSize();
 
     // console.log("PanneauCommandes:draw", Jeu.pioche.length);
 
@@ -1260,21 +1376,22 @@ class PanneauCommandes {
 
     let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSwap];
     for (let c = 0; c < commandes.length; c++) {
-      x = commandesXoffset + c*(getCellSize() + 7);
+      x = commandesXoffset + c*(cell + 7);
       y = yoffsetCommandes();
       let commande = commandes[c];
-      //console.log("commande=", commande, x, y);
-      commande.draw(x, y);
+      // console.log("commande=", commande, x, y);
+      // TuileShow(commande);
+      TuileDraw(commande, x, y);
     }
 
     x += 2 * cellSize;
     ctx.fillStyle = 'Blue';
     ctx.font = '15px san-serif';
-    ctx.fillText("pioche " + Jeu.pioche.length , x + getCellSize()*0.3, y + getCellSize()*0.7);
-
+    ctx.fillText("pioche " + Jeu.pioche.length , x + cell*0.3, y + cell*0.7);
   }
 
   executeCommande(e) {
+    let cell = getCellSize();
     let x = e.clientX - 8;
     let y = e.clientY - 8;
 
@@ -1282,25 +1399,25 @@ class PanneauCommandes {
 
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
-    let commandesXmax = commandesXoffset + 5*(getCellSize() + 7);
-    let commandesYmax = commandesYoffset + getCellSize();
+    let commandesXmax = commandesXoffset + 5*(cell + 7);
+    let commandesYmax = commandesYoffset + cell;
 
 
     let xc = commandesXoffset;
     let yc = commandesYoffset;
-    if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(getCellSize() + 7)))
-      if ((y >= commandesYoffset) && (y <= commandesYoffset + getCellSize())) {
-        let commande = Math.floor((x - commandesXoffset)/(getCellSize() + 7));
+    if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(cell + 7)))
+      if ((y >= commandesYoffset) && (y <= commandesYoffset + cell)) {
+        let commande = Math.floor((x - commandesXoffset)/(cell + 7));
         // console.log("executeCommande> x=" + x + " commande=" + commande);
         switch (commande) {
           case 0:
             // zoomin
-            cellSize = getCellSize() + 5;
+            cellSize = cell + 5;
             break;
           case 1:
             // zoomout
-            console.log("zoomout", getCellSize());
-            cellSize = getCellSize() - 5;;
+            console.log("zoomout", cell);
+            cellSize = cell - 5;;
             break;
           case 2:
             // undo
@@ -1333,6 +1450,7 @@ class PlateauJeu {
 
     this.userSelected;
     this.positionSelected;
+    this.poubelleSelected = false;
     this.tuileSelected;
     this.cSelected;
     this.rSelected;
@@ -1357,19 +1475,7 @@ class PlateauJeu {
     this.mode = mode;
   }
 
-  init() {
-    // création de toutes les 3 x 6 x 6 tuiles ordonnées
-    for (let layer = 0; layer < 3; layer++)
-        for (let c = 0; c < colors.length; c++) {
-          for (let f = 0; f < formes.length; f++) {
-            let color = colors[c];
-            let forme = formes[f];
-            let t = new Tuile(color, forme);
-            //console.log(color, forme, t);
-            this.tuiles.push(t);
-          }
-        }
-
+  initPioche() {
     // initialisation de la pioche par tirage aléatoire des tuiles
     let numbers = [];
     // on crée un tableau ne contenant que les indices
@@ -1393,7 +1499,71 @@ class PlateauJeu {
       //console.log("PlateauJeu:init> ", numbers);
       this.pioche.push(n);
     }
+  }
 
+  extendPioche(tuiles) {
+    // initialisation de la pioche par tirage aléatoire des tuiles
+    let tuile;
+    let numbers = [];
+    // on crée un tableau ne contenant que les indices
+    for (let t = 0; t < this.pioche.length; t++) {
+       numbers.push(t);
+    }
+    let t = this.pioche.length;
+    for (let i = 0; i < tuiles.length; i++) {
+      tuile = tuiles[i]
+      if (!TuileTestVide(tuile)) {
+        numbers.push(t);
+        t++;
+      }
+    }
+
+    console.log("extendPioche>", "pioche.length=", this.pioche.length, "numbers.length=", numbers.length, tuiles);
+
+    // puis, on tire aléatoirement ces indices, que l'on va utiliser pour les tuiles
+    // correspondantes
+    // apès chaque tirage, on élimine l'indice de cette liste.
+    // En utilisant cet indice on remplit une liste complète des tuiles, pour en faire la pioche
+    // pour choisir dans la pioche, il suffit à chaque fois de prendre le premier élément
+    // et le supprimer de la liste.
+
+    let newPioche = [];
+
+    for (let i = 0; i < tuiles.length; i++) {
+      tuile = tuiles[i]
+      if (!TuileTestVide(tuile)) {
+        this.pioche.push(tuile);
+      }
+    }
+    for (let t = 0; t < this.pioche.length; t++) {
+      // on tire
+      let index = Math.floor(Math.random() * numbers.length);
+      let n = numbers[index];
+      //console.log("PlateauJeu:init> index=", index, "n=", n, numbers);
+      numbers.splice(index, 1);
+      //console.log("PlateauJeu:init> ", numbers);
+      newPioche.push(n);
+    }
+
+    this.pioche = [];
+    for (let t = 0; t < newPioche.length; t++) {
+      tuile = newPioche[t];
+      this.pioche.push(tuile);
+    }
+  }
+
+  init() {
+    // création de toutes les 3 x 6 x 6 tuiles ordonnées
+    for (let layer = 0; layer < 3; layer++)
+        for (let color = 0; color < 6; color++) {
+          for (let forme = 0; forme < 6; forme++) {
+            let t = TuileId(color, forme, layer);
+            //console.log(color, forme, t);
+            this.tuiles.push(t);
+          }
+        }
+
+    this.initPioche();
     // initialisation de la grille
     for (let c = 0; c < this.width; c++)
       for (let r = 0; r < this.height; r++) {
@@ -1411,23 +1581,24 @@ class PlateauJeu {
     const ctx = canvas.getContext('2d');
 
     // dessine working
-    this.working.draw();
     this.commandes.draw();
+    this.working.draw();
   }
 
   drawCellFrame(c0, r0, color) {
+    let cell = getCellSize();
     for (let c = c0; c <= c0 + 1; c++)
     {
       ctx.beginPath();
       ctx.strokeStyle = color;
-      ctx.moveTo(c*getCellSize(), r0*getCellSize());
-      ctx.lineTo(c*getCellSize(), (r0+1)*getCellSize());
+      ctx.moveTo(c*cell, r0*cell);
+      ctx.lineTo(c*cell, (r0+1)*cell);
       ctx.stroke();
       for (let r = r0; r <= r0 + 1; r++) {
         ctx.beginPath();
         ctx.strokeStyle = color;
-        ctx.moveTo(c0*getCellSize(), r*getCellSize());
-        ctx.lineTo((c0+1)*getCellSize(), r*getCellSize());
+        ctx.moveTo(c0*cell, r*cell);
+        ctx.lineTo((c0+1)*cell, r*cell);
         ctx.stroke();
       }
     }
@@ -1439,30 +1610,37 @@ class PlateauJeu {
     this.positionSelected = position;
   }
 
+  selectUserPoubelle(user) {
+    console.log("selectUserPoubelle>", user);
+    this.userSelected = user;
+    this.poubelleSelected = true;
+  }
+
   drawTuiles () {
+    let cell = getCellSize();
     // dessin test des tuiles à côté du plateau juste pour visualiser
     if (canvas.getContext) {
       // let xoffset = 0;
-      let xoffset = (this.width + 2)*getCellSize();
-      let yoffset = 2 * getCellSize();
+      let xoffset = (this.width + 2)*cell;
+      let yoffset = 1000 * cell;
       let t = 0;
-      for (let c = 0; c < colors.length; c++) {
-        for (let f = 0; f < formes.length; f++) {
+      for (let c = 0; c < 6; c++) {
+        for (let f = 0; f < 6; f++) {
           //console.log("PlateauJeu:drawTuiles> ", Jeu);
           let tuile = this.tuiles[t];
           //console.log("PlateauJeu:drawTuiles>", tuile);
-          tuile.draw(xoffset + c*getCellSize(), yoffset + f*getCellSize());
+          TuileDraw(tuile, xoffset + c*cell, yoffset + f*cell);
           t++;
         }
       }
 
       for (let c = 0; c < 6; c++ ) {
         for (let r = 0; r < 6; r++ ) {
-          let x = c * getCellSize();
-          let y = r * getCellSize();
+          let x = c * cell;
+          let y = r * cell;
           ctx.strokeStyle = "red";
           ctx.beginPath();
-          ctx.strokeRect(xoffset + x, yoffset + y, getCellSize(), getCellSize());
+          ctx.strokeRect(xoffset + x, yoffset + y, cell, cell);
           ctx.stroke();
         }
       }
@@ -1534,6 +1712,13 @@ function observation(x, y) {
             where = "user";
             break;
           }
+          if (user.findUPoubelle(x, y)) {
+            Jeu.selectUserPoubelle(user);
+            found = true;
+            done = true;
+            where = "user poubelle";
+            break;
+          }
         }
   }
 
@@ -1545,6 +1730,7 @@ function observation(x, y) {
     let u;
 
     Jeu.selectUserPosition(u, u);
+    Jeu.selectUserPoubelle(u);
     Jeu.tuileSelected = u;
     Jeu.cSelected = u;
     Jeu.rSelected = u;
@@ -1553,7 +1739,7 @@ function observation(x, y) {
 
 function déplacement(x, y) {
   if (Jeu.positionSelected >= 0) {
-    // console.log("déplacement> ", x, y);
+    // console.log("déplacement> ", x, y, Jeu.userSelected);
     clear();
 
     if (Jeu.working.findWCell(x, y)) {
@@ -1570,8 +1756,13 @@ function déplacement(x, y) {
     }
 
     let tuile = Jeu.userSelected.jeu[Jeu.positionSelected];
-    tuile.draw(x, y);
+    TuileDraw(tuile, x, y);
   }
+  if (Jeu.userSelected && Jeu.userSelected.findUPoubelle(x, y)) {
+    // console.log("déplacement> poubelle", Jeu.positionSelected);
+    Jeu.userSelected.addPoubelle(Jeu.positionSelected);
+  }
+
 }
 
 canvas.addEventListener('mousemove', (e) => {
