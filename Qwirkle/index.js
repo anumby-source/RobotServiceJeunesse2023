@@ -486,7 +486,7 @@ class User {
       //console.log('play> tuile=', tuile, tuile.forme, tuile.color, x, y);
       tuile.draw(x, y);
     }
-    //console.log('play> pioche=', Jeu.pioche.length);
+    // console.log('play> pioche=', Jeu.pioche.length);
   }
 
   ok() {
@@ -1221,6 +1221,9 @@ class PanneauCommandes {
   }
 
   draw() {
+
+    // console.log("PanneauCommandes:draw", Jeu.pioche.length);
+
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
 
@@ -1240,6 +1243,7 @@ class PanneauCommandes {
     ctx.fillStyle = 'Blue';
     ctx.font = '15px san-serif';
     ctx.fillText("pioche " + Jeu.pioche.length , x + getCellSize()*0.3, y + getCellSize()*0.7);
+
   }
 
   executeCommande(e) {
@@ -1264,26 +1268,24 @@ class PanneauCommandes {
           case 0:
             // zoomin
             cellSize = getCellSize() + 5;
-            clear();
             break;
           case 1:
             // zoomout
             console.log("zoomout", getCellSize());
             cellSize = getCellSize() - 5;;
-            clear();
             break;
           case 2:
             // undo
             break;
           case 3:
             // ok
-            clear();
             Jeu.ok();
             break;
           case 4:
             // swap
             break;
         }
+        clear();
       }
   }
 }
@@ -1438,7 +1440,7 @@ class PlateauJeu {
   }
 
   ok(user) {
-    console.log("ok");
+    // console.log("ok");
     Users[0].ok();
   }
 }
@@ -1601,4 +1603,6 @@ canvas.addEventListener('mouseup', (e) => {
 
 for (u = 0; u < Users.length; u++) Users[u].draw();
 for (u = 0; u < Users.length; u++) Users[u].play();
+
+clear();
 
