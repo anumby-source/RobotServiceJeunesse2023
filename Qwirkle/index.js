@@ -507,6 +507,11 @@ class User {
     }
   }
 
+  swap() {
+    console.log("User:swap>")
+    this.undo();
+  }
+
   ok() {
     let histo = [];
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
@@ -1307,6 +1312,7 @@ class PanneauCommandes {
             break;
           case 4:
             // swap
+            Users[0].swap();
             break;
         }
         clear();
