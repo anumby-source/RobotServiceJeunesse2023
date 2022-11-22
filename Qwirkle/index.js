@@ -491,7 +491,7 @@ class User {
   }
 
   undo() {
-    console.log("User:undo>")
+    // console.log("User:undo>")
 
     for (let h = 0; h < this.historique.length; h++) {
       let histo = this.historique[h];
@@ -500,7 +500,7 @@ class User {
       let r = histo.r + Jeu.working.r0;
       let i = Jeu.working.index(c, r);
 
-      console.log("User:undo>", histo, Jeu.working.c0, Jeu.working.r0, c, r, i);
+      // console.log("User:undo>", histo, Jeu.working.c0, Jeu.working.r0, c, r, i);
 
       this.jeu[histo.position] = histo.tuile;
       Jeu.working.grid.setElement(c, r, TuileVide)
