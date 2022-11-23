@@ -886,6 +886,7 @@ class WorkingGrille {
   // ajoute une tuile sur la grille de travail éventuellement avec agrandissement de la zone de travail
   // cette zone de travail est dessinée librement sur la grille dur plateau de jeu
   addTuile(tuile, column, row) {
+
     if (this.first) {
       // console.log("WorkingGrille:addTuile>", column, row, tuile);
       // Première fois du jeu
