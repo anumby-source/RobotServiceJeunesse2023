@@ -19,4 +19,7 @@ OpenCV
 - https://github.com/ProjectoOfficial/ESP32/blob/main/ESP32_CAM_PYTHON_STREAM_OPENCV/ESP32_CAM_PYTHON_STREAM_OPENCV.py
 - https://www.youtube.com/watch?v=7qPIRBY6C8c
 - https://www.youtube.com/watch?v=xjuTEowOWvo (Gesture recognition)
-- 
+
+apprentissage pour le reconnaissance d'objets
+
+- https://docs.opencv.org/3.4/dc/d88/tutorial_traincascade.html
