@@ -4,6 +4,7 @@
 https://github.com/anumby-source/RobotServiceJeunesse2023
 
 - ./Qwirkle/index.html
+- ./Qwirkle/tuiles.js
 - ./Qwirkle/index.js
 - ./Qwirkle/qwirkle.jpg (image de toutes les tuiles du jeu)
 
