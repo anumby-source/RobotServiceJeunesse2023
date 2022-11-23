@@ -35,6 +35,9 @@ mode initial "observation"
 const canvas = document.getElementById('canvas');
 let cellSize = 20;
 
+let GOOD = 1;
+let BAD = 2;
+
 function getCellSize() {
   return cellSize;
 }
@@ -590,127 +593,172 @@ class WorkingGrille {
     return (i < 0) || TuileTestVide(this.grid.elements[i]);
   }
 
-  // teste si la case dans la grille de travail est de même type (forme, color)
-  sameType(column, row, forme, color){
+  // teste si la case dans la grille de travail est compatible soit forme soit color
+  compatible(column, row, forme, color){
     let i = this.index(column, row);
     if (i < 0) return false;
     let tuile = this.grid.elements[i];
-    return (i >= 0) && (TuileGetForme(tuile) == forme || TuileGetColor(tuile) == color);
+    return (TuileGetForme(tuile) == forme || TuileGetColor(tuile) == color);
   }
 
-  // application des règles du jeu
-  checkRules(tuile, column, row) {
-    // retourne false si l'on ne peut pas utiliser cette case selon les règles
-    //
-    // la première fois => OK
-    // si la case est occupée par une tuile => BAD
-    // si la case est isolée (Gauche, Droite, Haut, Bbas) => BAD
+  /*
+  Règles:
+  A> Est-ce la première pièce de la partie ? (true = GOOD)
+  B> est-ce à l'extérieur de la zone de travail ?
+  C> test si la case est déjà occupée
+  D> test case isolée
+  E> cellule voisine immédiate incompatible (color ET forme différentes) ou vide
+  F> cellule voisine +2 incompatible (color ET forme différentes) ou vide
+  G> test des doublons dans les lignes supportées par la case testée
+  H>
+  I>
+  J>
+  */
 
-    info("------------ check rules ---------- c=" + column + " r=" + row);
-
+  checkRuleA(tuile, column, row) {
     //info("chekrules> test first");
     if (this.grid.vide()) {
       info("first");
-      return true;
+      return GOOD;
     }
+    return BAD;
+  }
 
+  checkRuleB(tuile, column, row) {
     //info("chekrules> test intérieur de la zone");
     if (column < this.cmin || column > this.cmax) {
       info("extérieur de la zone");
-      return false;
+      return BAD;
     }
     if (row < this.rmin || row > this.rmax) {
       info("extérieur de la zone");
-      return false;
+      return BAD;
     }
+    return GOOD;
+  }
 
+  checkRuleC(tuile, column, row) {
     //info("chekrules> test si la case est déjà occupée");
     let index = this.index(column, row);
     if (index > 0) {
       let t = this.grid.elements[index];
       if (!TuileTestVide(t)) {
         info("la case est déjà occupée");
-        return false;
+        return BAD;
       }
     }
+    return GOOD;
+  }
 
+  checkRuleD(tuile, column, row) {
     //info("chekrules> test case isolée");
     if (this.vide(column-1, row) && this.vide(column+1, row) && this.vide(column, row-1) && this.vide(column, row+1)) {
       info("case isolée");
-      return false;
+      return BAD;
     }
 
+    return GOOD;
+  }
+
+  checkRuleE(tuile, column, row) {
     let GD = ["à gauche", "à droite"];
     let HB = ["en haut", "en bas"];
 
     for (let dc = 0; dc < 2; dc++) {
-      let c = column + 2*dc - 1;
+      let c = column + 2 * dc - 1;
       if (!this.vide(c, row)) {
         info("case c=" + c + " non vide");
-        if (!this.sameType(c, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          info("case voisine différente " + GD[dc]);
-          return false;
+        if (!this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
+          info("case voisine incompatible " + GD[dc]);
+          return BAD;
         }
-        else info("même type");
+        else info("compatible");
       }
     }
 
-    info("case voisines GD semblables ou vides ");
+    info("case voisine GD compatible ou vide ");
 
     for (let dr = 0; dr < 2; dr++) {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
         info("case r=" + r + " non vide");
-        if (!this.sameType(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          info("case voisine différente " + HB[dr]);
-          return false;
+        if (!this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
+          info("case voisine incompatible " + HB[dr]);
+          return BAD;
         }
-        else info("même type");
+        else info("compatible");
       }
     }
 
-    info("case voisines HB semblables ou vides ");
+    info("case voisine HB compatible ou vide");
+
+    return GOOD;
+  }
+
+  checkRuleF(tuile, column, row) {
+    let GD = ["à gauche", "à droite"];
+    let HB = ["en haut", "en bas"];
 
     for (let dc = 0; dc < 2; dc++) {
       let c = column + 2*dc - 1;
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
         info("case c=" + c + " non vide");
-        if (this.sameType(c, row, TuileGetForme(tuile), TuileGetColor(tuile)))
+        if (this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile)))
           if (!this.vide(c1, row)) {
             info("case c=" + c1 + " non vide");
-            if (!this.sameType(c1, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-              info("case voisine +2 différente " + GD[dc]);
-              return false;
+            if (!this.compatible(c1, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
+              info("case voisine +2 incompatible " + GD[dc]);
+              return BAD;
             }
           }
+          else info("case c1=" + c1 + " vide");
       }
+      else info("case c=" + c + " vide");
     }
 
-    info("case voisines GD +2 semblables ou vides ");
+    info("case voisine GD +2 compatible ou vide");
 
     for (let dr = 0; dr < 2; dr++) {
-        let r = row + 2*dr - 1;
-        let r1 = row + 4*dr - 2;
-        if (!this.vide(column, r) && this.sameType(column, r, TuileGetForme(tuile), TuileGetColor(tuile)) &&
-            !this.vide(column, r1) && !this.sameType(column, r1, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          info("case voisine +2 différente " + HB[dr]);
-          return false;
+      let r = row + 2*dr - 1;
+      let r1 = row + 4*dr - 2;
+      if (!this.vide(column, r)) {
+        info("case r=" + r + " non vide");
+        if (this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
+          if (!this.vide(column, r1)) {
+            info("case r1=" + r1 + " non vide");
+            if (!this.compatible(column, r1, TuileGetForme(tuile), TuileGetColor(tuile))) {
+              info("case voisine +2 incompatible " + HB[dr]);
+              return BAD;
+            }
+          }
+          else info("case r1=" + r1 + " vide");
         }
+      }
+      else info("case r=" + r + " vide");
     }
 
-    info("case voisines HB +2 semblables ou vides ");
+    info("case voisine HB +2 compatible ou vide ");
 
+    return GOOD;
+  }
+
+  checkRuleG(tuile, column, row) {
     // on va tester si les lignes supportées par la case courante sont conformes
     // c'est-à-dire qu'il n'y a pas de doublon
+    let GD = ["à gauche", "à droite"];
+    let HB = ["en haut", "en bas"];
 
+    let coordonnée = ["Horizontal", "Vertical"];
+
+    // coord = 0 pour les lignes horizontales
+    // coord = 1 pour les lignes verticales
     for (let coord = 0; coord < 2; coord++) {
-      // coord = 0 pour les lignes horizontales
-      // coord = 1 pour les lignes verticales
-      info("coord = " + coord);
+      info("coord = " + coordonnée[coord]);
+      // d = 0 pour parcourir à gauche/en haut
+      // d = 1 pour parcourir à droite/en bas
       for (let d = 0; d < 2; d++) {
-        // d = 0 pour parcourir à gauche/en haut
-        // d = 1 pour parcourir à droite/en bas
+        // on mémorise les propriétés à partir de la tuile proposée
         let formes = [TuileGetForme(tuile)];
         let colors = [TuileGetColor(tuile)];
         let mode;
@@ -740,8 +788,8 @@ class WorkingGrille {
 
           let t = this.grid.elements[i];
           if ((TuileGetForme(t) != TuileGetForme(tuile)) && (TuileGetColor(t) != TuileGetColor(tuile))) {
-            info("A la ligne " + doc + " n'est pas conforme len=" + formes.length + " : ni forme ni color conforme");
-            return false;
+            info("A> la ligne " + doc + " n'est pas conforme len=" + formes.length + " : ni forme ni color conforme");
+            return BAD;
           }
 
           // ici, on a une conformité soit sur les formes soit sur les couleurs
@@ -759,33 +807,66 @@ class WorkingGrille {
           if (mode == "forme") {
             // mode formes
             if (TuileGetForme(t) != TuileGetForme(tuile)) {
-              info("B la ligne " + doc + " n'est pas conforme len=" + formes.length);
-              return false;
+              info("B> la ligne " + doc + " n'est pas conforme len=" + formes.length);
+              return BAD;
             }
             let i = colors.indexOf(TuileGetColor(t));
             if (i > -1) {
-              info("C la ligne " + doc + " n'est pas conforme len=" + formes.length);
-              return false;
+              info("C> la ligne " + doc + " n'est pas conforme len=" + formes.length);
+              return BAD;
             }
             colors.push(TuileGetColor(t));
           }
           else {
             // mode color
             if (TuileGetColor(t) != TuileGetColor(tuile)) {
-              info("D la ligne " + doc + " n'est pas conforme len=" + colors.length);
-              return false;
+              info("D> la ligne " + doc + " n'est pas conforme len=" + colors.length);
+              return BAD;
             }
             let i = formes.indexOf(TuileGetForme(t));
             if (i > -1) {
-              info("E la ligne " + doc + " n'est pas conforme len=" + colors.length);
-              return false;
+              info("E> la ligne " + doc + " n'est pas conforme len=" + colors.length);
+              return BAD;
             }
             formes.push(TuileGetForme(t));
           }
         }
-        info("F la ligne " + doc + " est conforme len=" + formes.length);
+        info("F> la ligne " + doc + " est conforme len=" + formes.length);
       }
     }
+
+    return GOOD;
+  }
+
+  checkRuleH(tuile, column, row) {
+    return GOOD;
+  }
+
+  checkRuleI(tuile, column, row) {
+    return GOOD;
+  }
+
+  checkRuleJ(tuile, column, row) {
+    return GOOD;
+  }
+
+  // application des règles du jeu
+  checkRules(tuile, column, row) {
+    // retourne false si l'on ne peut pas utiliser cette case selon les règles
+    //
+    // la première fois => GOOD
+    // si la case est occupée par une tuile => BAD
+    // si la case est isolée (Gauche, Droite, Haut, Bbas) => BAD
+
+    info("------------ check rules ---------- c=" + column + " r=" + row);
+
+    if (this.checkRuleA(tuile, column, row) == GOOD) return GOOD;
+    if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
+    if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+    if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
+    if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
+    if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
+    if (this.checkRuleG(tuile, column, row) == BAD) return BAD;
 
     /*
     - il faut commencer à mémoriser la liste des tuiles jouées lors du tour courant pour le joueur
@@ -795,11 +876,11 @@ class WorkingGrille {
     - on devrait commencer à accumuler les points du tour courant.
     */
 
-    return true;
+    return GOOD;
 
 
     info("chekrules> ...");
-    return false;
+    return BAD;
   }
 
   // ajoute une tuile sur la grille de travail éventuellement avec agrandissement de la zone de travail
@@ -1067,6 +1148,25 @@ class PlateauJeu {
     this.init();
   }
 
+  init() {
+    // création de toutes les 3 x 6 x 6 tuiles ordonnées
+    for (let layer = 0; layer < 3; layer++)
+        for (let color = 0; color < 6; color++) {
+          for (let forme = 0; forme < 6; forme++) {
+            let t = TuileId(color, forme, layer);
+            //console.log(color, forme, t);
+            this.tuiles.push(t);
+          }
+        }
+
+    this.initPioche();
+    // initialisation de la grille
+    for (let c = 0; c < this.width; c++)
+      for (let r = 0; r < this.height; r++) {
+        this.grille.push(TuileVide);
+      }
+  }
+
   getMode() {
     return this.mode;
   }
@@ -1152,25 +1252,6 @@ class PlateauJeu {
     }
   }
 
-  init() {
-    // création de toutes les 3 x 6 x 6 tuiles ordonnées
-    for (let layer = 0; layer < 3; layer++)
-        for (let color = 0; color < 6; color++) {
-          for (let forme = 0; forme < 6; forme++) {
-            let t = TuileId(color, forme, layer);
-            //console.log(color, forme, t);
-            this.tuiles.push(t);
-          }
-        }
-
-    this.initPioche();
-    // initialisation de la grille
-    for (let c = 0; c < this.width; c++)
-      for (let r = 0; r < this.height; r++) {
-        this.grille.push(TuileVide);
-      }
-  }
-
   cellIndex(c, r) {
     let index = r*this.width + c;
     return index;
@@ -1183,25 +1264,6 @@ class PlateauJeu {
     // dessine working
     this.commandes.draw();
     this.working.draw();
-  }
-
-  drawCellFrame(c0, r0, color) {
-    let cell = getCellSize();
-    for (let c = c0; c <= c0 + 1; c++)
-    {
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.moveTo(c*cell, r0*cell);
-      ctx.lineTo(c*cell, (r0+1)*cell);
-      ctx.stroke();
-      for (let r = r0; r <= r0 + 1; r++) {
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.moveTo(c0*cell, r*cell);
-        ctx.lineTo((c0+1)*cell, r*cell);
-        ctx.stroke();
-      }
-    }
   }
 
   selectUserPosition(user, position) {
@@ -1257,7 +1319,6 @@ class PlateauJeu {
 
 // La Jeu de jeu
 let Jeu = new PlateauJeu();
-
 
 // La liste des utilisateurs
 let Users = [];
@@ -1400,16 +1461,16 @@ canvas.addEventListener('mouseup', (e) => {
       if (Jeu.cSelected >= 0 && Jeu.rSelected >= 0) {
         // détection de la grille de travail
         // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "c=", Jeu.cSelected, "r=", Jeu.rSelected);
-        Jeu.drawCellFrame(Jeu.cSelected, Jeu.rSelected, "red");
         let user = Jeu.userSelected;
         let tuile = user.jeu[Jeu.positionSelected];
         let check = Jeu.working.checkRules(tuile, Jeu.cSelected, Jeu.rSelected);
         // console.log("mouseup> check=", check);
-        if (check) {
+        if (check == GOOD) {
           user.jeu[Jeu.positionSelected] = TuileVide;
           let cc;
           let rr;
           [cc, rr] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
+          Jeu.working.drawCellFrame(Jeu.cSelected, Jeu.rSelected, "red");
           // on va ajouter cet événement dans l'historique du joueur
           // console.log("addEvenement>", "c=", Jeu.cSelected, "c0=", Jeu.working.c0, "dx=", Jeu.cSelected - Jeu.working.c0, "r=", Jeu.rSelected, "r0=", Jeu.working.r0, "dr=", Jeu.rSelected - Jeu.working.r0, "cc=", cc - Jeu.working.c0, "rr=", rr - Jeu.working.r0);
           user.addEvenement(Jeu.positionSelected, tuile, cc - Jeu.working.c0, rr - Jeu.working.r0);

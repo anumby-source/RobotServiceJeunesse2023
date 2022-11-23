@@ -208,14 +208,14 @@ function drawVide(ctx, x, y) {
 
     for (let c = 0; c <= 1; c++) {
         ctx.beginPath();
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = "grey";
         ctx.moveTo(x + c*cell, y);
         ctx.lineTo(x + c*cell, y + cell);
         ctx.stroke();
     }
     for (let r = 0; r <= 1; r++) {
       ctx.beginPath();
-      ctx.strokeStyle = "red";
+      ctx.strokeStyle = "grey";
       ctx.moveTo(x, y + r*cell);
       ctx.lineTo(x + cell, y + r*cell);
       ctx.stroke();
