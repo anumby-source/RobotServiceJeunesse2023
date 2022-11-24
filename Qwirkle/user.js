@@ -29,14 +29,24 @@ class Ligne {
     }
   }
 
+  length() {
+    return this.p2 - this.p1 + 1;
+  }
+
   extend() {
     // on scan toute la longueur de la ligne, jusqu'à on trouve une cellule vide, dans les deux directions
     // pour obtenir la valeur la plus grande pour p1 et p2
     // console.log("Ligne:extend> before>", "o=", this.orientation, "ancrage=", this.ancrage, "p1=", this.p1, "p2=", this.p2);
     if (this.orientation == HORIZONTAL) {
       let r0 = this.ancrage + Jeu.working.r0;
-      let c1 = this.p1 + Jeu.working.c0;
-      let c2 = this.p2 + Jeu.working.c0;
+      let c1;
+      let c2;
+      c1 = this.p1 + Jeu.working.c0;
+      c2 = this.p2 + Jeu.working.c0;
+      if (c1 > c2) {
+        c1 = this.p2 + Jeu.working.c0;
+        c2 = this.p1 + Jeu.working.c0;
+      }
       // console.log("Ligne:extend>", "c1=", c1, "c2=", c2);
       for (let c = c1 - 1; c >= 0; c--) {
         // console.log("Ligne:extend> à gauche", "c=", c);
@@ -51,8 +61,14 @@ class Ligne {
     }
     else {
       let c0 = this.ancrage + Jeu.working.c0;
-      let r1 = this.p1 + Jeu.working.r0;
-      let r2 = this.p2 + Jeu.working.r0;
+      let r1;
+      let r2;
+      r1 = this.p1 + Jeu.working.r0;
+      r2 = this.p2 + Jeu.working.r0;
+      if (r1 > r2) {
+        r1 = this.p2 + Jeu.working.r0;
+        r2 = this.p1 + Jeu.working.r0;
+      }
       for (let r = r1 - 1; r >= 0; r--) {
         if (!Jeu.working.vide(c0, r)) this.p1--;
         else break;
@@ -191,6 +207,7 @@ class User {
     this.numéro = numéro;
     this.name = name;
     this.jeu = [];
+    this.score = 0;
     for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
     this.poubelle = [];
     for (let t = 0; t < 6; t++) this.poubelle.push(TuileVide);
@@ -237,6 +254,13 @@ class User {
     ctx.fillStyle = 'Blue';
     ctx.font = '15px san-serif';
     ctx.fillText("jeu=[" + this.tuilesJouées() + "]", xoffset + 10*cell, yoffset + 0.7 * cell);
+
+    let n = this.getScore();
+
+    ctx.fillStyle = 'Blue';
+    ctx.font = '15px san-serif';
+    ctx.fillText("score=[" + this.score + "]", xoffset + 13*cell, yoffset + 0.7 * cell);
+
   }
 
   play() {
@@ -281,7 +305,82 @@ class User {
     }
   }
 
+  getScore() {
+    // console.log("User:getScore>");
+    let n = 0;
+    let ligne;
+    if (this.historique.length == 0) {
+    }
+    else if (this.historique.length == 1) {
+      let evt = this.historique[0];
+      let h = new Ligne(HORIZONTAL, evt.r, evt.c, evt.c);
+      h.extend();
+      let hlen = h.length();
+      let v = new Ligne(VERTICAL, evt.c, evt.r, evt.r);
+      v.extend();
+      let vlen = v.length();
+
+      // console.log("User:getScore> ", h, hlen, v, vlen);
+
+      if (hlen == 1 && vlen == 1) {
+        return 1;
+      }
+      if (hlen == 1) return vlen;
+      if (vlen == 1) return hlen;
+    }
+    else
+    {
+      let evt1 = this.historique[0];
+      let evt2 = this.historique[this.historique.length - 1];
+
+      if (evt1.r == evt2.r) {
+        ligne = new Ligne(HORIZONTAL, evt1.r, evt1.c, evt2.c);
+        ligne.extend();
+        n += ligne.length();
+        // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
+
+        let c1 = evt1.c;
+        let c2 = evt2.c;
+        if (c1 > c2) {
+          c1 = evt2.c;
+          c2 = evt1.c;
+        }
+
+        for (let c = c1; c <= c2; c++) {
+          let l = new Ligne(VERTICAL, c, evt1.r, evt2.r);
+          l.extend();
+          if (l.length() > 1) n += l.length();
+          // console.log("User:getScore> ligne transverse ", l, l.length(), n);
+        }
+      }
+      else if (evt1.c == evt2.c) {
+        ligne = new Ligne(VERTICAL, evt1.c, evt1.r, evt2.r);
+        ligne.extend();
+        n += ligne.length();
+        // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
+
+        let r1 = evt1.r;
+        let r2 = evt2.r;
+        if (r1 > r2) {
+          r1 = evt2.r;
+          r2 = evt1.r;
+        }
+
+        for (let r = r1; r <= r2; r++) {
+          let l = new Ligne(HORIZONTAL, r, evt1.c, evt2.c);
+          l.extend();
+          if (l.length() > 1) n += l.length();
+          // console.log("User:getScore> ligne transverse ", l, l.length(), n);
+        }
+      }
+    }
+    return n;
+  }
+
   ok() {
+    console.log("User:ok>", "histo=", this.historique.length, this.historique);
+    let n = this.getScore();
+    this.score += n;
     let histo = [];
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
     this.partie.push(histo);
