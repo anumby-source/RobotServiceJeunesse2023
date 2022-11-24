@@ -35,8 +35,12 @@ mode initial "observation"
 const canvas = document.getElementById('canvas');
 let cellSize = 20;
 
-let GOOD = 1;
-let BAD = 2;
+const GOOD = 1;
+const BAD = 2;
+const HORIZONTAL = 3;
+const VERTICAL = 4;
+const MODE_COLOR = 5;
+const MODE_FORME = 6;
 
 function getCellSize() {
   return cellSize;
@@ -372,6 +376,10 @@ class WorkingGrille {
     return i;
   }
 
+  getElement(column, row) {
+    return this.grid.getElement(column, row);
+  }
+
   // teste si la case contient une cellule vide
   vide(column, row){
     let i = this.index(column, row);
@@ -392,10 +400,13 @@ class WorkingGrille {
   B> est-ce à l'extérieur de la zone de travail ?
   C> test si la case est déjà occupée
   D> test case isolée
-  E> cellule voisine immédiate incompatible (color ET forme différentes) ou vide
-  F> cellule voisine +2 incompatible (color ET forme différentes) ou vide
+  E> cellule voisine immédiate compatible (color OU forme identique) ou vide
+  F> cellule voisine +2 compatible (color OU forme identique) ou vide
   G> test des doublons dans les lignes supportées par la case testée
-  H>
+
+  une tuile déjà jouée:
+  H> teste si on est immédiatement à côté de la première tuile jouée
+
   I>
   J>
   */
@@ -528,102 +539,71 @@ class WorkingGrille {
     return GOOD;
   }
 
-  checkRuleG(tuile, column, row) {
-    // on va tester si les lignes supportées par la case courante sont conformes
-    // c'est-à-dire qu'il n'y a pas de doublon
-    let GD = ["à gauche", "à droite"];
-    let HB = ["en haut", "en bas"];
+  checkRuleG(tuile, column, row, user) {
+    // Quand on arrive ici, on sait que les cases adjacentes sont soit vides ou bien sont compatibles
+    let hgauche;
+    let hdroite;
+    let vhaut;
+    let vbas;
 
-    let coordonnée = ["Horizontal", "Vertical"];
+    info("checkRuleG");
 
-    // coord = 0 pour les lignes horizontales
-    // coord = 1 pour les lignes verticales
-    for (let coord = 0; coord < 2; coord++) {
-      info("coord = " + coordonnée[coord]);
-      // d = 0 pour parcourir à gauche/en haut
-      // d = 1 pour parcourir à droite/en bas
-      for (let d = 0; d < 2; d++) {
-        // on mémorise les propriétés à partir de la tuile proposée
-        let formes = [TuileGetForme(tuile)];
-        let colors = [TuileGetColor(tuile)];
-        let mode;
-        let doc;
-        for (let position = 1; position < 6; position++) {
-          let i;
-          if (coord == 0) {
-            // on travaille sur un row donné et la column varie
-            doc = GD[d];
-            let c = column + position*(2*d - 1);
-            info("Ligne " + doc + " coord=" + coord + " c=" + c + " r=" + row);
-            if (this.vide(c, row)) {
-              break;
-            }
-            i = this.index(c, row);
-          }
-          else {
-            // on travaille sur une colonne donnée et le row varie
-            doc = HB[d];
-            let r = row + position*(2*d - 1);
-            info("Ligne " + doc + " coord=" + coord + " c=" + column + " r=" + r);
-            if (this.vide(column, r)) {
-              break;
-            }
-            i = this.index(column, r);
-          }
+    if (!Jeu.working.vide(column - 1, row)) {
+      hgauche = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 - 1, column - Jeu.working.c0 - 1);
+      hgauche.extend();
+      info("checkRuleG> test horizontal gauche");
+      if (!hgauche.compatible(tuile)) return BAD;
+    }
+    if (!Jeu.working.vide(column + 1, row)) {
+      info("checkRuleG> test horizontal droite");
+      hdroite = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 + 1, column - Jeu.working.c0 + 1);
+      hdroite.extend();
+      if (!hdroite.compatible(tuile)) return BAD;
+    }
+    if (!Jeu.working.vide(column, row - 1)) {
+      info("checkRuleG> test vertical haut");
+      vhaut = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 - 1, row - Jeu.working.r0 - 1);
+      vhaut.extend();
+      if (!vhaut.compatible(tuile)) return BAD;
+    }
+    if (!Jeu.working.vide(column, row + 1)) {
+      info("checkRuleG> test vertical bas");
+      vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
+      vbas.extend();
+      if (!vbas.compatible(tuile)) return BAD;
+    }
 
-          let t = this.grid.elements[i];
-          if ((TuileGetForme(t) != TuileGetForme(tuile)) && (TuileGetColor(t) != TuileGetColor(tuile))) {
-            info("A> la ligne " + doc + " n'est pas conforme len=" + formes.length + " : ni forme ni color conforme");
-            return BAD;
-          }
+    info("checkRuleG> les segments sont compatibles");
 
-          // ici, on a une conformité soit sur les formes soit sur les couleurs
-          // on mémorise la conformité dans la variable mode
+    // chaque segment de ligne à droite, gauche, haut, bas est compatible par la tuile
+    // maintenant nous devons essayer de concaténer les parties doite/gauche et haut/bas
+    // on sait que les parties individuelles sont toutes compatibles avec la tuile
+    // il reste donc à vérifier que, une fois assemblées, il n'y a pas de doublon
 
-          if (position == 1) {
-            if (TuileGetForme(t) == TuileGetForme(tuile)) {
-              mode = "forme";
-            }
-            else {
-              mode = "color";
-            }
-          }
+    if (hgauche && hdroite) {
+      if (!hgauche.canJoin(tuile, hdroite)) return BAD;
+    }
 
-          if (mode == "forme") {
-            // mode formes
-            if (TuileGetForme(t) != TuileGetForme(tuile)) {
-              info("B> la ligne " + doc + " n'est pas conforme len=" + formes.length);
-              return BAD;
-            }
-            let i = colors.indexOf(TuileGetColor(t));
-            if (i > -1) {
-              info("C> la ligne " + doc + " n'est pas conforme len=" + formes.length);
-              return BAD;
-            }
-            colors.push(TuileGetColor(t));
-          }
-          else {
-            // mode color
-            if (TuileGetColor(t) != TuileGetColor(tuile)) {
-              info("D> la ligne " + doc + " n'est pas conforme len=" + colors.length);
-              return BAD;
-            }
-            let i = formes.indexOf(TuileGetForme(t));
-            if (i > -1) {
-              info("E> la ligne " + doc + " n'est pas conforme len=" + colors.length);
-              return BAD;
-            }
-            formes.push(TuileGetForme(t));
-          }
-        }
-        info("F> la ligne " + doc + " est conforme len=" + formes.length);
-      }
+    if (vhaut && vbas) {
+      if (!vhaut.canJoin(tuile, vbas)) return BAD;
     }
 
     return GOOD;
   }
 
-  checkRuleH(tuile, column, row) {
+  checkRuleH(tuile, column, row, evt) {
+    // on teste si la position de l'evt testé est immédiatement à côté de [column, row]
+    let c = evt.c + Jeu.working.c0;
+    let r = evt.r + Jeu.working.r0;
+    // console.log("checkRuleH>", column, row, evt, c, r);
+    if (!((column == c-1 && row == r) ||
+          (column == c+1 && row == r) ||
+          (column == c && row == r-1) ||
+          (column == c && row == r+1))) {
+      info("on n'est pas à côté de la première tuile jouée");
+      return BAD;
+    }
+    info("on est à côté de la première tuile jouée");
     return GOOD;
   }
 
@@ -636,22 +616,74 @@ class WorkingGrille {
   }
 
   // application des règles du jeu
-  checkRules(tuile, column, row) {
+  checkRules(user, tuile, column, row) {
     // retourne false si l'on ne peut pas utiliser cette case selon les règles
     //
     // la première fois => GOOD
     // si la case est occupée par une tuile => BAD
     // si la case est isolée (Gauche, Droite, Haut, Bbas) => BAD
 
-    info("------------ check rules ---------- c=" + column + " r=" + row);
+    let jouées = user.tuilesJouées();
 
-    if (this.checkRuleA(tuile, column, row) == GOOD) return GOOD;
-    if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
-    if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
-    if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
-    if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
-    if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
-    if (this.checkRuleG(tuile, column, row) == BAD) return BAD;
+    info("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
+
+    if (this.grid.vide()) return GOOD;
+
+    if (jouées == 0) {
+      let evt = user.historique[0];
+
+      console.log("checkRules> première tuile");
+      if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
+    }
+    else if (jouées == 1) {
+      let evt = user.historique[0];
+
+      console.log("checkRules> deuxième tuile");
+
+      // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
+      if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
+      if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
+    }
+    else {
+      // au moins 2 tuiles ont été posées, ce qui définit "la ligne courante"
+      //  => une orientation (Horizontale ou Verticale) ainsi que:
+      //     pour H: un row et les columns [c1 ... c2]
+      //     pour V: une column et les rows [r1 ... r2]
+
+      if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
+
+      console.log("checkRules> tuile suivante", user.historique.length);
+
+      if (!user.ligne) {
+        let e0 = user.historique[0];
+        let e1 = user.historique[1];
+
+        if (e0.c == e1.c) {
+          user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
+        }
+        else {
+          user.ligne = new Ligne(HORIZONTAL, e0.r, e0.c, e1.c);
+        }
+      }
+      user.ligne.extend();
+      console.log("checkRules> tuile suivante", user.ligne);
+      // on doit vérifier que la [column, row] testée est compatible avec cette ligne
+
+      if (!user.ligne.aligné(column, row)) return BAD;
+    }
 
     /*
     - il faut commencer à mémoriser la liste des tuiles jouées lors du tour courant pour le joueur
@@ -1249,7 +1281,7 @@ canvas.addEventListener('mouseup', (e) => {
         // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let user = Jeu.userSelected;
         let tuile = user.jeu[Jeu.positionSelected];
-        let check = Jeu.working.checkRules(tuile, Jeu.cSelected, Jeu.rSelected);
+        let check = Jeu.working.checkRules(user, tuile, Jeu.cSelected, Jeu.rSelected);
         // console.log("mouseup> check=", check);
         if (check == GOOD) {
           user.jeu[Jeu.positionSelected] = TuileVide;

@@ -12,6 +12,179 @@ class Evenement {
   }
 }
 
+class Ligne {
+  constructor(orientation, ancrage, p1, p2) {
+    // l'orientation peut être H ou V
+    this.orientation = orientation;
+    // l'ancrage peut être le row pour H, ou la column pour V
+    this.ancrage = ancrage
+    // la ligne s'étend entre [p1 ... p2]
+    // pour H: p1 et p2 sont des columns
+    // pour V: p1 et p2 sont des rows
+    this.p1 = p1;
+    this.p2 = p2;
+    if (p1 > p2) {
+      this.p1 = p2;
+      this.p2 = p1;
+    }
+  }
+
+  extend() {
+    // on scan toute la longueur de la ligne, jusqu'à on trouve une cellule vide, dans les deux directions
+    // pour obtenir la valeur la plus grande pour p1 et p2
+    // console.log("Ligne:extend> before>", "o=", this.orientation, "ancrage=", this.ancrage, "p1=", this.p1, "p2=", this.p2);
+    if (this.orientation == HORIZONTAL) {
+      let r0 = this.ancrage + Jeu.working.r0;
+      let c1 = this.p1 + Jeu.working.c0;
+      let c2 = this.p2 + Jeu.working.c0;
+      // console.log("Ligne:extend>", "c1=", c1, "c2=", c2);
+      for (let c = c1 - 1; c >= 0; c--) {
+        // console.log("Ligne:extend> à gauche", "c=", c);
+        if (!Jeu.working.vide(c, r0)) this.p1--;
+        else break;
+      }
+      for (let c = c2 + 1; c <= Jeu.working.cmax; c++) {
+        // console.log("Ligne:extend> à droite", "c=", c);
+        if (!Jeu.working.vide(c, r0)) this.p2++;
+        else break;
+      }
+    }
+    else {
+      let c0 = this.ancrage + Jeu.working.c0;
+      let r1 = this.p1 + Jeu.working.r0;
+      let r2 = this.p2 + Jeu.working.r0;
+      for (let r = r1 - 1; r >= 0; r--) {
+        if (!Jeu.working.vide(c0, r)) this.p1--;
+        else break;
+      }
+      for (let r = r2 + 1; r <= Jeu.working.rmax; r++) {
+        if (!Jeu.working.vide(c0, r)) this.p2++;
+        else break;
+      }
+    }
+    // console.log("Ligne:extend> after>", "o=", this.orientation, "ancrage=", this.ancrage, "p1=", this.p1, "p2=", this.p2);
+  }
+
+  aligné(column, row) {
+    if (this.orientation == HORIZONTAL) {
+      return (this.ancrage + Jeu.working.r0 == row);
+    }
+    else {
+      return (this.ancrage + Jeu.working.c0 == column);
+    }
+  }
+
+  compatible(tuile)
+  {
+    // on vérifie:
+    //  - que l'ensemble de la ligne est compatible avec cette tuile (soit homogène en couleur ou en forme
+    //  - qu'il n'y ait pas de doublon entre la ligne et la tuile testée
+
+    let forme = TuileGetForme(tuile);
+    let color = TuileGetColor(tuile);
+
+    console.log("Ligne:compatible>", "forme=", forme, "color=", color);
+
+    if (this.orientation == HORIZONTAL) {
+      let r0 = this.ancrage + Jeu.working.r0;
+      let c1 = this.p1 + Jeu.working.c0;
+      let i1 = Jeu.working.index(c1, r0);
+      let c2 = this.p2 + Jeu.working.c0;
+      let i2 = Jeu.working.index(c2, r0);
+
+      for (let c = c1; c >= c2; c--) {
+        // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
+        if (!Jeu.working.compatible(c, r0, forme, color)) return false;
+        // console.log("Ligne:compatible>", "ok compatible");
+        let t = Jeu.working.getElement(c, r0);
+        // console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        // console.log("Ligne:compatible>", "ok compatible");
+      }
+    }
+    else {
+      let c0 = this.ancrage + Jeu.working.c0;
+      let r1 = this.p1 + Jeu.working.r0;
+      let i1 = Jeu.working.index(c0, r1);
+      let r2 = this.p2 + Jeu.working.r0;
+      let i2 = Jeu.working.index(c0, r2);
+
+      for (let r = r1; r >= r2; r--) {
+        if (!Jeu.working.compatible(c0, r, forme, color)) return false;
+        let t = Jeu.working.getElement(c0, r);
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+      }
+    }
+
+    return true;
+  }
+
+  canJoin(tuile, other) {
+    // ==> on vérifie que la tuile puis la ligne "other" peuvent être ajoutées
+    // on suppose que la tuile ET la ligne "other" sont déjà compatibles entre elles
+    // et que bien sûr les deux lignes ont la même orientation et le même ancrage (puisqu'elles sont toute deux compatibles avec la tuile)
+    // il reste à vérifier qu'il n'y a pas de doublon sur l'ensemble une fois joint
+
+    let forme = TuileGetForme(tuile);
+    let color = TuileGetColor(tuile);
+
+    if (this.orientation == HORIZONTAL && other.orientation == HORIZONTAL) {
+      let r0 = this.ancrage + Jeu.working.r0;
+
+      let c1;
+      let c2;
+      let c3;
+      let c4;
+
+      if (this.p1 < other.p1) {
+        c1 = this.p1 + Jeu.working.c0;
+        c2 = this.p2 + Jeu.working.c0;
+        c3 = other.p1 + Jeu.working.c0;
+        c4 = other.p2 + Jeu.working.c0;
+      }
+      else {
+        c1 = other.p1 + Jeu.working.c0;
+        c2 = other.p2 + Jeu.working.c0;
+        c3 = this.p1 + Jeu.working.c0;
+        c4 = this.p2 + Jeu.working.c0;
+      }
+
+      for (let c = c1; c >= c4; c--) {
+        if (c > c2 && c < c3) continue;
+        let t = Jeu.working.getElement(c, r0);
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+      }
+    }
+    else if (this.orientation == VERTICAL && other.orientation == VERTICAL) {
+      let c0 = this.ancrage + Jeu.working.c0;
+
+      let r1;
+      let r2;
+      let r3;
+      let r4;
+
+      if (this.p1 < other.p1) {
+        r1 = this.p1 + Jeu.working.r0;
+        r2 = this.p2 + Jeu.working.r0;
+        r3 = other.p1 + Jeu.working.r0;
+        r4 = other.p2 + Jeu.working.r0;
+      }
+      else {
+        r1 = other.p1 + Jeu.working.r0;
+        r2 = other.p2 + Jeu.working.r0;
+        r3 = this.p1 + Jeu.working.r0;
+        r4 = this.p2 + Jeu.working.r0;
+      }
+
+      for (let r = r1; r >= r2; r--) {
+        if (r > r2 && r < r3) continue;
+        let t = Jeu.working.getElement(c0, r);
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+      }
+    }
+  }
+}
+
 // Définition de la classe pour les utilisateurs
 class User {
   constructor(numéro, name) {
@@ -23,6 +196,15 @@ class User {
     for (let t = 0; t < 6; t++) this.poubelle.push(TuileVide);
     this.partie = [];
     this.historique = [];
+    this.ligne;
+  }
+
+  tuilesJouées() {
+    let jouées = 0;
+    for (let t = 0; t < 6; t++) {
+      if (TuileTestVide(this.jeu[t])) jouées++;
+    }
+    return jouées;
   }
 
   draw() {
@@ -52,14 +234,9 @@ class User {
     ctx.font = '15px san-serif';
     ctx.fillText("[" + poubelles + "]", xoffset + 8.5*cell, yoffset + 0.7 * cell);
 
-    let joués = 0;
-    for (let t = 0; t < 6; t++) {
-      if (TuileTestVide(this.jeu[t])) joués++;
-    }
-
     ctx.fillStyle = 'Blue';
     ctx.font = '15px san-serif';
-    ctx.fillText("jeu=[" + joués + "]", xoffset + 10*cell, yoffset + 0.7 * cell);
+    ctx.fillText("jeu=[" + this.tuilesJouées() + "]", xoffset + 10*cell, yoffset + 0.7 * cell);
   }
 
   play() {
@@ -109,6 +286,8 @@ class User {
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
     this.partie.push(histo);
     this.historique = [];
+    let u;
+    this.ligne = u;
     let hasPoubelle = false;
     for (let p = 0; p < 6; p++) {
       this.poubelle[p]
@@ -126,7 +305,6 @@ class User {
       }
       // console.log("has poubelle>");
     }
-
   }
 
   addPoubelle(position) {
