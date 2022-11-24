@@ -11,4 +11,7 @@ https://github.com/anumby-source/RobotServiceJeunesse2023
 
 Pour lancer le jeu, lancer la page HTML index.html à partir d'un navigateur (Chrome par exemple)
 
+![image](https://github.com/anumby-source/RobotServiceJeunesse2023/blob/main/Qwirkle/écran.jpg)
+
+
 ![image](https://github.com/anumby-source/RobotServiceJeunesse2023/blob/main/Qwirkle/qwirkle.jpg)
