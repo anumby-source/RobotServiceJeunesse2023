@@ -632,7 +632,7 @@ class WorkingGrille {
     if (jouées == 0) {
       let evt = user.historique[0];
 
-      console.log("checkRules> première tuile");
+      // console.log("checkRules> première tuile");
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
@@ -643,7 +643,7 @@ class WorkingGrille {
     else if (jouées == 1) {
       let evt = user.historique[0];
 
-      console.log("checkRules> deuxième tuile");
+      // console.log("checkRules> deuxième tuile");
 
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
       if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
@@ -665,7 +665,7 @@ class WorkingGrille {
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
 
-      console.log("checkRules> tuile suivante", user.historique.length);
+      // console.log("checkRules> tuile suivante", user.historique.length);
 
       if (!user.ligne) {
         let e0 = user.historique[0];
@@ -679,7 +679,7 @@ class WorkingGrille {
         }
       }
       user.ligne.extend();
-      console.log("checkRules> tuile suivante", user.ligne);
+      // console.log("checkRules> tuile suivante", user.ligne);
       // on doit vérifier que la [column, row] testée est compatible avec cette ligne
 
       if (!user.ligne.aligné(column, row)) return BAD;

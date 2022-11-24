@@ -99,7 +99,7 @@ class Ligne {
     let forme = TuileGetForme(tuile);
     let color = TuileGetColor(tuile);
 
-    console.log("Ligne:compatible>", "forme=", forme, "color=", color);
+    // console.log("Ligne:compatible>", "forme=", forme, "color=", color);
 
     if (this.orientation == HORIZONTAL) {
       let r0 = this.ancrage + Jeu.working.r0;
@@ -378,7 +378,7 @@ class User {
   }
 
   ok() {
-    console.log("User:ok>", "histo=", this.historique.length, this.historique);
+    // console.log("User:ok>", "histo=", this.historique.length, this.historique);
     let n = this.getScore();
     this.score += n;
     let histo = [];
