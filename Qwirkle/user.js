@@ -321,11 +321,13 @@ class User {
 
       // console.log("User:getScore> ", h, hlen, v, vlen);
 
-      if (hlen == 1 && vlen == 1) {
-        return 1;
+      if (hlen == 1 && vlen == 1) n = 1;
+      else {
+        if (hlen == 1) n = vlen;
+        else if (vlen == 1) n = hlen;
       }
-      if (hlen == 1) return vlen;
-      if (vlen == 1) return hlen;
+      if (n == QWIRKLE) n *= 2;
+      return n;
     }
     else
     {
@@ -335,7 +337,9 @@ class User {
       if (evt1.r == evt2.r) {
         ligne = new Ligne(HORIZONTAL, evt1.r, evt1.c, evt2.c);
         ligne.extend();
-        n += ligne.length();
+        let local = ligne.length();
+        if (local == QWIRKLE) local *= 2;
+        n += local;
         // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
 
         let c1 = evt1.c;
@@ -348,14 +352,20 @@ class User {
         for (let c = c1; c <= c2; c++) {
           let l = new Ligne(VERTICAL, c, evt1.r, evt2.r);
           l.extend();
-          if (l.length() > 1) n += l.length();
+          if (l.length() > 1) {
+            local = ligne.length();
+            if (local == QWIRKLE) local *= 2;
+            n += local;
+          }
           // console.log("User:getScore> ligne transverse ", l, l.length(), n);
         }
       }
       else if (evt1.c == evt2.c) {
         ligne = new Ligne(VERTICAL, evt1.c, evt1.r, evt2.r);
         ligne.extend();
-        n += ligne.length();
+        let local = ligne.length();
+        if (local == QWIRKLE) local *= 2;
+        n += local;
         // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
 
         let r1 = evt1.r;
@@ -368,7 +378,11 @@ class User {
         for (let r = r1; r <= r2; r++) {
           let l = new Ligne(HORIZONTAL, r, evt1.c, evt2.c);
           l.extend();
-          if (l.length() > 1) n += l.length();
+          if (l.length() > 1) {
+            local = ligne.length();
+            if (local == QWIRKLE) local *= 2;
+            n += local;
+          }
           // console.log("User:getScore> ligne transverse ", l, l.length(), n);
         }
       }

@@ -35,6 +35,8 @@ mode initial "observation"
 const canvas = document.getElementById('canvas');
 let cellSize = 20;
 
+const QWIRKLE = 6;
+
 const GOOD = 1;
 const BAD = 2;
 const HORIZONTAL = 3;
