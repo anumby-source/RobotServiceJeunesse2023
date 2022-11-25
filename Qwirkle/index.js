@@ -41,6 +41,22 @@ const HORIZONTAL = 3;
 const VERTICAL = 4;
 const MODE_COLOR = 5;
 const MODE_FORME = 6;
+const COLORS = 6;
+const FORMES = 6;
+const LAYERS = 3;
+
+// position vis-à-vis de la zone de travail
+const W_HAUT_GAUCHE = -1;
+const W_BAS_GAUCHE = -2;
+const W_HAUT_DROITE = -3;
+const W_BAS_DROITE = -4;
+
+const W_GAUCHE = -5;
+const W_DROITE = -6;
+const W_HAUT = -7;
+const W_BAS = -8;
+
+const W_EXTERIEUR = -10;
 
 function getCellSize() {
   return cellSize;
@@ -77,9 +93,7 @@ function info (text) {
 
   if (text) {
     let lines = (canvas.height - yoffset)/cell;
-    if (infos.length < lines) {
-    }
-    else {
+    if (infos.length >= lines) {
       infos.splice(0, 1);
     }
     infos.push(text);
@@ -93,7 +107,7 @@ function info (text) {
 
       ctx.fillStyle = 'red';
       ctx.font = '20px san-serif';
-      ctx.fillText(infos[line], 0, yoffset  + line*cell);
+      ctx.fillText(infos[line], 0, yoffset + line * cell);
   }
 }
 
@@ -250,6 +264,7 @@ function tm() {
 // Définition de la classe pour la grille de travail dans laquelle on manipule les tuiles du jeu
 class WorkingGrille {
   constructor() {
+    // on démarre par une grille minimale 3 x 3 = une cellule centrale entourée d'une marge de 1
     this.cmin = 0;
     this.cmax = 2;
     this.rmin = 0;
@@ -358,19 +373,19 @@ class WorkingGrille {
     // s'il y a une seule tuile => (cmin = c0 - 1, cmax = c0 + 1)
 
     // on est juste au bord de la zone de travail
-    if (column == this.cmin && row == this.rmin) return -1; // Haut/Gauche
-    if (column == this.cmin && row == this.rmax) return -2; // Bas/Gauche
-    if (column == this.cmax && row == this.rmin) return -3; // Haut/Droite
-    if (column == this.cmax && row == this.rmax) return -4; // Bas/Droite
+    if (column == this.cmin && row == this.rmin) return W_HAUT_GAUCHE;
+    if (column == this.cmin && row == this.rmax) return W_BAS_GAUCHE;
+    if (column == this.cmax && row == this.rmin) return W_HAUT_DROITE;
+    if (column == this.cmax && row == this.rmax) return W_BAS_DROITE;
 
-    if (column == this.cmin) return -5; // Gauche
-    if (column == this.cmax) return -6; // Droite
-    if (row == this.rmin) return -7; // Haut
-    if (row == this.rmax) return -8; // Bas
+    if (column == this.cmin) return W_GAUCHE;
+    if (column == this.cmax) return W_DROITE;
+    if (row == this.rmin) return W_HAUT;
+    if (row == this.rmax) return W_BAS;
 
     // on est complètement en dehors de la zone de travail
-    if (column < this.cmin || column > this.cmax) return -10;
-    if (row < this.rmin || row > this.rmax) return -10;
+    if (column < this.cmin || column > this.cmax) return W_EXTERIEUR;
+    if (row < this.rmin || row > this.rmax) return W_EXTERIEUR;
 
     let i = this.grid.index(column - this.cmin, row - this.rmin);
     return i;
@@ -607,14 +622,6 @@ class WorkingGrille {
     return GOOD;
   }
 
-  checkRuleI(tuile, column, row) {
-    return GOOD;
-  }
-
-  checkRuleJ(tuile, column, row) {
-    return GOOD;
-  }
-
   // application des règles du jeu
   checkRules(user, tuile, column, row) {
     // retourne false si l'on ne peut pas utiliser cette case selon les règles
@@ -744,7 +751,7 @@ class WorkingGrille {
 
     // les différents d'augmentation
     switch (i) {
-      case -1: // Haut/Gauche
+      case W_HAUT_GAUCHE:
             this.cmin -= 1;
             this.rmin -= 1;
             dw = 1;
@@ -752,7 +759,7 @@ class WorkingGrille {
             c = 1;
             r = 1;
             break;
-      case -2: // Bas/Gauche
+      case W_BAS_GAUCHE:
             this.cmax += 1;
             this.rmax += 1;
             dw = 1;
@@ -760,7 +767,7 @@ class WorkingGrille {
             c = 1;
             r = 0;
             break;
-      case -3: // Haut/Droite
+      case W_HAUT_DROITE:
             this.rmin -= 1;
             this.rmin -= 1;
             dw = 1;
@@ -768,7 +775,7 @@ class WorkingGrille {
             c = 0;
             r = 1;
             break;
-      case -4: // Bas/Droite
+      case W_BAS_DROITE:
             this.rmax += 1;
             this.rmax += 1;
             dw = 1;
@@ -776,25 +783,25 @@ class WorkingGrille {
             c = 0;
             r = 0;
             break;
-      case -5: // Gauche
+      case W_GAUCHE:
             this.cmin -= 1;
             dw = 1;
             c = 1;
             r = 0;
             break;
-      case -6: // Droite
+      case W_DROITE:
             this.cmax += 1;
             dw = 1;
             c = 0;
             r = 0;
             break;
-      case -7: // Haut
+      case W_HAUT:
             this.rmin -= 1;
             dh = 1;
             c = 0;
             r = 1;
             break;
-      case -8: // Bas
+      case W_BAS:
             this.rmax += 1;
             dh = 1;
             c = 0;
@@ -968,9 +975,9 @@ class PlateauJeu {
 
   init() {
     // création de toutes les 3 x 6 x 6 tuiles ordonnées
-    for (let layer = 0; layer < 3; layer++)
-        for (let color = 0; color < 6; color++) {
-          for (let forme = 0; forme < 6; forme++) {
+    for (let layer = 0; layer < LAYERS; layer++)
+        for (let color = 0; color < COLORS; color++) {
+          for (let forme = 0; forme < FORMES; forme++) {
             let t = TuileId(color, forme, layer);
             //console.log(color, forme, t);
             this.tuiles.push(t);
@@ -1104,8 +1111,8 @@ class PlateauJeu {
       let xoffset = (this.width + 2)*cell;
       let yoffset = 1000 * cell;
       let t = 0;
-      for (let c = 0; c < 6; c++) {
-        for (let f = 0; f < 6; f++) {
+      for (let c = 0; c < COLORS; c++) {
+        for (let f = 0; f < FORMES; f++) {
           //console.log("PlateauJeu:drawTuiles> ", Jeu);
           let tuile = this.tuiles[t];
           //console.log("PlateauJeu:drawTuiles>", tuile);
@@ -1114,8 +1121,8 @@ class PlateauJeu {
         }
       }
 
-      for (let c = 0; c < 6; c++ ) {
-        for (let r = 0; r < 6; r++ ) {
+      for (let c = 0; c < COLORS; c++ ) {
+        for (let r = 0; r < FORMES; r++ ) {
           let x = c * cell;
           let y = r * cell;
           ctx.strokeStyle = "red";
@@ -1169,36 +1176,36 @@ function observation(x, y) {
   let done = false;
   let found = false;
   if (Jeu.working.findWCell(x, y)) {
-        // détection de la grille de travail
-        found = true;
-        done = true;
-        where = "working";
+    // détection de la grille de travail
+    found = true;
+    done = true;
+    where = "working";
   }
   else if (Jeu.commandes.findCommande(x, y)) {
-        // détection de la grille de commandes
-        found = true;
-        done = true;
-        where = "commande";
+    // détection de la grille de commandes
+    found = true;
+    done = true;
+    where = "commande";
   }
   else {
-        for (let u = 0; u < Users.length; u++) {
-          let user = Users[u];
-          let tuileIndice = user.findUCell(x, y);
-          if (tuileIndice >= 0) {
-            Jeu.selectUserPosition(user, tuileIndice);
-            found = true;
-            done = true;
-            where = "user";
-            break;
-          }
-          if (user.findUPoubelle(x, y)) {
-            Jeu.selectUserPoubelle(user);
-            found = true;
-            done = true;
-            where = "user poubelle";
-            break;
-          }
-        }
+    for (let u = 0; u < Users.length; u++) {
+      let user = Users[u];
+      let tuileIndice = user.findUCell(x, y);
+      if (tuileIndice >= 0) {
+        Jeu.selectUserPosition(user, tuileIndice);
+        found = true;
+        done = true;
+        where = "user";
+        break;
+      }
+      if (user.findUPoubelle(x, y)) {
+        Jeu.selectUserPoubelle(user);
+        found = true;
+        done = true;
+        where = "user poubelle";
+        break;
+      }
+    }
   }
 
   // console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);

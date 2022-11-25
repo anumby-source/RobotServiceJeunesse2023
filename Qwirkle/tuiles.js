@@ -3,6 +3,27 @@ const colors = ["red", "darkviolet", "lime", "skyblue", "orange", "yellow", "sil
 //              0       1        2          3        4         5         6       7         8          9       10    11
 const formes = ["rond", "carré", "losange", "croix", "trefle", "étoile", "vide", "zoomin", "zoomout", "undo", "ok", "poubelle"];
 
+const COLOR_RED = 0;
+const COLOR_DARKVIOLET = 1;
+const COLOR_LIME = 2;
+const COLOR_SKYBLUE = 3;
+const COLOR_ORANGE = 4;
+const COLOR_YELLOW = 5;
+const COLOR_SILVER = 6;
+
+const FORME_ROND = 0;
+const FORME_CARRE = 1;
+const FORME_LOSANGE = 2;
+const FORME_CROIX = 3;
+const FORME_TREFLE = 4;
+const FORME_ETOILE = 5
+const FORME_VIDE = 6;
+const FORME_ZOOMIN = 7;
+const FORME_ZOOMOUT = 8;
+const FORME_UNDO = 9;
+const FORME_OK = 10;
+const FORME_POUBELLE = 11;
+
 function TuileId(color, forme, layer) {
   return layer*1000 + color*100 + forme;
 }
@@ -30,47 +51,47 @@ function TuileDraw(id, x, y) {
   //console.log("TuileDraw> forme=", forme);
 
   switch (forme) {
-    case 0:
+    case FORME_ROND:
       drawRond(ctx, colors[color], x, y);
       break;
-    case 1:
+    case FORME_CARRE:
       drawSquare(ctx, colors[color], x, y);
       break;
-    case 2:
+    case FORME_LOSANGE:
       drawLosange(ctx, colors[color], x, y);
       break;
-    case 3:
+    case FORME_CROIX:
       drawCross(ctx, colors[color], x, y);
       break;
-    case 4:
+    case FORME_TREFLE:
       drawTrefle(ctx, colors[color], x, y);
       break;
-    case 5:
+    case FORME_ETOILE:
       drawStar(ctx, colors[color], x, y);
       break;
-    case 6:
+    case FORME_VIDE:
       drawVide(ctx, x, y);
       break;
-    case 7:
+    case FORME_ZOOMIN:
       drawZoomin(ctx, x, y);
       break;
-    case 8:
+    case FORME_ZOOMOUT:
       drawZoomout(ctx, x, y);
       break;
-    case 9:
+    case FORME_UNDO:
       drawUndo(ctx, x, y);
       break;
-    case 10:
+    case FORME_OK:
       drawOk(ctx, x, y);
       break;
-    case 11:
+    case FORME_POUBELLE:
       drawPoubelle(ctx, x, y);
       break;
   }
 }
 
 function TuileTestVide(id) {
-  return TuileGetForme(id) == 6;
+  return TuileGetForme(id) == FORME_VIDE;
 }
 
 function TuileShow(id) {
@@ -366,10 +387,10 @@ function drawStar(ctx, color, x, y) {
   }
 
 // Une instance de Tuile unique pour installer sur des cellules particulières: La cellule vide, les cellules pour les commandes
-let TuileVide = TuileId (6, 6, 0);
-let TuileZoomin = TuileId (6, 7, 0);
-let TuileZoomout = TuileId (6, 8, 0);
-let TuileUndo = TuileId (6, 9, 0);
-let TuileOk = TuileId (6, 10, 0);
-let TuilePoubelle = TuileId (6, 11, 0);
+let TuileVide = TuileId (COLOR_SILVER, FORME_VIDE, 0);
+let TuileZoomin = TuileId (COLOR_SILVER, FORME_ZOOMIN, 0);
+let TuileZoomout = TuileId (COLOR_SILVER, FORME_ZOOMOUT, 0);
+let TuileUndo = TuileId (COLOR_SILVER, FORME_UNDO, 0);
+let TuileOk = TuileId (COLOR_SILVER, FORME_OK, 0);
+let TuilePoubelle = TuileId (COLOR_SILVER, FORME_POUBELLE, 0);
 

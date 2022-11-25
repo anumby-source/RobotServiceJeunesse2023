@@ -90,8 +90,7 @@ class Ligne {
     }
   }
 
-  compatible(tuile)
-  {
+  compatible(tuile) {
     // on vérifie:
     //  - que l'ensemble de la ligne est compatible avec cette tuile (soit homogène en couleur ou en forme
     //  - qu'il n'y ait pas de doublon entre la ligne et la tuile testée
