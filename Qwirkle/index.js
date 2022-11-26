@@ -670,7 +670,9 @@ class WorkingGrille {
 
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
       // if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
+      if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+      if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
@@ -1286,7 +1288,7 @@ function observation(x, y) {
 
 function déplacement(x, y) {
   if (Jeu.positionSelected >= 0) {
-    // console.log("déplacement> ", x, y, Jeu.userSelected);
+    console.log("déplacement> ", x, y, Jeu.userSelected);
     clear();
 
     if (Jeu.working.findWCell(x, y)) {
@@ -1297,7 +1299,7 @@ function déplacement(x, y) {
 
       Jeu.working.drawCellFrame(c, r, "yellow");
 
-      // console.log("déplacement> ", c, r);
+      console.log("déplacement> ", c, r);
       found = true;
       done = true;
     }

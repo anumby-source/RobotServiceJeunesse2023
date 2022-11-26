@@ -329,7 +329,7 @@ class User {
       }
       if (n == QWIRKLE) n *= 2;
 
-      console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
+      // console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
 
       return n;
     }
@@ -344,7 +344,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -355,7 +355,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          // console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
       else if (evt1.c == evt2.c) {
@@ -364,7 +364,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        // console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -375,7 +375,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          // console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
     }
