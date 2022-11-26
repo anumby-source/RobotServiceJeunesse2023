@@ -212,6 +212,7 @@ class User {
     for (let t = 0; t < 6; t++) this.poubelle.push(TuileVide);
     this.partie = [];
     this.historique = [];
+    this.tourPrécédent = [];
     this.ligne;
   }
 
@@ -386,7 +387,9 @@ class User {
     // console.log("User:ok>", "histo=", this.historique.length, this.historique);
     let n = this.getScore();
     this.score += n;
+    this.tourPrécédent = [];
     let histo = [];
+    for (let h = 0; h < this.historique.length; h++) this.tourPrécédent.push(this.historique[h]);
     for (let h = 0; h < this.historique.length; h++) histo.push(this.historique[h]);
     this.partie.push(histo);
     this.historique = [];

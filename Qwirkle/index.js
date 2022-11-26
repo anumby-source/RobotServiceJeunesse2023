@@ -304,13 +304,21 @@ class WorkingGrille {
             TuileDraw(tuile, x, y);
           }
       }
-    Jeu.working.drawCellFrame(this.c0, this.r0, "yellow")
+    Jeu.working.drawCellFrame(this.c0, this.r0, "green")
     if (Users[0].historique.length > 0) {
       for (let ievt = 0; ievt < Users[0].historique.length; ievt++) {
         let evt = Users[0].historique[ievt];
         let c = evt.c + this.c0;
         let r = evt.r + this.r0;
         Jeu.working.drawCellFrame(c, r, "red");
+      }
+    }
+    if (Users[0].tourPrécédent.length > 0) {
+      for (let ievt = 0; ievt < Users[0].tourPrécédent.length; ievt++) {
+        let evt = Users[0].tourPrécédent[ievt];
+        let c = evt.c + this.c0;
+        let r = evt.r + this.r0;
+        Jeu.working.drawCellFrame(c, r, "yellow");
       }
     }
   }
@@ -346,6 +354,7 @@ class WorkingGrille {
     let workingXmax = workingXoffset + (this.cmax + 1)*cell;
     let workingYmax = workingYoffset + (this.rmax + 1)*cell;
 
+    ctx.lineWidth = 2;
     for (let c = c0; c <= c0 + 1; c++)
     {
       ctx.beginPath();
