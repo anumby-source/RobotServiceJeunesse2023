@@ -305,7 +305,7 @@ class User {
   }
 
   getScore() {
-    console.log("User:getScore> A");
+    // console.log("User:getScore> A");
     let n = 0;
     let ligne;
     if (this.historique.length == 0) {

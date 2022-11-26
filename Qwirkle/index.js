@@ -297,13 +297,22 @@ class WorkingGrille {
     for (let c = this.cmin; c <= this.cmax; c++)
       for (let r = this.rmin; r <= this.rmax; r++) {
           let tuile = this.grid.getElement(c - this.cmin, r - this.rmin);
-          if (tuile) {
+          if (tuile >= 0) {
             let x = xoffset + c*cell;
             let y = yoffset + r*cell;
-            //console.log("WorkingGrille:draw>", x, y, tuile);
+            // console.log("WorkingGrille:draw>", x, y, tuile);
             TuileDraw(tuile, x, y);
           }
       }
+    Jeu.working.drawCellFrame(this.c0, this.r0, "yellow")
+    if (Users[0].historique.length > 0) {
+      for (let ievt = 0; ievt < Users[0].historique.length; ievt++) {
+        let evt = Users[0].historique[ievt];
+        let c = evt.c + this.c0;
+        let r = evt.r + this.r0;
+        Jeu.working.drawCellFrame(c, r, "red");
+      }
+    }
   }
 
   findWCell(x, y) {
@@ -575,34 +584,34 @@ class WorkingGrille {
     let vhaut;
     let vbas;
 
-    console.log("checkRuleG");
+    // console.log("checkRuleG");
 
     if (!Jeu.working.vide(column - 1, row)) {
       hgauche = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 - 1, column - Jeu.working.c0 - 1);
       hgauche.extend();
-      console.log("checkRuleG> test horizontal gauche");
+      // console.log("checkRuleG> test horizontal gauche");
       if (!hgauche.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column + 1, row)) {
-      console.log("checkRuleG> test horizontal droite");
+      // console.log("checkRuleG> test horizontal droite");
       hdroite = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 + 1, column - Jeu.working.c0 + 1);
       hdroite.extend();
       if (!hdroite.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column, row - 1)) {
-      console.log("checkRuleG> test vertical haut");
+      // console.log("checkRuleG> test vertical haut");
       vhaut = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 - 1, row - Jeu.working.r0 - 1);
       vhaut.extend();
       if (!vhaut.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column, row + 1)) {
-      console.log("checkRuleG> test vertical bas");
+      // console.log("checkRuleG> test vertical bas");
       vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
       vbas.extend();
       if (!vbas.compatible(tuile)) return BAD;
     }
 
-    console.log("checkRuleG> les segments sont compatibles");
+    // console.log("checkRuleG> les segments sont compatibles");
 
     // chaque segment de ligne à droite, gauche, haut, bas est compatible par la tuile
     // maintenant nous devons essayer de concaténer les parties doite/gauche et haut/bas
@@ -617,7 +626,7 @@ class WorkingGrille {
       if (!vhaut.canJoin(tuile, vbas)) return BAD;
     }
 
-    console.log("checkRuleG> les segments peuvent être joints");
+    // console.log("checkRuleG> les segments peuvent être joints");
 
     return GOOD;
   }
@@ -676,6 +685,7 @@ class WorkingGrille {
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
+      console.log("CheckRules> deuxième tuile règles OK");
     }
     else {
       // au moins 2 tuiles ont été posées, ce qui définit "la ligne courante"
@@ -719,19 +729,13 @@ class WorkingGrille {
     */
 
     return GOOD;
-
-
-    console.log("chekrules> ...");
-    return BAD;
   }
 
   // ajoute une tuile sur la grille de travail éventuellement avec agrandissement de la zone de travail
   // cette zone de travail est dessinée librement sur la grille dur plateau de jeu
   addTuile(tuile, column, row) {
-
-
+    // console.log("WorkingGrille:addTuile>", column, row, tuile);
     if (this.grid.vide()) {
-      // console.log("WorkingGrille:addTuile>", column, row, tuile);
       // Première fois du jeu
       this.cmin = 0;
       this.cmax = 2;
@@ -756,8 +760,10 @@ class WorkingGrille {
     if (i >= 0) {
       // La tuile est ajoutée sans changement de taille de la grille de travail
       this.grid.elements[i] = tuile;
-      return [column, row];
+      return [column, row, i];
     }
+
+    // console.log("WorkingGrille:addTuile> on doit augmenter la grille de travail");
 
     // on doit augmenter la grille de travail
     let oldW = this.width();
@@ -1288,7 +1294,7 @@ function observation(x, y) {
 
 function déplacement(x, y) {
   if (Jeu.positionSelected >= 0) {
-    console.log("déplacement> ", x, y, Jeu.userSelected);
+    // console.log("déplacement> ", x, y, Jeu.userSelected);
     clear();
 
     if (Jeu.working.findWCell(x, y)) {
@@ -1299,7 +1305,7 @@ function déplacement(x, y) {
 
       Jeu.working.drawCellFrame(c, r, "yellow");
 
-      console.log("déplacement> ", c, r);
+      // console.log("déplacement> ", c, r);
       found = true;
       done = true;
     }
@@ -1349,7 +1355,7 @@ canvas.addEventListener('mouseup', (e) => {
       if (Jeu.cSelected >= 0 && Jeu.rSelected >= 0) {
         // détection de la grille de travail
         let user = Jeu.userSelected;
-        console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "t=", user.jeu[Jeu.positionSelected], "c=", Jeu.cSelected, "r=", Jeu.rSelected);
+        // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "t=", user.jeu[Jeu.positionSelected], "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let tuile = user.jeu[Jeu.positionSelected];
         let check = Jeu.working.checkRules(user, tuile, Jeu.cSelected, Jeu.rSelected);
         // console.log("mouseup> check=", check);
@@ -1357,14 +1363,19 @@ canvas.addEventListener('mouseup', (e) => {
           user.jeu[Jeu.positionSelected] = TuileVide;
           let cc;
           let rr;
-          [cc, rr] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
-          Jeu.working.drawCellFrame(Jeu.cSelected, Jeu.rSelected, "red");
+          let i;
+          [cc, rr, i] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
+          // console.log("mouseup> add tuile", "cc=", cc, "rr=", rr, "tuile=", tuile, "i=", i);
+          // Jeu.working.drawCellFrame(Jeu.cSelected, Jeu.rSelected, "red");
 
           // un événement est le fait de jouer une tuile.
           // on va ajouter cet événement dans l'historique du joueur
-          // console.log("addEvenement>", "c=", Jeu.cSelected, "c0=", Jeu.working.c0, "dx=", Jeu.cSelected - Jeu.working.c0, "r=", Jeu.rSelected, "r0=", Jeu.working.r0, "dr=", Jeu.rSelected - Jeu.working.r0, "cc=", cc - Jeu.working.c0, "rr=", rr - Jeu.working.r0);
+          // console.log("addEvenement>", "c=", Jeu.cSelected, "c0=", Jeu.working.c0, "dc=", Jeu.cSelected - Jeu.working.c0, "r=", Jeu.rSelected, "r0=", Jeu.working.r0, "dr=", Jeu.rSelected - Jeu.working.r0, "cc=", cc - Jeu.working.c0, "rr=", rr - Jeu.working.r0);
           user.addEvenement(Jeu.positionSelected, tuile, cc - Jeu.working.c0, rr - Jeu.working.r0);
           clear();
+        }
+        else {
+          // console.log("mouseup> check BAD");
         }
       }
     }
