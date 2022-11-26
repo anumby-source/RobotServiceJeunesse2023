@@ -419,6 +419,7 @@ class WorkingGrille {
     let i = this.index(column, row);
     if (i < 0) return false;
     let tuile = this.grid.elements[i];
+    if (TuileGetForme(tuile) == forme && TuileGetColor(tuile) == color) return false;
     return (TuileGetForme(tuile) == forme || TuileGetColor(tuile) == color);
   }
 
