@@ -60,6 +60,8 @@ const W_BAS = -8;
 
 const W_EXTERIEUR = -10;
 
+localStorage.setItem("key", "valeur");
+
 function getCellSize() {
   return cellSize;
 }
@@ -91,25 +93,35 @@ let infos = [];
 function info (text) {
   let cell = getCellSize();
   let xoffset = 0;
-  let yoffset = yoffsetJoueurs() + (Jeu.working.cmax + 6) * cell;
+  let yoffset = yoffsetJoueurs() + (Jeu.working.rmax + 6) * cell;
+
+  console.log("info> A", text, Jeu.working.rmax, "yoffsetJoueurs=", yoffsetJoueurs());
+
+  // if (!text) return;
 
   if (text) {
     let lines = (canvas.height - yoffset)/cell;
+    console.log("info> B", "canvas.height=", canvas.height, "yoffset=", yoffset, "lines=", lines, "infos.length=", infos.length);
     if (infos.length >= lines) {
       infos.splice(0, 1);
     }
     infos.push(text);
   }
 
-  for (let line = 0; line < infos.length; line++) {
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.fillRect(0, yoffset - cell + line*cell, canvas.width, cell);
-      ctx.fill();
+  console.log("info> C length=", infos.length);
 
-      ctx.fillStyle = 'red';
-      ctx.font = '20px san-serif';
-      ctx.fillText(infos[line], 0, yoffset + line * cell);
+  for (let line = 0; line < infos.length; line++) {
+    console.log("info> D ", line, infos[line], "y=", yoffset + line * cell);
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.fillRect(0, yoffset - cell + line*cell, canvas.width, cell);
+    ctx.fill();
+
+    ctx.fillStyle = 'red';
+    ctx.font = '20px san-serif';
+    ctx.fillText(infos[line], 0, yoffset + line * cell);
+    ctx.fill();
   }
 }
 
@@ -276,7 +288,6 @@ class WorkingGrille {
 
     this.grid = new Matrix();
     this.grid.fill (3, 3, TuileVide);
-    this.first = true;
   }
 
   draw() {
@@ -431,32 +442,32 @@ class WorkingGrille {
   checkRuleA(tuile, column, row) {
     //info("chekrules> test first");
     if (this.grid.vide()) {
-      info("first");
+      console.log("first");
       return GOOD;
     }
     return BAD;
   }
 
   checkRuleB(tuile, column, row) {
-    //info("chekrules> test intérieur de la zone");
+    //console.log("chekrules> test intérieur de la zone");
     if (column < this.cmin || column > this.cmax) {
-      info("extérieur de la zone");
+      console.log("extérieur de la zone");
       return BAD;
     }
     if (row < this.rmin || row > this.rmax) {
-      info("extérieur de la zone");
+      console.log("extérieur de la zone");
       return BAD;
     }
     return GOOD;
   }
 
   checkRuleC(tuile, column, row) {
-    //info("chekrules> test si la case est déjà occupée");
+    //console.log("chekrules> test si la case est déjà occupée");
     let index = this.index(column, row);
     if (index > 0) {
       let t = this.grid.elements[index];
       if (!TuileTestVide(t)) {
-        info("la case est déjà occupée");
+        console.log("la case est déjà occupée");
         return BAD;
       }
     }
@@ -464,9 +475,9 @@ class WorkingGrille {
   }
 
   checkRuleD(tuile, column, row) {
-    //info("chekrules> test case isolée");
+    //console.log("chekrules> test case isolée");
     if (this.vide(column-1, row) && this.vide(column+1, row) && this.vide(column, row-1) && this.vide(column, row+1)) {
-      info("case isolée");
+      console.log("case isolée");
       return BAD;
     }
 
@@ -480,30 +491,30 @@ class WorkingGrille {
     for (let dc = 0; dc < 2; dc++) {
       let c = column + 2 * dc - 1;
       if (!this.vide(c, row)) {
-        info("case c=" + c + " non vide");
+        console.log("case c=" + c + " non vide");
         if (!this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          info("case voisine incompatible " + GD[dc]);
+          console.log("case voisine incompatible " + GD[dc]);
           return BAD;
         }
-        else info("compatible");
+        else console.log("compatible");
       }
     }
 
-    info("case voisine GD compatible ou vide ");
+    console.log("case voisine GD compatible ou vide ");
 
     for (let dr = 0; dr < 2; dr++) {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
-        info("case r=" + r + " non vide");
+        console.log("case r=" + r + " non vide");
         if (!this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          info("case voisine incompatible " + HB[dr]);
+          console.log("case voisine incompatible " + HB[dr]);
           return BAD;
         }
-        else info("compatible");
+        else console.log("compatible");
       }
     }
 
-    info("case voisine HB compatible ou vide");
+    console.log("case voisine HB compatible ou vide");
 
     return GOOD;
   }
@@ -516,42 +527,42 @@ class WorkingGrille {
       let c = column + 2*dc - 1;
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
-        info("case c=" + c + " non vide");
+        console.log("case c=" + c + " non vide");
         if (this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile)))
           if (!this.vide(c1, row)) {
-            info("case c=" + c1 + " non vide");
+            console.log("case c=" + c1 + " non vide");
             if (!this.compatible(c1, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-              info("case voisine +2 incompatible " + GD[dc]);
+              console.log("case voisine +2 incompatible " + GD[dc]);
               return BAD;
             }
           }
-          else info("case c1=" + c1 + " vide");
+          else console.log("case c1=" + c1 + " vide");
       }
-      else info("case c=" + c + " vide");
+      else console.log("case c=" + c + " vide");
     }
 
-    info("case voisine GD +2 compatible ou vide");
+    console.log("case voisine GD +2 compatible ou vide");
 
     for (let dr = 0; dr < 2; dr++) {
       let r = row + 2*dr - 1;
       let r1 = row + 4*dr - 2;
       if (!this.vide(column, r)) {
-        info("case r=" + r + " non vide");
+        console.log("case r=" + r + " non vide");
         if (this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
           if (!this.vide(column, r1)) {
-            info("case r1=" + r1 + " non vide");
+            console.log("case r1=" + r1 + " non vide");
             if (!this.compatible(column, r1, TuileGetForme(tuile), TuileGetColor(tuile))) {
-              info("case voisine +2 incompatible " + HB[dr]);
+              console.log("case voisine +2 incompatible " + HB[dr]);
               return BAD;
             }
           }
-          else info("case r1=" + r1 + " vide");
+          else console.log("case r1=" + r1 + " vide");
         }
       }
-      else info("case r=" + r + " vide");
+      else console.log("case r=" + r + " vide");
     }
 
-    info("case voisine HB +2 compatible ou vide ");
+    console.log("case voisine HB +2 compatible ou vide ");
 
     return GOOD;
   }
@@ -563,34 +574,34 @@ class WorkingGrille {
     let vhaut;
     let vbas;
 
-    info("checkRuleG");
+    console.log("checkRuleG");
 
     if (!Jeu.working.vide(column - 1, row)) {
       hgauche = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 - 1, column - Jeu.working.c0 - 1);
       hgauche.extend();
-      info("checkRuleG> test horizontal gauche");
+      console.log("checkRuleG> test horizontal gauche");
       if (!hgauche.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column + 1, row)) {
-      info("checkRuleG> test horizontal droite");
+      console.log("checkRuleG> test horizontal droite");
       hdroite = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 + 1, column - Jeu.working.c0 + 1);
       hdroite.extend();
       if (!hdroite.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column, row - 1)) {
-      info("checkRuleG> test vertical haut");
+      console.log("checkRuleG> test vertical haut");
       vhaut = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 - 1, row - Jeu.working.r0 - 1);
       vhaut.extend();
       if (!vhaut.compatible(tuile)) return BAD;
     }
     if (!Jeu.working.vide(column, row + 1)) {
-      info("checkRuleG> test vertical bas");
+      console.log("checkRuleG> test vertical bas");
       vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
       vbas.extend();
       if (!vbas.compatible(tuile)) return BAD;
     }
 
-    info("checkRuleG> les segments sont compatibles");
+    console.log("checkRuleG> les segments sont compatibles");
 
     // chaque segment de ligne à droite, gauche, haut, bas est compatible par la tuile
     // maintenant nous devons essayer de concaténer les parties doite/gauche et haut/bas
@@ -605,6 +616,8 @@ class WorkingGrille {
       if (!vhaut.canJoin(tuile, vbas)) return BAD;
     }
 
+    console.log("checkRuleG> les segments peuvent être joints");
+
     return GOOD;
   }
 
@@ -612,15 +625,15 @@ class WorkingGrille {
     // on teste si la position de l'evt testé est immédiatement à côté de [column, row]
     let c = evt.c + Jeu.working.c0;
     let r = evt.r + Jeu.working.r0;
-    // console.log("checkRuleH>", column, row, evt, c, r);
+    console.log("checkRuleH>", column, row, "evt", evt.c, evt.r, "0=", Jeu.working.c0, Jeu.working.r0, c, r);
     if (!((column == c-1 && row == r) ||
           (column == c+1 && row == r) ||
           (column == c && row == r-1) ||
           (column == c && row == r+1))) {
-      info("on n'est pas à côté de la première tuile jouée");
+      console.log("on n'est pas à côté de la première tuile jouée");
       return BAD;
     }
-    info("on est à côté de la première tuile jouée");
+    console.log("on est à côté de la première tuile jouée");
     return GOOD;
   }
 
@@ -634,14 +647,14 @@ class WorkingGrille {
 
     let jouées = user.tuilesJouées();
 
-    info("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
+    console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
 
     if (this.grid.vide()) return GOOD;
 
     if (jouées == 0) {
       let evt = user.historique[0];
 
-      // console.log("checkRules> première tuile");
+      console.log("checkRules> première tuile", tuile);
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
@@ -652,10 +665,10 @@ class WorkingGrille {
     else if (jouées == 1) {
       let evt = user.historique[0];
 
-      // console.log("checkRules> deuxième tuile");
+      console.log("checkRules> deuxième tuile", tuile);
 
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
-      if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
+      // if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
@@ -674,7 +687,7 @@ class WorkingGrille {
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
 
-      // console.log("checkRules> tuile suivante", user.historique.length);
+      console.log("checkRules> tuile suivante", user.historique.length);
 
       if (!user.ligne) {
         let e0 = user.historique[0];
@@ -705,7 +718,7 @@ class WorkingGrille {
     return GOOD;
 
 
-    info("chekrules> ...");
+    console.log("chekrules> ...");
     return BAD;
   }
 
@@ -713,7 +726,8 @@ class WorkingGrille {
   // cette zone de travail est dessinée librement sur la grille dur plateau de jeu
   addTuile(tuile, column, row) {
 
-    if (this.first) {
+
+    if (this.grid.vide()) {
       // console.log("WorkingGrille:addTuile>", column, row, tuile);
       // Première fois du jeu
       this.cmin = 0;
@@ -725,7 +739,6 @@ class WorkingGrille {
       this.grid.fill(3, 3, TuileVide);
       // console.log("WorkingGrille:addTuile>", column, row, tuile);
       this.grid.setElement(1, 1, tuile);
-      this.first = false;
 
       return [column, row];
     }
@@ -864,12 +877,12 @@ class PanneauCommandes {
     let cell = getCellSize();
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
-    let commandesXmax = commandesXoffset + 5*(cell + 7);
+    let commandesXmax = commandesXoffset + 6*(cell + 7);
     let commandesYmax = commandesYoffset + cell;
 
-    if (x >= commandesXoffset && x <= commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
+    if (x >= commandesXoffset && x < commandesXmax && y >= commandesYoffset && y <= commandesYmax) {
       let commande = Math.floor((x - commandesXoffset)/(cell + 7));
-      // console.log ("Jeu::findCommande> in", commande);
+      // console.log ("Jeu::findCommande> in", commandesXmax, x, x/(cell + 7), commande);
       return true;
     }
     return false;
@@ -886,7 +899,7 @@ class PanneauCommandes {
     let x;
     let y;
 
-    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk];
+    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSave, TuileRestore];
     for (let c = 0; c < commandes.length; c++) {
       x = commandesXoffset + c*(cell + 7);
       y = yoffsetCommandes();
@@ -911,13 +924,12 @@ class PanneauCommandes {
 
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
-    let commandesXmax = commandesXoffset + 5*(cell + 7);
+    let commandesXmax = commandesXoffset + 6*(cell + 7);
     let commandesYmax = commandesYoffset + cell;
-
 
     let xc = commandesXoffset;
     let yc = commandesYoffset;
-    if ((x >= commandesXoffset) && (x <= commandesXoffset + 5*(cell + 7)))
+    if ((x >= commandesXoffset) && (x <= commandesXoffset + 6*(cell + 7)))
       if ((y >= commandesYoffset) && (y <= commandesYoffset + cell)) {
         let commande = Math.floor((x - commandesXoffset)/(cell + 7));
         // console.log("executeCommande> x=" + x + " commande=" + commande);
@@ -938,6 +950,14 @@ class PanneauCommandes {
           case 3:
             // ok
             Jeu.ok();
+            break;
+          case 4:
+            // ok
+            Jeu.save();
+            break;
+          case 5:
+            // ok
+            Jeu.restore();
             break;
         }
         clear();
@@ -1140,6 +1160,43 @@ class PlateauJeu {
     // console.log("ok");
     Users[0].ok();
   }
+
+  save() {
+    console.log("Save>");
+    localStorage.clear();
+    localStorage.setItem("Pioche", JSON.stringify(Jeu.pioche));
+    localStorage.setItem("Grid", JSON.stringify(Jeu.working.grid.elements));
+    localStorage.setItem("GridColumns", JSON.stringify(Jeu.working.grid.columns));
+    localStorage.setItem("GridRows", JSON.stringify(Jeu.working.grid.rows));
+    localStorage.setItem("Jeu_c0", JSON.stringify(Jeu.working.c0));
+    localStorage.setItem("Jeu_cmin", JSON.stringify(Jeu.working.cmin));
+    localStorage.setItem("Jeu_cmax", JSON.stringify(Jeu.working.cmax));
+    localStorage.setItem("Jeu_r0", JSON.stringify(Jeu.working.r0));
+    localStorage.setItem("Jeu_rmin", JSON.stringify(Jeu.working.rmin));
+    localStorage.setItem("Jeu_rmax", JSON.stringify(Jeu.working.rmax));
+
+    localStorage.setItem("User_Score", JSON.stringify(Users[0].score));
+    localStorage.setItem("User_Jeu", JSON.stringify(Users[0].jeu));
+  }
+
+  restore() {
+    console.log("Restore>");
+    Jeu.pioche = structuredClone(JSON.parse(localStorage.getItem("Pioche")));
+    Jeu.working.grid.elements = structuredClone(JSON.parse(localStorage.getItem("Grid")));
+    Jeu.working.grid.columns = structuredClone(JSON.parse(localStorage.getItem("GridColumns")));
+    Jeu.working.grid.rows = structuredClone(JSON.parse(localStorage.getItem("GridRows")));
+    Jeu.working.c0 = structuredClone(JSON.parse(localStorage.getItem("Jeu_c0")));
+    Jeu.working.cmin = structuredClone(JSON.parse(localStorage.getItem("Jeu_cmin")));
+    Jeu.working.cmax = structuredClone(JSON.parse(localStorage.getItem("Jeu_cmax")));
+    Jeu.working.r0 = structuredClone(JSON.parse(localStorage.getItem("Jeu_r0")));
+    Jeu.working.rmin = structuredClone(JSON.parse(localStorage.getItem("Jeu_rmin")));
+    Jeu.working.rmax = structuredClone(JSON.parse(localStorage.getItem("Jeu_rmax")));
+
+    Users[0].score = structuredClone(JSON.parse(localStorage.getItem("User_Score")));
+    Users[0].jeu = structuredClone(JSON.parse(localStorage.getItem("User_Jeu")));
+
+    clear();
+  }
 }
 
 // Instanciation des arrays
@@ -1165,7 +1222,8 @@ function clear() {
 
   for (u = 0; u < Users.length; u++) Users[u].draw();
 
-  info();
+  infos = [];
+  // console.log("clear> ", infos.length);
 }
 
 function observation(x, y) {
@@ -1287,8 +1345,8 @@ canvas.addEventListener('mouseup', (e) => {
       // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "c=", Jeu.cSelected, "r=", Jeu.rSelected);
       if (Jeu.cSelected >= 0 && Jeu.rSelected >= 0) {
         // détection de la grille de travail
-        // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let user = Jeu.userSelected;
+        console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "t=", user.jeu[Jeu.positionSelected], "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let tuile = user.jeu[Jeu.positionSelected];
         let check = Jeu.working.checkRules(user, tuile, Jeu.cSelected, Jeu.rSelected);
         // console.log("mouseup> check=", check);

@@ -305,7 +305,7 @@ class User {
   }
 
   getScore() {
-    // console.log("User:getScore>");
+    console.log("User:getScore> A");
     let n = 0;
     let ligne;
     if (this.historique.length == 0) {
@@ -319,14 +319,18 @@ class User {
       v.extend();
       let vlen = v.length();
 
-      // console.log("User:getScore> ", h, hlen, v, vlen);
-
       if (hlen == 1 && vlen == 1) n = 1;
       else {
         if (hlen == 1) n = vlen;
-        else if (vlen == 1) n = hlen;
+        if (vlen == 1) n = hlen;
+        if (hlen > 1 && vlen > 1) {
+          n = vlen + hlen;
+        }
       }
       if (n == QWIRKLE) n *= 2;
+
+      console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
+
       return n;
     }
     else
@@ -339,25 +343,19 @@ class User {
         ligne.extend();
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
-        n += local;
-        // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
+        n = local;
+        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
-        let c1 = evt1.c;
-        let c2 = evt2.c;
-        if (c1 > c2) {
-          c1 = evt2.c;
-          c2 = evt1.c;
-        }
-
-        for (let c = c1; c <= c2; c++) {
-          let l = new Ligne(VERTICAL, c, evt1.r, evt2.r);
+        for (let ievt = 0; ievt < this.historique.length; ievt++) {
+          let evt = this.historique[ievt];
+          let l = new Ligne(VERTICAL, evt.c, evt.r, evt.r);
           l.extend();
           if (l.length() > 1) {
-            local = ligne.length();
+            local = l.length();
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> ligne transverse ", l, l.length(), n);
+          console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
       else if (evt1.c == evt2.c) {
@@ -365,25 +363,19 @@ class User {
         ligne.extend();
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
-        n += local;
-        // console.log("User:getScore> ligne de base ", ligne, ligne.length(), evt1, evt2);
+        n = local;
+        console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
-        let r1 = evt1.r;
-        let r2 = evt2.r;
-        if (r1 > r2) {
-          r1 = evt2.r;
-          r2 = evt1.r;
-        }
-
-        for (let r = r1; r <= r2; r++) {
-          let l = new Ligne(HORIZONTAL, r, evt1.c, evt2.c);
+        for (let ievt = 0; ievt < this.historique.length; ievt++) {
+          let evt = this.historique[ievt];
+          let l = new Ligne(HORIZONTAL, evt.r, evt.c, evt.c);
           l.extend();
           if (l.length() > 1) {
-            local = ligne.length();
+            local = l.length();
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> ligne transverse ", l, l.length(), n);
+          console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
     }
