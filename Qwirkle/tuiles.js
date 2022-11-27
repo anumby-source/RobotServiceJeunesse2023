@@ -25,6 +25,7 @@ const FORME_OK = 10;
 const FORME_POUBELLE = 11;
 const FORME_SAVE = 12;
 const FORME_RESTORE = 13;
+const FORME_SIMULATION = 14;
 
 function TuileId(color, forme, layer) {
   return layer*1000 + color*100 + forme;
@@ -94,6 +95,9 @@ function TuileDraw(id, x, y) {
       break;
     case FORME_RESTORE:
       drawRestore(ctx, x, y);
+      break;
+    case FORME_SIMULATION:
+      drawSimulation(ctx, x, y);
       break;
   }
 }
@@ -422,6 +426,20 @@ function drawRestore(ctx, x, y) {
   ctx.fillText("R", x + cell*0.15, y + cell*0.7);
 }
 
+function drawSimulation(ctx, x, y) {
+  let cell = getCellSize();
+
+  drawFrame(ctx, x, y, "red");
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.fillRect(x, y, cell, cell);
+  ctx.fill();
+
+  ctx.fillStyle = 'green';
+  ctx.font = '15px san-serif';
+  ctx.fillText("Sim", x + cell*0, y + cell*0.7);
+}
+
 // Une instance de Tuile unique pour installer sur des cellules particulières: La cellule vide, les cellules pour les commandes
 let TuileVide = TuileId (COLOR_SILVER, FORME_VIDE, 0);
 let TuileZoomin = TuileId (COLOR_SILVER, FORME_ZOOMIN, 0);
@@ -431,4 +449,5 @@ let TuileOk = TuileId (COLOR_SILVER, FORME_OK, 0);
 let TuilePoubelle = TuileId (COLOR_SILVER, FORME_POUBELLE, 0);
 let TuileSave = TuileId (COLOR_SILVER, FORME_SAVE, 0);
 let TuileRestore = TuileId (COLOR_SILVER, FORME_RESTORE, 0);
+let TuileSimulation = TuileId (COLOR_SILVER, FORME_SIMULATION, 0);
 

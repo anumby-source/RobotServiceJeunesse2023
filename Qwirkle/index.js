@@ -60,6 +60,9 @@ const W_BAS = -8;
 
 const W_EXTERIEUR = -10;
 
+const COMMANDES = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSave, TuileRestore, TuileSimulation];
+
+
 localStorage.setItem("key", "valeur");
 
 function getCellSize() {
@@ -321,6 +324,16 @@ class WorkingGrille {
         Jeu.working.drawCellFrame(c, r, "yellow");
       }
     }
+
+    if (Users[0].jouables.length > 0) {
+      for (let i = 0; i < Users[0].jouables.length; i++) {
+        let c;
+        let r;
+        [c, r] = Users[0].jouables[i];
+        // console.log("working.draw> draw jouable", i, c, r);
+        Jeu.working.drawCellFrame(c, r, "orange");
+      }
+    }
   }
 
   findWCell(x, y) {
@@ -461,7 +474,7 @@ class WorkingGrille {
   checkRuleA(tuile, column, row) {
     //info("chekrules> test first");
     if (this.grid.vide()) {
-      console.log("first");
+      // console.log("first");
       return GOOD;
     }
     return BAD;
@@ -470,11 +483,11 @@ class WorkingGrille {
   checkRuleB(tuile, column, row) {
     //console.log("chekrules> test intérieur de la zone");
     if (column < this.cmin || column > this.cmax) {
-      console.log("extérieur de la zone");
+      // console.log("extérieur de la zone");
       return BAD;
     }
     if (row < this.rmin || row > this.rmax) {
-      console.log("extérieur de la zone");
+      // console.log("extérieur de la zone");
       return BAD;
     }
     return GOOD;
@@ -486,7 +499,7 @@ class WorkingGrille {
     if (index > 0) {
       let t = this.grid.elements[index];
       if (!TuileTestVide(t)) {
-        console.log("la case est déjà occupée");
+        // console.log("la case est déjà occupée");
         return BAD;
       }
     }
@@ -496,7 +509,7 @@ class WorkingGrille {
   checkRuleD(tuile, column, row) {
     //console.log("chekrules> test case isolée");
     if (this.vide(column-1, row) && this.vide(column+1, row) && this.vide(column, row-1) && this.vide(column, row+1)) {
-      console.log("case isolée");
+      // console.log("case isolée");
       return BAD;
     }
 
@@ -510,30 +523,30 @@ class WorkingGrille {
     for (let dc = 0; dc < 2; dc++) {
       let c = column + 2 * dc - 1;
       if (!this.vide(c, row)) {
-        console.log("case c=" + c + " non vide");
+        // console.log("case c=" + c + " non vide");
         if (!this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          console.log("case voisine incompatible " + GD[dc]);
+          // console.log("case voisine incompatible " + GD[dc]);
           return BAD;
         }
-        else console.log("compatible");
+        // else console.log("compatible");
       }
     }
 
-    console.log("case voisine GD compatible ou vide ");
+    // console.log("case voisine GD compatible ou vide ");
 
     for (let dr = 0; dr < 2; dr++) {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
-        console.log("case r=" + r + " non vide");
+        // console.log("case r=" + r + " non vide");
         if (!this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
-          console.log("case voisine incompatible " + HB[dr]);
+          // console.log("case voisine incompatible " + HB[dr]);
           return BAD;
         }
-        else console.log("compatible");
+        // else console.log("compatible");
       }
     }
 
-    console.log("case voisine HB compatible ou vide");
+    // console.log("case voisine HB compatible ou vide");
 
     return GOOD;
   }
@@ -546,42 +559,42 @@ class WorkingGrille {
       let c = column + 2*dc - 1;
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
-        console.log("case c=" + c + " non vide");
+        // console.log("case c=" + c + " non vide");
         if (this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile)))
           if (!this.vide(c1, row)) {
-            console.log("case c=" + c1 + " non vide");
+            // console.log("case c=" + c1 + " non vide");
             if (!this.compatible(c1, row, TuileGetForme(tuile), TuileGetColor(tuile))) {
-              console.log("case voisine +2 incompatible " + GD[dc]);
+              // console.log("case voisine +2 incompatible " + GD[dc]);
               return BAD;
             }
           }
-          else console.log("case c1=" + c1 + " vide");
+          // else console.log("case c1=" + c1 + " vide");
       }
-      else console.log("case c=" + c + " vide");
+      // else console.log("case c=" + c + " vide");
     }
 
-    console.log("case voisine GD +2 compatible ou vide");
+    // console.log("case voisine GD +2 compatible ou vide");
 
     for (let dr = 0; dr < 2; dr++) {
       let r = row + 2*dr - 1;
       let r1 = row + 4*dr - 2;
       if (!this.vide(column, r)) {
-        console.log("case r=" + r + " non vide");
+        // console.log("case r=" + r + " non vide");
         if (this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile))) {
           if (!this.vide(column, r1)) {
-            console.log("case r1=" + r1 + " non vide");
+            // console.log("case r1=" + r1 + " non vide");
             if (!this.compatible(column, r1, TuileGetForme(tuile), TuileGetColor(tuile))) {
-              console.log("case voisine +2 incompatible " + HB[dr]);
+              // console.log("case voisine +2 incompatible " + HB[dr]);
               return BAD;
             }
           }
-          else console.log("case r1=" + r1 + " vide");
+          // else console.log("case r1=" + r1 + " vide");
         }
       }
-      else console.log("case r=" + r + " vide");
+      // else console.log("case r=" + r + " vide");
     }
 
-    console.log("case voisine HB +2 compatible ou vide ");
+    // console.log("case voisine HB +2 compatible ou vide ");
 
     return GOOD;
   }
@@ -617,6 +630,7 @@ class WorkingGrille {
       // console.log("checkRuleG> test vertical bas");
       vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
       vbas.extend();
+      // console.log("checkRuleG>", tuile,  vbas);
       if (!vbas.compatible(tuile)) return BAD;
     }
 
@@ -644,29 +658,29 @@ class WorkingGrille {
     // on teste si la position de l'evt testé est immédiatement à côté de [column, row]
     let c = evt.c + Jeu.working.c0;
     let r = evt.r + Jeu.working.r0;
-    console.log("checkRuleH>", column, row, "evt", evt.c, evt.r, "0=", Jeu.working.c0, Jeu.working.r0, c, r);
+    // console.log("checkRuleH>", column, row, "evt", evt.c, evt.r, "0=", Jeu.working.c0, Jeu.working.r0, c, r);
     if (!((column == c-1 && row == r) ||
           (column == c+1 && row == r) ||
           (column == c && row == r-1) ||
           (column == c && row == r+1))) {
-      console.log("on n'est pas à côté de la première tuile jouée");
+      // console.log("on n'est pas à côté de la première tuile jouée");
       return BAD;
     }
-    console.log("on est à côté de la première tuile jouée");
+    // console.log("on est à côté de la première tuile jouée");
     return GOOD;
   }
 
   // application des règles du jeu
-  checkRules(user, tuile, column, row) {
+  checkRules(user, jeu, tuile, column, row) {
     // retourne false si l'on ne peut pas utiliser cette case selon les règles
     //
     // la première fois => GOOD
     // si la case est occupée par une tuile => BAD
     // si la case est isolée (Gauche, Droite, Haut, Bbas) => BAD
 
-    let jouées = user.tuilesJouées();
+    let jouées = user.tuilesJouées(jeu);
 
-    console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
+    // console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
 
     if (this.grid.vide()) return GOOD;
 
@@ -684,8 +698,7 @@ class WorkingGrille {
     else if (jouées == 1) {
       let evt = user.historique[0];
 
-      console.log("checkRules> deuxième tuile", tuile);
-
+      // console.log("checkRules> deuxième tuile", tuile);
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
       // if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
@@ -714,19 +727,27 @@ class WorkingGrille {
       if (!user.ligne) {
         let e0 = user.historique[0];
         let e1 = user.historique[1];
+        if (e1) {
+          console.log("checkRules> test ligne", "e0=", e0, "e1=", e1);
 
-        if (e0.c == e1.c) {
-          user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
-        }
-        else {
-          user.ligne = new Ligne(HORIZONTAL, e0.r, e0.c, e1.c);
+          if (e0.c == e1.c) {
+            user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
+          }
+          else {
+            user.ligne = new Ligne(HORIZONTAL, e0.r, e0.c, e1.c);
+          }
         }
       }
-      user.ligne.extend();
-      // console.log("checkRules> tuile suivante", user.ligne);
-      // on doit vérifier que la [column, row] testée est compatible avec cette ligne
+      else {
+        user.ligne.extend();
+        // console.log("checkRules> tuile suivante", user.ligne);
+        // on doit vérifier que la [column, row] testée est compatible avec cette ligne
 
-      if (!user.ligne.aligné(column, row)) return BAD;
+        if (!user.ligne.aligné(column, row)) return BAD;
+        console.log("checkRules> tuile suivante", user.ligne);
+        return GOOD;
+      }
+      return BAD;
     }
 
     /*
@@ -917,11 +938,10 @@ class PanneauCommandes {
     let x;
     let y;
 
-    let commandes = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSave, TuileRestore];
-    for (let c = 0; c < commandes.length; c++) {
+    for (let c = 0; c < COMMANDES.length; c++) {
       x = commandesXoffset + c*(cell + 7);
       y = yoffsetCommandes();
-      let commande = commandes[c];
+      let commande = COMMANDES[c];
       // console.log("commande=", commande, x, y);
       // TuileShow(commande);
       TuileDraw(commande, x, y);
@@ -942,12 +962,12 @@ class PanneauCommandes {
 
     let commandesXoffset = 0;
     let commandesYoffset = yoffsetCommandes();
-    let commandesXmax = commandesXoffset + 6*(cell + 7);
+    let commandesXmax = commandesXoffset + COMMANDES.length*(cell + 7);
     let commandesYmax = commandesYoffset + cell;
 
     let xc = commandesXoffset;
     let yc = commandesYoffset;
-    if ((x >= commandesXoffset) && (x <= commandesXoffset + 6*(cell + 7)))
+    if ((x >= commandesXoffset) && (x <= commandesXoffset + COMMANDES.length*(cell + 7)))
       if ((y >= commandesYoffset) && (y <= commandesYoffset + cell)) {
         let commande = Math.floor((x - commandesXoffset)/(cell + 7));
         // console.log("executeCommande> x=" + x + " commande=" + commande);
@@ -975,7 +995,16 @@ class PanneauCommandes {
             break;
           case 5:
             // ok
+            // console.log("executeCommande> restore");
             Jeu.restore();
+            break;
+          case 6:
+            // ok
+            let j = [...Users[0].jeu];
+            let n = 0;
+            // console.log("executeCommande> simulation", j, n);
+            Users[0].simulation(j, n);
+            Users[0].jouables.length = 0;
             break;
         }
         clear();
@@ -1198,7 +1227,7 @@ class PlateauJeu {
   }
 
   restore() {
-    console.log("Restore>");
+    console.log("PlateauJeu:Restore>");
     Jeu.pioche = structuredClone(JSON.parse(localStorage.getItem("Pioche")));
     Jeu.working.grid.elements = structuredClone(JSON.parse(localStorage.getItem("Grid")));
     Jeu.working.grid.columns = structuredClone(JSON.parse(localStorage.getItem("GridColumns")));
@@ -1366,7 +1395,7 @@ canvas.addEventListener('mouseup', (e) => {
         let user = Jeu.userSelected;
         // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "t=", user.jeu[Jeu.positionSelected], "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let tuile = user.jeu[Jeu.positionSelected];
-        let check = Jeu.working.checkRules(user, tuile, Jeu.cSelected, Jeu.rSelected);
+        let check = Jeu.working.checkRules(user, user.jeu, tuile, Jeu.cSelected, Jeu.rSelected);
         // console.log("mouseup> check=", check);
         if (check == GOOD) {
           user.jeu[Jeu.positionSelected] = TuileVide;
