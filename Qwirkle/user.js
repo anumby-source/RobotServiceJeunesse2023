@@ -77,11 +77,12 @@ class Ligne {
 
   aligné(column, row) {
     if (this.orientation == HORIZONTAL) {
-      return (this.ancrage + Jeu.working.r0 == row);
+      if (this.ancrage + Jeu.working.r0 == row) return GOOD;
     }
     else {
-      return (this.ancrage + Jeu.working.c0 == column);
+      if (this.ancrage + Jeu.working.c0 == column) return GOOD;
     }
+    return BAD
   }
 
   compatible(tuile) {
@@ -92,7 +93,7 @@ class Ligne {
     let forme = TuileGetForme(tuile);
     let color = TuileGetColor(tuile);
 
-    // console.log("Ligne:compatible>", "forme=", forme, "color=", color);
+    console.log("Ligne:compatible>", "forme=", forme, "color=", color);
 
     if (this.orientation == HORIZONTAL) {
       let r0 = this.ancrage + Jeu.working.r0;
@@ -104,13 +105,13 @@ class Ligne {
       }
 
       for (let c = c1; c <= c2; c++) {
-        // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
-        if (!Jeu.working.compatible(c, r0, forme, color)) return false;
-        // console.log("Ligne:compatible>", "ok compatible");
+        console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
+        if (!Jeu.working.compatible(c, r0, forme, color)) return BAD;
+        console.log("Ligne:compatible>", "ok compatible");
         let t = Jeu.working.getElement(c, r0);
-        // console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
-        // console.log("Ligne:compatible>", "ok compatible");
+        console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
+        console.log("Ligne:compatible>", "ok compatible et différent");
       }
     }
     else {
@@ -125,16 +126,16 @@ class Ligne {
       // console.log("Ligne:compatible> VERTICAL", "r1=", r1, "r2=", r2);
 
       for (let r = r1; r <= r2; r++) {
-        if (!Jeu.working.compatible(c0, r, forme, color)) return false;
+        if (!Jeu.working.compatible(c0, r, forme, color)) return BAD;
         let t = Jeu.working.getElement(c0, r);
         // console.log("Ligne:compatible>", "forme=", forme, "color=", color, "c=", c0, "r=", r, "t=", t);
         // console.log("Ligne:compatible> A");
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
         // console.log("Ligne:compatible> B");
       }
     }
 
-    return true;
+    return GOOD;
   }
 
   canJoin(tuile, other) {
@@ -170,7 +171,7 @@ class Ligne {
       for (let c = c1; c >= c4; c--) {
         if (c > c2 && c < c3) continue;
         let t = Jeu.working.getElement(c, r0);
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
       }
     }
     else if (this.orientation == VERTICAL && other.orientation == VERTICAL) {
@@ -197,9 +198,10 @@ class Ligne {
       for (let r = r1; r >= r2; r--) {
         if (r > r2 && r < r3) continue;
         let t = Jeu.working.getElement(c0, r);
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
       }
     }
+    return GOOD
   }
 }
 
@@ -221,9 +223,10 @@ class User {
   }
 
   tuilesJouées(jeu) {
+    // on compte toutes les tuiles vides du jeu
     let jouées = 0;
-    for (let t = 0; t < 6; t++) {
-      if (TuileTestVide(jeu[t])) jouées++;
+    for (let t of jeu) {
+      if (TuileTestVide(t)) jouées++;
     }
     return jouées;
   }
@@ -521,7 +524,7 @@ class User {
 
     let prefix = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
     let pre = prefix.slice(0, 2*niveau);
-    console.log(pre, "........simulation>", jeu, niveau);
+    console.log(pre, "........simulation>", "jeu=", jeu, "niveau=", niveau);
 
     this.jouables = [];
     let tuile;
@@ -547,18 +550,19 @@ class User {
 
     let bonScores = [];
     if (this.jouables.length > 0) {
-      console.log(pre, "simulation> scan jouables", jeu, this.jouables);
+      console.log(pre, "simulation> scan jouables", "jeu=", jeu, "jouables=", this.jouables);
       for (let ijeu = 0; ijeu < jeu.length; ijeu++) {
         let t = jeu[ijeu];
         if (TuileTestVide(t)) continue;
         jeu[ijeu] = TuileVide;
+        console.log(pre, "simulation> scan jeu", "ijeu=", ijeu, "t=", t, "c0=", Jeu.working.c0, "r0=", Jeu.working.r0);
         for (let ijouable = 0; ijouable < this.jouables.length; ijouable++) {
           let c;
           let r;
           [c, r] = Users[0].jouables[ijouable];
           c += Jeu.working.c0;
           r += Jeu.working.r0;
-          // console.log(pre, "===================simulation> test jouable", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
+          console.log(pre, "===================simulation> test jouable", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
           if (Jeu.working.checkRules(this, jeu, t, c, r) == GOOD) {
             console.log(pre, "===================simulation> tuile OK ", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
             let i;
@@ -570,7 +574,7 @@ class User {
               {
                 let evts = this.historique.length;
                 let n = this.getScore();
-                bonScores.push([ijeu, c, r, n]);
+                bonScores.push([JSON.stringify([this.historique, ijeu, c, r]), n]);
                 for (let e of this.historique) {
                   console.log(pre, "===================simulation> after push bonScore", "e=", e);
                 }
@@ -579,27 +583,39 @@ class User {
                 clear();
                 let quit = confirm("quit");
                 if (quit) return BAD;
-                if (this.simulation([...jeu], niveau + 1) == BAD) return BAD;
+                let subScores = this.simulation([...jeu], niveau + 1);
+                console.log(pre, "simulation> after simulation subScores=", subScores)
+                if (subScores == BAD) return BAD;
+                subScores = structuredClone(JSON.parse(subScores));
+                bonScores = [...bonScores, ...subScores];
               }
               this.historique.pop();
             }
             Jeu.working.grid.setElement(c, r, TuileVide);
+          }
+          else {
+            console.log(pre, "===================simulation> tuile BAD ", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
           }
         }
         jeu[ijeu] = t;
       }
     }
 
-    let x = bonScores.sort((a,b) => a[3] - b[3]);
-    for (let iscore = 0; iscore < x.length; iscore++) {
+    bonScores = bonScores.sort((a,b) => a[3] - b[3]);
+    console.log(pre, "***simulation> END", bonScores)
+      /*
+    for (let score of bonScores) {
+      console.log(pre, "***simulation>", score)
+      let h;
       let ijeu;
       let c;
       let r;
       let n;
-      [ijeu, c, r, n] = x[iscore];
-      console.log(pre, "===================simulation> bons scores: ", "ijeu=", ijeu, "c=", c, "r=", r, "n=", n);
+      [h, ijeu, c, r] = structuredClone(JSON.parse(y));
+      console.log(pre, "***simulation> bons scores: ", "h=", h, "ijeu=", ijeu, "c=", c, "r=", r, "n=", n);
     }
-    return GOOD;
+      */
+    return JSON.stringify(bonScores);
   }
 }
 
