@@ -313,7 +313,7 @@ class User {
   }
 
   getScore() {
-    // console.log("User:getScore> A");
+    console.log("User:getScore> A");
     let n = 0;
     let ligne;
     if (this.historique.length == 0) {
@@ -327,6 +327,9 @@ class User {
       v.extend();
       let vlen = v.length();
 
+      if (vlen == QWIRKLE) vlen *= 2;
+      if (hlen == QWIRKLE) hlen *= 2;
+
       if (hlen == 1 && vlen == 1) n = 1;
       else {
         if (hlen == 1) n = vlen;
@@ -335,9 +338,8 @@ class User {
           n = vlen + hlen;
         }
       }
-      if (n == QWIRKLE) n *= 2;
 
-      // console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
+      console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
 
       return n;
     }
@@ -352,7 +354,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -363,7 +365,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
       else if (evt1.c == evt2.c) {
@@ -372,7 +374,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        // console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -383,7 +385,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
     }
@@ -391,7 +393,7 @@ class User {
   }
 
   ok() {
-    // console.log("User:ok>", "histo=", this.historique.length, this.historique);
+    console.log("User:ok>", "histo=", this.historique.length, this.historique);
     let n = this.getScore();
     this.score += n;
     this.tourPrécédent = [];
@@ -574,20 +576,22 @@ class User {
               {
                 let evts = this.historique.length;
                 let n = this.getScore();
-                bonScores.push([JSON.stringify([this.historique, ijeu, c, r]), n]);
-                for (let e of this.historique) {
-                  console.log(pre, "===================simulation> after push bonScore", "e=", e);
+                if (n > 0) {
+                  bonScores.push([JSON.stringify([this.historique, ijeu, c, r]), n]);
+                  for (let e of this.historique) {
+                    console.log(pre, "===================simulation> after push bonScore", "e=", e);
+                  }
+                  console.log(pre, "===================simulation> after push bonScore", "ijeu=", ijeu, "c=", c, "r=", r, "t=", t, "n=", n);
+                  console.log(pre, "simulation> start simulation niveau + 1", [...jeu], niveau + 1)
+                  clear();
+                  let quit = confirm("quit");
+                  if (quit) return BAD;
+                  let subScores = this.simulation([...jeu], niveau + 1);
+                  console.log(pre, "simulation> after simulation subScores=", subScores)
+                  if (subScores == BAD) return BAD;
+                  subScores = structuredClone(JSON.parse(subScores));
+                  bonScores = [...bonScores, ...subScores];
                 }
-                console.log(pre, "===================simulation> after push bonScore", "ijeu=", ijeu, "c=", c, "r=", r, "t=", t, "n=", n);
-                console.log(pre, "simulation> start simulation niveau + 1", [...jeu], niveau + 1)
-                clear();
-                let quit = confirm("quit");
-                if (quit) return BAD;
-                let subScores = this.simulation([...jeu], niveau + 1);
-                console.log(pre, "simulation> after simulation subScores=", subScores)
-                if (subScores == BAD) return BAD;
-                subScores = structuredClone(JSON.parse(subScores));
-                bonScores = [...bonScores, ...subScores];
               }
               this.historique.pop();
             }
