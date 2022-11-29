@@ -293,7 +293,7 @@ class WorkingGrille {
 
     Users[0].tourPrécédent.forEach(evt => {
         Jeu.working.drawCellFrame(evt.c + this.c0, evt.r + this.r0, "yellow");
-    )};
+    });
 
     Users[0].jouables.forEach(jouable => {
       let [c, r] = jouable;
@@ -395,6 +395,7 @@ class WorkingGrille {
   }
 
   // teste si la case dans la grille de travail est compatible soit forme soit color
+  // ET teste si les tuiles sont identiques [color, forme]
   compatible(column, row, forme, color){
     let i = this.index(column, row);
     if (i < 0) return BAD;
@@ -469,7 +470,7 @@ class WorkingGrille {
     let GD = ["à gauche", "à droite"];
     let HB = ["en haut", "en bas"];
 
-    for (let dc = 0; dc < 2; dc++) {
+    range(3).forEach(dc => {
       let c = column + 2 * dc - 1;
       if (!this.vide(c, row)) {
         // console.log("case c=" + c + " non vide");
@@ -479,7 +480,11 @@ class WorkingGrille {
         }
         // else console.log("compatible");
       }
-    }
+    });
+
+
+    //for (let dc = 0; dc < 2; dc++) {
+    //}
 
     // console.log("case voisine GD compatible ou vide ");
 
