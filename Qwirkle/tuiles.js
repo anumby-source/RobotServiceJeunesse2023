@@ -110,6 +110,11 @@ function TuileShow(id) {
   // console.log("Tuile", "c=", TuileGetColor(id), "f=", TuileGetForme(id), "L=", TuileGetLayer(id));
 }
 
+function TuileToText(id) {
+  return id;
+  //return "c=" + TuileGetColor(id) + " f=" + TuileGetForme(id) + " L=" + TuileGetLayer(id);
+}
+
 function drawFrame(ctx, x, y, color) {
   let cell = getCellSize();
 

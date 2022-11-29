@@ -62,6 +62,8 @@ const W_EXTERIEUR = -10;
 
 const COMMANDES = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSave, TuileRestore, TuileSimulation];
 
+const range = (max) => Array.from({ length: max}, (_, i) => i);
+const range2 = (min, max) => Array.from({ length: max - min }, (_, i) => min + i);
 
 localStorage.setItem("key", "valeur");
 
@@ -91,43 +93,6 @@ function margin() {
 
 const ctx = canvas.getContext('2d');
 
-// Définition de la classe pour la zone d'info
-let infos = [];
-function info (text) {
-  let cell = getCellSize();
-  let xoffset = 0;
-  let yoffset = yoffsetJoueurs() + (Jeu.working.rmax + 6) * cell;
-
-  console.log("info> A", text, Jeu.working.rmax, "yoffsetJoueurs=", yoffsetJoueurs());
-
-  // if (!text) return;
-
-  if (text) {
-    let lines = (canvas.height - yoffset)/cell;
-    console.log("info> B", "canvas.height=", canvas.height, "yoffset=", yoffset, "lines=", lines, "infos.length=", infos.length);
-    if (infos.length >= lines) {
-      infos.splice(0, 1);
-    }
-    infos.push(text);
-  }
-
-  console.log("info> C length=", infos.length);
-
-  for (let line = 0; line < infos.length; line++) {
-    console.log("info> D ", line, infos[line], "y=", yoffset + line * cell);
-
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.fillRect(0, yoffset - cell + line*cell, canvas.width, cell);
-    ctx.fill();
-
-    ctx.fillStyle = 'red';
-    ctx.font = '20px san-serif';
-    ctx.fillText(infos[line], 0, yoffset + line * cell);
-    ctx.fill();
-  }
-}
-
 // définition d'une classe générique pour manipuler une matrice 2D extensible
 class Matrix {
   /*
@@ -143,65 +108,68 @@ class Matrix {
   }
 
   vide() {
-    if (this.elements.length == 0) return true;
-    for (let i = 0; i < this.elements.length; i++) {
-      let t = this.elements[i];
-      if (!TuileTestVide(t)) return false;
-    }
-    return true;
+    let vide = true;
+    this.elements.forEach(t => {
+      if (!TuileTestVide(t)) {
+        vide = false;
+        return;
+      }
+    });
+
+    return vide;
   }
 
   zeros(columns, rows) {
     this.columns = columns;
     this.rows = rows;
-    for (let c = 0; c < this.columns; c++)
-      for (let r = 0; r < this.rows; r++) this.elements.push(0);
+    let cs = range(this.columns);
+    let rs = range(this.rows);
+    cs.forEach(c => rs.forEach(r => this.elements.push(0)));
   }
 
   fill(columns, rows, element) {
     this.columns = columns;
     this.rows = rows;
-    for (let c = 0; c < this.columns; c++)
-      for (let r = 0; r < this.rows; r++) this.elements.push(element);
+    let cs = range(this.columns);
+    let rs = range(this.rows);
+    cs.forEach(c => rs.forEach(r => this.elements.push(element)));
   }
 
   fillNumbers(columns, rows, offset) {
     this.columns = columns;
     this.rows = rows;
     let n = 0;
-    for (let c = 0; c < this.columns; c++)
-      for (let r = 0; r < this.rows; r++) {
-        this.elements.push(n + offset);
-        n++;
-      }
+    let cs = range(this.columns);
+    let rs = range(this.rows);
+    cs.forEach(c => rs.forEach(r => {
+      this.elements.push(n + offset);
+      n++;
+    }));
   }
 
   random(columns, rows) {
     this.columns = columns;
     this.rows = rows;
-    for (let c = 0; c < this.columns; c++)
-      for (let r = 0; r < this.rows; r++) this.elements.push(Math.random());
+    let cs = range(this.columns);
+    let rs = range(this.rows);
+    cs.forEach(c => rs.forEach(r => this.elements.push(Math.random())));
   }
 
   show(title) {
     console.log(title + "[" + this.columns + "," + this.rows + "]");
-    for (let r = 0; r < this.rows; r++) {
+    let cs = range(this.columns);
+    let rs = range(this.rows);
+    rs.forEach(r => {
       let t = "r=" + r + " [";
-      for (let c = 0; c < this.columns; c++) {
+      cs.forEach(c => {
         let i = this.index(c, r);
-        let o  = this.elements[i];
-        let to = "";
-        if (o.toText()) {
-          to = o.toText();
-        }
-        else {
-          to = o;
-        }
+        let o = this.elements[i];
+        let to = TuileToText(o);
         t += to + ", "
-      }
+      });
       t += "]";
       console.log(title, t);
-    }
+    });
   }
 
   index(column, row) {
@@ -229,19 +197,26 @@ class Matrix {
     if (column < 0 && column >= this.columns) return;
     if (row < 0 && row >= this.rows) return;
 
-    for (let co = 0; co < other.columns; co++) {
-      for (let ro = 0; ro < other.rows; ro++) {
-        let e = other.getElement(co, ro);
+    // console.log("insert>", column, row);
+
+    // this.show("insert> this");
+    // other.show("insert> other");
+
+    let cs = range(other.columns);
+    let rs = range(other.rows);
+    rs.forEach(ro => {
+      cs.forEach(co => {
+        let e = other.getElement(co, ro)
         let c = column + co;
         let r = row + ro;
         let i = this.index(c, r);
-        //console.log("insert> ", "co=", co, "ro=", ro, "e=", e, "c=", c, "r=", r, "i=", i);
+        console.log("insert> ", "co=", co, "ro=", ro, "e=", e, "c=", c, "r=", r, "i=", i);
         if (i >= 0) {
           this.elements[i] = e;
           //this.show("---m1>");
         }
-      }
-    }
+      });
+    });
   }
 
   extend(columns, rows, element) {
@@ -297,6 +272,20 @@ class WorkingGrille {
     let cell = getCellSize();
     let xoffset = 0;
     let yoffset = yoffsetJoueurs() + 2 * Users.length * cell;
+    let cs = range2(this.cmin, this.cmax + 1);
+    let rs = range2(this.rmin, this.rmax + 1);
+
+    cs.forEach(c => rs.forEach(r => {
+      let tuile = this.grid.getElement(c - this.cmin, r - this.rmin);
+      if (tuile >= 0) {
+        let x = xoffset + c*cell;
+        let y = yoffset + r*cell;
+        // console.log("WorkingGrille:draw>", x, y, tuile);
+        TuileDraw(tuile, x, y);
+      }
+    }));
+
+    /*
     for (let c = this.cmin; c <= this.cmax; c++)
       for (let r = this.rmin; r <= this.rmax; r++) {
           let tuile = this.grid.getElement(c - this.cmin, r - this.rmin);
@@ -307,6 +296,8 @@ class WorkingGrille {
             TuileDraw(tuile, x, y);
           }
       }
+    */
+
     Jeu.working.drawCellFrame(this.c0, this.r0, "green")
     if (Users[0].historique.length > 0) {
       for (let ievt = 0; ievt < Users[0].historique.length; ievt++) {
@@ -473,7 +464,6 @@ class WorkingGrille {
   */
 
   checkRuleA(tuile, column, row) {
-    //info("chekrules> test first");
     if (this.grid.vide()) {
       // console.log("first");
       return GOOD;
@@ -1279,9 +1269,6 @@ function clear() {
   // Jeu.drawTuiles();
 
   for (u = 0; u < Users.length; u++) Users[u].draw();
-
-  infos = [];
-  // console.log("clear> ", infos.length);
 }
 
 function observation(x, y) {
