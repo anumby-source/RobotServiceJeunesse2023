@@ -285,46 +285,21 @@ class WorkingGrille {
       }
     }));
 
-    /*
-    for (let c = this.cmin; c <= this.cmax; c++)
-      for (let r = this.rmin; r <= this.rmax; r++) {
-          let tuile = this.grid.getElement(c - this.cmin, r - this.rmin);
-          if (tuile >= 0) {
-            let x = xoffset + c*cell;
-            let y = yoffset + r*cell;
-            // console.log("WorkingGrille:draw>", x, y, tuile);
-            TuileDraw(tuile, x, y);
-          }
-      }
-    */
-
     Jeu.working.drawCellFrame(this.c0, this.r0, "green")
-    if (Users[0].historique.length > 0) {
-      for (let ievt = 0; ievt < Users[0].historique.length; ievt++) {
-        let evt = Users[0].historique[ievt];
-        let c = evt.c + this.c0;
-        let r = evt.r + this.r0;
-        Jeu.working.drawCellFrame(c, r, "red");
-      }
-    }
-    if (Users[0].tourPrécédent.length > 0) {
-      for (let ievt = 0; ievt < Users[0].tourPrécédent.length; ievt++) {
-        let evt = Users[0].tourPrécédent[ievt];
-        let c = evt.c + this.c0;
-        let r = evt.r + this.r0;
-        Jeu.working.drawCellFrame(c, r, "yellow");
-      }
-    }
 
-    if (Users[0].jouables.length > 0) {
-      for (let i = 0; i < Users[0].jouables.length; i++) {
-        let c;
-        let r;
-        [c, r] = Users[0].jouables[i];
-        // console.log("working.draw> draw jouable", i, c, r);
-        Jeu.working.drawCellFrame(c, r, "orange");
-      }
-    }
+    Users[0].historique.forEach(evt => {
+      Jeu.working.drawCellFrame(evt.c + this.c0, evt.r + this.r0, "red");
+    });
+
+    Users[0].tourPrécédent.forEach(evt => {
+        Jeu.working.drawCellFrame(evt.c + this.c0, evt.r + this.r0, "yellow");
+    )};
+
+    Users[0].jouables.forEach(jouable => {
+      let [c, r] = jouable;
+      // console.log("working.draw> draw jouable", c, r);
+      Jeu.working.drawCellFrame(c, r, "orange");
+    });
   }
 
   findWCell(x, y) {
@@ -340,8 +315,8 @@ class WorkingGrille {
 
       x -= workingXoffset;
       y -= workingYoffset;
-      let c = Math.floor(x/cell);
-      let r = Math.floor(y/cell);
+      let c = Math.trunc(x/cell);
+      let r = Math.trunc(y/cell);
       // console.log("WorkingGrille:findWCell> cellule=", c, r);
       Jeu.cSelected = c;
       Jeu.rSelected = r;
@@ -359,47 +334,30 @@ class WorkingGrille {
     let workingYmax = workingYoffset + (this.rmax + 1)*cell;
 
     ctx.lineWidth = 2;
-    for (let c = c0; c <= c0 + 1; c++)
-    {
+    let cs = range2(c0, c0 + 2);
+    let rs = range2(r0, r0 + 2);
+
+    cs.forEach(c => {
       ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.moveTo(workingXoffset + c*cell, workingYoffset + r0*cell);
-      ctx.lineTo(workingXoffset + c*cell, workingYoffset + (r0+1)*cell);
+      ctx.lineTo(workingXoffset + c*cell, workingYoffset + (r0 + 1)*cell);
       ctx.stroke();
-      for (let r = r0; r <= r0 + 1; r++) {
+      rs.forEach(r => {
         ctx.beginPath();
         ctx.strokeStyle = color;
         ctx.moveTo(workingXoffset + c0*cell, workingYoffset + r*cell);
         ctx.lineTo(workingXoffset + (c0+1)*cell, workingYoffset + r*cell);
         ctx.stroke();
-      }
-    }
+      });
+    });
   }
-  /*
-    grille autour de p0 = (c0=10, r0=5)
 
-    [(9, 4), (10, 4), (11, 4),
-     (9, 5), (10, 5), (11, 5),
-     (9, 6), (10, 6), (11, 6)]
-
-     cmin = 9
-     cmax = 11
-     rmin = 4
-     rmax = 6
-     w = 3
-     h = 3
-     index(9, 4) = 0
-     index(10, 4) = 1
-     index(11, 4) = 2
-     index(9, 5) = 3  w*(r - rmin) + (c - cmin)
-
-  */
-
-  width(){
+  width() {
     return this.cmax - this.cmin + 1;
   }
 
-  height(){
+  height() {
     return this.rmax - this.rmin + 1;
   }
 
@@ -1313,7 +1271,7 @@ function observation(x, y) {
     }
   }
 
-  // console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);
+  console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);
 
   if (!done)
   {

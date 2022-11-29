@@ -264,6 +264,8 @@ class User {
 
     let n = this.getScore();
 
+    // console.log("User:draw", this.score);
+
     ctx.fillStyle = 'Blue';
     ctx.font = '15px san-serif';
     ctx.fillText("score=[" + this.score + "]", xoffset + 13*cell, yoffset + 0.7 * cell);
@@ -313,12 +315,13 @@ class User {
   }
 
   getScore() {
-    console.log("User:getScore> A");
     let n = 0;
     let ligne;
-    if (this.historique.length == 0) {
-    }
-    else if (this.historique.length == 1) {
+    if (this.historique.length == 0) return 0;
+
+    console.log("User:getScore> A", this.historique);
+
+    if (this.historique.length == 1) {
       let evt = this.historique[0];
       let h = new Ligne(HORIZONTAL, evt.r, evt.c, evt.c);
       h.extend();
