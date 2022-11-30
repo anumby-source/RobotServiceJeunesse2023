@@ -210,7 +210,7 @@ class Matrix {
         let c = column + co;
         let r = row + ro;
         let i = this.index(c, r);
-        console.log("insert> ", "co=", co, "ro=", ro, "e=", e, "c=", c, "r=", r, "i=", i);
+        // console.log("insert> ", "co=", co, "ro=", ro, "e=", e, "c=", c, "r=", r, "i=", i);
         if (i >= 0) {
           this.elements[i] = e;
           //this.show("---m1>");
@@ -444,7 +444,7 @@ class WorkingGrille {
   }
 
   checkRuleC(tuile, column, row) {
-    //console.log("chekrules> test si la case est déjà occupée");
+    // console.log("chekrules> test si la case est déjà occupée");
     let index = this.index(column, row);
     if (index > 0) {
       let t = this.grid.elements[index];
@@ -457,7 +457,7 @@ class WorkingGrille {
   }
 
   checkRuleD(tuile, column, row) {
-    //console.log("chekrules> test case isolée");
+    // console.log("chekrules> test case isolée");
     if (this.vide(column-1, row) && this.vide(column+1, row) && this.vide(column, row-1) && this.vide(column, row+1)) {
       // console.log("case isolée");
       return BAD;
@@ -483,12 +483,9 @@ class WorkingGrille {
     });
 
 
-    //for (let dc = 0; dc < 2; dc++) {
-    //}
-
     // console.log("case voisine GD compatible ou vide ");
 
-    for (let dr = 0; dr < 2; dr++) {
+    range(3).forEach(dr => {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
         // console.log("case r=" + r + " non vide");
@@ -498,7 +495,7 @@ class WorkingGrille {
         }
         // else console.log("compatible");
       }
-    }
+    });
 
     // console.log("case voisine HB compatible ou vide");
 
@@ -509,7 +506,7 @@ class WorkingGrille {
     let GD = ["à gauche", "à droite"];
     let HB = ["en haut", "en bas"];
 
-    for (let dc = 0; dc < 2; dc++) {
+    range(3).forEach(dc => {
       let c = column + 2*dc - 1;
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
@@ -525,11 +522,11 @@ class WorkingGrille {
           // else console.log("case c1=" + c1 + " vide");
       }
       // else console.log("case c=" + c + " vide");
-    }
+    });
 
     // console.log("case voisine GD +2 compatible ou vide");
 
-    for (let dr = 0; dr < 2; dr++) {
+    range(3).forEach(dr => {
       let r = row + 2*dr - 1;
       let r1 = row + 4*dr - 2;
       if (!this.vide(column, r)) {
@@ -546,7 +543,7 @@ class WorkingGrille {
         }
       }
       // else console.log("case r=" + r + " vide");
-    }
+    });
 
     // console.log("case voisine HB +2 compatible ou vide ");
 
@@ -565,27 +562,27 @@ class WorkingGrille {
     if (!Jeu.working.vide(column - 1, row)) {
       hgauche = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 - 1, column - Jeu.working.c0 - 1);
       hgauche.extend();
-      console.log("checkRuleG> test horizontal gauche");
+      // console.log("checkRuleG> test horizontal gauche");
       if (hgauche.compatible(tuile) == BAD) return BAD;
     }
     if (!Jeu.working.vide(column + 1, row)) {
-      console.log("checkRuleG> test horizontal droite");
+      // console.log("checkRuleG> test horizontal droite");
       hdroite = new Ligne(HORIZONTAL, row - Jeu.working.r0, column - Jeu.working.c0 + 1, column - Jeu.working.c0 + 1);
       hdroite.extend();
-      console.log("checkRuleG>", tuile,  hdroite);
+      // console.log("checkRuleG>", tuile,  hdroite);
       if (hdroite.compatible(tuile) == BAD) return BAD;
     }
     if (!Jeu.working.vide(column, row - 1)) {
-      console.log("checkRuleG> test vertical haut");
+      // console.log("checkRuleG> test vertical haut");
       vhaut = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 - 1, row - Jeu.working.r0 - 1);
       vhaut.extend();
       if (vhaut.compatible(tuile) == BAD) return BAD;
     }
     if (!Jeu.working.vide(column, row + 1)) {
-      console.log("checkRuleG> test vertical bas");
+      // console.log("checkRuleG> test vertical bas");
       vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
       vbas.extend();
-      console.log("checkRuleG>", tuile,  vbas);
+      // console.log("checkRuleG>", tuile,  vbas);
       if (vbas.compatible(tuile) == BAD) return BAD;
     }
 
@@ -636,31 +633,31 @@ class WorkingGrille {
     // let jouées = user.tuilesJouées(jeu);
     let jouées = user.historique.length;
 
-    console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
+    // console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
 
     if (this.grid.vide()) return GOOD;
 
     if (jouées == 0) {
       let evt = user.historique[0];
 
-      console.log("checkRules> première tuile A", tuile, column, row);
+      // console.log("checkRules> première tuile A", tuile, column, row);
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
-      console.log("checkRules> première tuile B", tuile, column, row);
+      // console.log("checkRules> première tuile B", tuile, column, row);
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
-      console.log("checkRules> première tuile C", tuile, column, row);
+      // console.log("checkRules> première tuile C", tuile, column, row);
       if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
-      console.log("checkRules> première tuile D", tuile, column, row);
+      // console.log("checkRules> première tuile D", tuile, column, row);
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
-      console.log("checkRules> première tuile E", tuile, column, row);
+      // console.log("checkRules> première tuile E", tuile, column, row);
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
-      console.log("checkRules> première tuile F", tuile, column, row);
+      // console.log("checkRules> première tuile F", tuile, column, row);
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
-      console.log("checkRules> première tuile G", tuile, column, row);
+      // console.log("checkRules> première tuile G", tuile, column, row);
     }
     else if (jouées == 1) {
       let evt = user.historique[0];
 
-      console.log("checkRules> deuxième tuile", tuile, column, row);
+      // console.log("checkRules> deuxième tuile", tuile, column, row);
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
       // if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
@@ -677,7 +674,7 @@ class WorkingGrille {
       //     pour H: un row et les columns [c1 ... c2]
       //     pour V: une column et les rows [r1 ... r2]
 
-      console.log("checkRules> tuile suivante", tuile, column, row);
+      // console.log("checkRules> tuile suivante", tuile, column, row);
 
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
@@ -686,13 +683,13 @@ class WorkingGrille {
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
 
-      console.log("checkRules> tuile suivante", "historique=", user.historique.length, "ligne=", user.ligne);
+      // console.log("checkRules> tuile suivante", "historique=", user.historique.length, "ligne=", user.ligne);
 
       if (!user.ligne) {
         let e0 = user.historique[0];
         let e1 = user.historique[1];
         if (e1) {
-          console.log("checkRules> test ligne", "e0=", e0, "e1=", e1);
+          // console.log("checkRules> test ligne", "e0=", e0, "e1=", e1);
 
           if (e0.c == e1.c) {
             user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
@@ -704,11 +701,11 @@ class WorkingGrille {
       }
       else {
         user.ligne.extend();
-        console.log("checkRules> tuile suivante", user.ligne);
+        // console.log("checkRules> tuile suivante", user.ligne);
         // on doit vérifier que la [column, row] testée est compatible avec cette ligne
 
         if (!user.ligne.aligné(column, row)) return BAD;
-        console.log("checkRules> tuile suivante", user.ligne);
+        // console.log("checkRules> tuile suivante", user.ligne);
         return GOOD;
       }
       return BAD;
@@ -902,14 +899,14 @@ class PanneauCommandes {
     let x;
     let y;
 
-    for (let c = 0; c < COMMANDES.length; c++) {
+    range(COMMANDES.length).forEach(c => {
       x = commandesXoffset + c*(cell + 7);
       y = yoffsetCommandes();
       let commande = COMMANDES[c];
       // console.log("commande=", commande, x, y);
       // TuileShow(commande);
       TuileDraw(commande, x, y);
-    }
+    });
 
     x += 2 * cellSize;
     ctx.fillStyle = 'Blue';
@@ -942,7 +939,7 @@ class PanneauCommandes {
             break;
           case 1:
             // zoomout
-            console.log("zoomout", cell);
+            // console.log("zoomout", cell);
             cellSize = cell - 5;;
             break;
           case 2:
@@ -1008,21 +1005,21 @@ class PlateauJeu {
 
   init() {
     // création de toutes les 3 x 6 x 6 tuiles ordonnées
-    for (let layer = 0; layer < LAYERS; layer++)
-        for (let color = 0; color < COLORS; color++) {
-          for (let forme = 0; forme < FORMES; forme++) {
-            let t = TuileId(color, forme, layer);
-            //console.log(color, forme, t);
-            this.tuiles.push(t);
-          }
-        }
+
+    let layers = range(LAYERS);
+    let colors = range(COLORS);
+    let formes = range(FORMES);
+
+    layers.forEach(layer => colors.forEach(color => formes.forEach(forme => {
+      let t = TuileId(color, forme, layer);
+      //console.log(color, forme, t);
+      this.tuiles.push(t);
+    })));
 
     this.initPioche();
+
     // initialisation de la grille
-    for (let c = 0; c < this.width; c++)
-      for (let r = 0; r < this.height; r++) {
-        this.grille.push(TuileVide);
-      }
+    range(this.width).forEach(c => range(this.height).forEach(r => this.grille.push(TuileVide)));
   }
 
   getMode() {
@@ -1037,9 +1034,7 @@ class PlateauJeu {
     // initialisation de la pioche par tirage aléatoire des tuiles
     let numbers = [];
     // on crée un tableau ne contenant que les indices
-    for (let t = 0; t < this.tuiles.length; t++) {
-       numbers.push(t);
-    }
+    this.tuiles.forEach(t => numbers.push(t));
 
     // puis, on tire aléatoirement ces indices, que l'on va utiliser pour les tuiles
     // correspondantes
@@ -1048,7 +1043,7 @@ class PlateauJeu {
     // pour choisir dans la pioche, il suffit à chaque fois de prendre le premier élément
     // et le supprimer de la liste.
 
-    for (let t = 0; t < this.tuiles.length; t++) {
+    this.tuiles.forEach(t => {
       // on tire
       let index = Math.floor(Math.random() * numbers.length);
       let n = numbers[index];
@@ -1056,27 +1051,31 @@ class PlateauJeu {
       numbers.splice(index, 1);
       //console.log("PlateauJeu:init> ", numbers);
       this.pioche.push(n);
-    }
+    });
+
+    // console.log("initPioche>", this.pioche);
   }
 
   extendPioche(tuiles) {
     // initialisation de la pioche par tirage aléatoire des tuiles
     let tuile;
-    let numbers = [];
+
     // on crée un tableau ne contenant que les indices
-    for (let t = 0; t < this.pioche.length; t++) {
-       numbers.push(t);
-    }
+    let numbers = range(this.pioche.length);
+
+    // console.log("extendPioche> A ", "pioche=", this.pioche, "numbers=", numbers, "poub=", Users[0].poubelle, "jeu", Users[0].jeu);
+
     let t = this.pioche.length;
-    for (let i = 0; i < tuiles.length; i++) {
-      tuile = tuiles[i]
+    tuiles.forEach(tuile => {
       if (!TuileTestVide(tuile)) {
         numbers.push(t);
         t++;
       }
-    }
+    });
 
-    // console.log("extendPioche>", "pioche.length=", this.pioche.length, "numbers.length=", numbers.length, tuiles);
+    // numbers = [ les index de la pioche, les index de tuiles non vides]
+
+    // console.log("extendPioche> B ", "pioche=", this.pioche, "numbers=", numbers, "poub=", Users[0].poubelle, "jeu", Users[0].jeu);
 
     // puis, on tire aléatoirement ces indices, que l'on va utiliser pour les tuiles
     // correspondantes
@@ -1085,29 +1084,37 @@ class PlateauJeu {
     // pour choisir dans la pioche, il suffit à chaque fois de prendre le premier élément
     // et le supprimer de la liste.
 
-    let newPioche = [];
-
-    for (let i = 0; i < tuiles.length; i++) {
-      tuile = tuiles[i]
+    tuiles.forEach(tuile => {
       if (!TuileTestVide(tuile)) {
         this.pioche.push(tuile);
       }
-    }
-    for (let t = 0; t < this.pioche.length; t++) {
+    });
+
+    // console.log("extendPioche> C ", "pioche=", this.pioche, "numbers=", numbers, "poub=", Users[0].poubelle, "jeu", Users[0].jeu);
+
+    let newPioche = [];
+
+    range(this.pioche.length).forEach(t => {
       // on tire
-      let index = Math.floor(Math.random() * numbers.length);
+      let index = Math.trunc(Math.random() * numbers.length);
       let n = numbers[index];
       //console.log("PlateauJeu:init> index=", index, "n=", n, numbers);
       numbers.splice(index, 1);
       //console.log("PlateauJeu:init> ", numbers);
-      newPioche.push(n);
-    }
+      newPioche.push(this.pioche[n]);
+    });
+
+    // console.log("extendPioche> D ", "pioche=", this.pioche, "numbers=", numbers, "poub=", Users[0].poubelle, "jeu", Users[0].jeu, "newpioche=", newPioche);
 
     this.pioche = [];
-    for (let t = 0; t < newPioche.length; t++) {
+
+    range(newPioche.length).forEach(t => {
       tuile = newPioche[t];
       this.pioche.push(tuile);
-    }
+    });
+
+    // console.log("extendPioche> E ", "pioche=", this.pioche, "numbers=", numbers, "poub=", Users[0].poubelle, "jeu", Users[0].jeu, "newpioche=", newPioche);
+
   }
 
   cellIndex(c, r) {
@@ -1173,7 +1180,7 @@ class PlateauJeu {
   }
 
   save() {
-    console.log("Save>");
+    // console.log("Save>");
     localStorage.clear();
     localStorage.setItem("Pioche", JSON.stringify(Jeu.pioche));
     localStorage.setItem("Grid", JSON.stringify(Jeu.working.grid.elements));
@@ -1191,7 +1198,7 @@ class PlateauJeu {
   }
 
   restore() {
-    console.log("PlateauJeu:Restore>");
+    // console.log("PlateauJeu:Restore>");
     Jeu.pioche = structuredClone(JSON.parse(localStorage.getItem("Pioche")));
     Jeu.working.grid.elements = structuredClone(JSON.parse(localStorage.getItem("Grid")));
     Jeu.working.grid.columns = structuredClone(JSON.parse(localStorage.getItem("GridColumns")));
@@ -1276,7 +1283,7 @@ function observation(x, y) {
     }
   }
 
-  console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);
+  // console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);
 
   if (!done)
   {
@@ -1357,14 +1364,14 @@ canvas.addEventListener('mouseup', (e) => {
         // console.log("mouseup> ", Jeu.getMode(), "u=", Jeu.userSelected, "p=", Jeu.positionSelected, "t=", user.jeu[Jeu.positionSelected], "c=", Jeu.cSelected, "r=", Jeu.rSelected);
         let tuile = user.jeu[Jeu.positionSelected];
         let check = Jeu.working.checkRules(user, user.jeu, tuile, Jeu.cSelected, Jeu.rSelected);
-        console.log("mouseup> check=", check);
+        // console.log("mouseup> check=", check);
         if (check == GOOD) {
           user.jeu[Jeu.positionSelected] = TuileVide;
           let cc;
           let rr;
           let i;
           [cc, rr, i] = Jeu.working.addTuile(tuile, Jeu.cSelected, Jeu.rSelected);
-          console.log("mouseup> add tuile", "cc=", cc, "rr=", rr, "tuile=", tuile, "i=", i);
+          // console.log("mouseup> add tuile", "cc=", cc, "rr=", rr, "tuile=", tuile, "i=", i);
           // Jeu.working.drawCellFrame(Jeu.cSelected, Jeu.rSelected, "red");
 
           // un événement est le fait de jouer une tuile.
@@ -1374,7 +1381,7 @@ canvas.addEventListener('mouseup', (e) => {
           clear();
         }
         else {
-          console.log("mouseup> check BAD");
+          // console.log("mouseup> check BAD");
         }
       }
     }

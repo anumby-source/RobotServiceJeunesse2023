@@ -93,7 +93,7 @@ class Ligne {
     let forme = TuileGetForme(tuile);
     let color = TuileGetColor(tuile);
 
-    console.log("Ligne:compatible>", "forme=", forme, "color=", color);
+    // console.log("Ligne:compatible>", "forme=", forme, "color=", color);
 
     if (this.orientation == HORIZONTAL) {
       let r0 = this.ancrage + Jeu.working.r0;
@@ -105,13 +105,13 @@ class Ligne {
       }
 
       for (let c = c1; c <= c2; c++) {
-        console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
+        // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
         if (!Jeu.working.compatible(c, r0, forme, color)) return BAD;
-        console.log("Ligne:compatible>", "ok compatible");
+        // console.log("Ligne:compatible>", "ok compatible");
         let t = Jeu.working.getElement(c, r0);
-        console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
+        // console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
         if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
-        console.log("Ligne:compatible>", "ok compatible et différent");
+        // console.log("Ligne:compatible>", "ok compatible et différent");
       }
     }
     else {
@@ -279,12 +279,11 @@ class User {
     let yoffset = yoffsetJoueurs() + 2 * this.numéro * cell;
 
     for (let t = 0; t < 6; t++) {
-      let n = Jeu.pioche[0];
+      let tuile = Jeu.pioche[0];
       Jeu.pioche.splice(0, 1);
-      //console.log('User:play> ', n);
 
-      let tuile = Jeu.tuiles[n];
-      // console.log('play> tuile=', tuile);
+      // console.log('User:play> ', tuile);
+
       TuileShow(tuile);
 
       this.jeu[t] = tuile;
@@ -319,7 +318,7 @@ class User {
     let ligne;
     if (this.historique.length == 0) return 0;
 
-    console.log("User:getScore> A", this.historique);
+    // console.log("User:getScore> A", this.historique);
 
     if (this.historique.length == 1) {
       let evt = this.historique[0];
@@ -342,7 +341,7 @@ class User {
         }
       }
 
-      console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
+      // console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
 
       return n;
     }
@@ -357,7 +356,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -368,7 +367,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          // console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
       else if (evt1.c == evt2.c) {
@@ -377,7 +376,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        // console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -388,7 +387,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          // console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
     }
@@ -396,7 +395,7 @@ class User {
   }
 
   ok() {
-    console.log("User:ok>", "histo=", this.historique.length, this.historique);
+    // console.log("User:ok>", "histo=", this.historique.length, this.historique);
     let n = this.getScore();
     this.score += n;
     this.tourPrécédent = [];
@@ -502,11 +501,10 @@ class User {
     for (let t = 0; t < 6; t++) {
       let tuile = this.jeu[t];
       if (TuileTestVide(tuile)) {
-        let n = Jeu.pioche[0];
+        let tuile = Jeu.pioche[0];
         Jeu.pioche.splice(0, 1);
         //console.log('User:play> ', n);
 
-        let tuile = Jeu.tuiles[n];
         //console.log('play> tuile=', tuile);
 
         this.jeu[t] = tuile;
