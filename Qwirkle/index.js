@@ -1172,7 +1172,7 @@ class PlateauJeu {
         ctx.beginPath();
         ctx.strokeRect(xoffset + x, yoffset + y, cell, cell);
         ctx.stroke();
-      });
+      }));
     }
   }
 
@@ -1240,7 +1240,7 @@ function clear() {
   Jeu.draw();
   // Jeu.drawTuiles();
 
-  Users.forEach(u => draw(u));
+  Users.forEach(u => u.draw());
 }
 
 function observation(x, y) {
@@ -1265,22 +1265,21 @@ function observation(x, y) {
     where = "commande";
   }
   else {
-    Users.forEach(u => {
-      let user = Users[u];
+    Users.forEach(user => {
       let tuileIndice = user.findUCell(x, y);
       if (tuileIndice >= 0) {
         Jeu.selectUserPosition(user, tuileIndice);
         found = true;
         done = true;
         where = "user";
-        break;
+        return;
       }
       if (user.findUPoubelle(x, y)) {
         Jeu.selectUserPoubelle(user);
         found = true;
         done = true;
         where = "user poubelle";
-        break;
+        return;
       }
     });
   }
@@ -1392,8 +1391,8 @@ canvas.addEventListener('mouseup', (e) => {
   }
 })
 
-Users.forEach(u => draw(u))
-Users.forEach(u => play(u))
+Users.forEach(u => u.draw())
+Users.forEach(u => u.play())
 
 clear();
 

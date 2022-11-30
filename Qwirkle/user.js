@@ -44,17 +44,15 @@ class Ligne {
       if (c1 > c2) {
         [c1, c2] = [c2, c1];
       }
-      // console.log("Ligne:extend>", "c1=", c1, "c2=", c2);
-      for (let c = c1 - 1; c >= 0; c--) {
-        // console.log("Ligne:extend> à gauche", "c=", c);
-        if (!Jeu.working.vide(c, r0)) this.p1--;
-        else break;
-      }
-      for (let c = c2 + 1; c <= Jeu.working.cmax; c++) {
-        // console.log("Ligne:extend> à droite", "c=", c);
-        if (!Jeu.working.vide(c, r0)) this.p2++;
-        else break;
-      }
+      // console.log("Ligne:extend>", "r0=", r0, "c1=", c1, "c2=", c2);
+
+      let ext = range2(c1 - 1, -1);
+      let a = ext.findIndex(c => Jeu.working.vide(c, r0));
+      this.p1 -= a == -1 ? a.length : a;
+
+      ext = range2(c2 + 1, Jeu.working.cmax + 1);
+      a = ext.findIndex(c => Jeu.working.vide(c, r0));
+      this.p2 += a == -1 ? a.length : a;
     }
     else {
       let c0 = this.ancrage + Jeu.working.c0;
@@ -63,14 +61,16 @@ class Ligne {
       if (r1 > r2) {
         [r1, r2] = [r2, r1]
       }
-      for (let r = r1 - 1; r >= 0; r--) {
-        if (!Jeu.working.vide(c0, r)) this.p1--;
-        else break;
-      }
-      for (let r = r2 + 1; r <= Jeu.working.rmax; r++) {
-        if (!Jeu.working.vide(c0, r)) this.p2++;
-        else break;
-      }
+
+      // console.log("Ligne:extend>", "r1=", r1, "r2=", r2);
+
+      let ext = range2(r1 - 1, -1);
+      let a = ext.findIndex(r => Jeu.working.vide(c0, r));
+      this.p1 -= a == -1 ? a.length : a;
+
+      ext = range2(r2 + 1, Jeu.working.rmax + 1);
+      a = ext.findIndex(r => Jeu.working.vide(c0, r));
+      this.p2 += a == -1 ? a.length : a;
     }
     // console.log("Ligne:extend> after>", "o=", this.orientation, "ancrage=", this.ancrage, "p1=", this.p1, "p2=", this.p2);
   }
@@ -311,6 +311,7 @@ class User {
       this.jeu[histo.position] = histo.tuile;
       Jeu.working.grid.setElement(c, r, TuileVide)
     }
+    this.historique = [];
   }
 
   getScore() {
@@ -318,7 +319,7 @@ class User {
     let ligne;
     if (this.historique.length == 0) return 0;
 
-    // console.log("User:getScore> A", this.historique);
+    // console.log("---------------User:getScore> A", this.historique);
 
     if (this.historique.length == 1) {
       let evt = this.historique[0];
@@ -356,7 +357,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
