@@ -357,7 +357,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];

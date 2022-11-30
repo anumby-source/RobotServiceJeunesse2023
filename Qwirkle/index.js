@@ -109,15 +109,7 @@ class Matrix {
   }
 
   vide() {
-    let vide = true;
-    this.elements.forEach(t => {
-      if (!TuileTestVide(t)) {
-        vide = false;
-        return;
-      }
-    });
-
-    return vide;
+    return this.elements.every(t => TuileTestVide(t));
   }
 
   zeros(columns, rows) {
@@ -471,34 +463,42 @@ class WorkingGrille {
     let GD = ["à gauche", "à droite"];
     let HB = ["en haut", "en bas"];
 
-    range(3).forEach(dc => {
+    let status = GOOD;
+
+    status = range(3).every(dc => {
       let c = column + 2 * dc - 1;
       if (!this.vide(c, row)) {
-        // console.log("case c=" + c + " non vide");
+        console.log("case c=" + c + " non vide");
         if (this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile)) == BAD) {
-          // console.log("case voisine incompatible " + GD[dc]);
-          return BAD;
+          // console.log("checkRuleE> case voisine incompatible " + GD[dc]);
+          return false;
         }
         // else console.log("compatible");
       }
-    });
+      return true;
+    }) ? GOOD : BAD;
+    // console.log("checkRuleE> status=", status);
 
+    if (status == BAD) return BAD;
 
     // console.log("case voisine GD compatible ou vide ");
 
-    range(3).forEach(dr => {
+    status = range(3).every(dr => {
       let r = row + 2*dr - 1;
       if (!this.vide(column, r)) {
         // console.log("case r=" + r + " non vide");
         if (this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile)) == BAD) {
           // console.log("case voisine incompatible " + HB[dr]);
-          return BAD;
+          return false;
         }
         // else console.log("compatible");
       }
-    });
+      return true;
+    }) ? GOOD : BAD;
+    if (status == BAD) return BAD;
+    // console.log("checkRuleE> status=", status);
 
-    // console.log("case voisine HB compatible ou vide");
+    // console.log("checkRuleE> case voisine HB compatible ou vide");
 
     return GOOD;
   }
@@ -507,46 +507,52 @@ class WorkingGrille {
     let GD = ["à gauche", "à droite"];
     let HB = ["en haut", "en bas"];
 
-    range(3).forEach(dc => {
+    let status = GOOD;
+    status = range(3).every(dc => {
       let c = column + 2*dc - 1;
       let c1 = column + 4*dc - 2;
       if (!this.vide(c, row)) {
-        // console.log("case c=" + c + " non vide");
+        // console.log("checkRuleF> case c=" + c + " non vide");
         if (this.compatible(c, row, TuileGetForme(tuile), TuileGetColor(tuile)) == GOOD)
           if (!this.vide(c1, row)) {
-            // console.log("case c=" + c1 + " non vide");
+            // console.log("checkRuleF> case c=" + c1 + " non vide");
             if (this.compatible(c1, row, TuileGetForme(tuile), TuileGetColor(tuile)) == BAD) {
-              // console.log("case voisine +2 incompatible " + GD[dc]);
-              return BAD;
+              // console.log("checkRuleF> case voisine +2 incompatible " + GD[dc]);
+              return false;
             }
           }
-          // else console.log("case c1=" + c1 + " vide");
+          // else console.log("checkRuleF> case c1=" + c1 + " vide");
       }
-      // else console.log("case c=" + c + " vide");
-    });
+      // else console.log("checkRuleF> case c=" + c + " vide");
+      return true;
+    }) ? GOOD : BAD;
 
-    // console.log("case voisine GD +2 compatible ou vide");
+    // console.log("checkRuleF> case voisine GD +2 compatible ou vide");
 
-    range(3).forEach(dr => {
+    if (status == BAD) return BAD;
+
+    status = range(3).every(dr => {
       let r = row + 2*dr - 1;
       let r1 = row + 4*dr - 2;
       if (!this.vide(column, r)) {
-        // console.log("case r=" + r + " non vide");
+        // console.log("checkRuleF> case r=" + r + " non vide");
         if (this.compatible(column, r, TuileGetForme(tuile), TuileGetColor(tuile)) == GOOD) {
           if (!this.vide(column, r1)) {
-            // console.log("case r1=" + r1 + " non vide");
+            // console.log("checkRuleF> case r1=" + r1 + " non vide");
             if (this.compatible(column, r1, TuileGetForme(tuile), TuileGetColor(tuile)) == BAD) {
-              // console.log("case voisine +2 incompatible " + HB[dr]);
-              return BAD;
+              // console.log("checkRuleF> case voisine +2 incompatible " + HB[dr]);
+              return false;
             }
           }
-          // else console.log("case r1=" + r1 + " vide");
+          // else console.log("checkRuleF> case r1=" + r1 + " vide");
         }
       }
-      // else console.log("case r=" + r + " vide");
-    });
+      // else console.log("checkRuleF> case r=" + r + " vide");
+      return true;
+    }) ? GOOD : BAD;
+    if (status == BAD) return BAD;
 
-    // console.log("case voisine HB +2 compatible ou vide ");
+    // console.log("checkRuleF> case voisine HB +2 compatible ou vide ");
 
     return GOOD;
   }
@@ -634,7 +640,7 @@ class WorkingGrille {
     // let jouées = user.tuilesJouées(jeu);
     let jouées = user.historique.length;
 
-    // console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
+    console.log("------------ check rules ---------- c=" + column + " r=" + row + " jouées=" + jouées);
 
     if (this.grid.vide()) return GOOD;
 
@@ -658,16 +664,21 @@ class WorkingGrille {
     else if (jouées == 1) {
       let evt = user.historique[0];
 
-      // console.log("checkRules> deuxième tuile", tuile, column, row);
+      console.log("checkRules> deuxième tuile A", tuile, column, row);
       // une tuile a déjà été posée on doit donc commencer par tester que la position testée est immédiatement à côté de la première tuile jouée
       // if (this.checkRuleH(tuile, column, row, evt) == BAD) return BAD;
       if (this.checkRuleB(tuile, column, row) == BAD) return BAD;
+      console.log("checkRules> deuxième tuile B", tuile, column, row);
       if (this.checkRuleC(tuile, column, row) == BAD) return BAD;
+      console.log("checkRules> deuxième tuile C", tuile, column, row);
       if (this.checkRuleD(tuile, column, row) == BAD) return BAD;
+      console.log("checkRules> deuxième tuile D", tuile, column, row);
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
+      console.log("checkRules> deuxième tuile E", tuile, column, row);
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
+      console.log("checkRules> deuxième tuile F", tuile, column, row);
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
-      // console.log("CheckRules> deuxième tuile règles OK", tuile, column, row);
+      console.log("CheckRules> deuxième tuile règles OK", tuile, column, row);
     }
     else {
       // au moins 2 tuiles ont été posées, ce qui définit "la ligne courante"
@@ -1265,22 +1276,23 @@ function observation(x, y) {
     where = "commande";
   }
   else {
-    Users.forEach(user => {
+    Users.every(user => {
       let tuileIndice = user.findUCell(x, y);
       if (tuileIndice >= 0) {
         Jeu.selectUserPosition(user, tuileIndice);
         found = true;
         done = true;
         where = "user";
-        return;
+        return false;
       }
       if (user.findUPoubelle(x, y)) {
         Jeu.selectUserPoubelle(user);
         found = true;
         done = true;
         where = "user poubelle";
-        return;
+        return false;
       }
+      return true;
     });
   }
 
