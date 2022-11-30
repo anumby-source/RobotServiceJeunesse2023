@@ -1150,27 +1150,28 @@ class PlateauJeu {
       // let xoffset = 0;
       let xoffset = (this.width + 2)*cell;
       let yoffset = 1000 * cell;
-      let t = 0;
-      for (let c = 0; c < COLORS; c++) {
-        for (let f = 0; f < FORMES; f++) {
-          //console.log("PlateauJeu:drawTuiles> ", Jeu);
-          let tuile = this.tuiles[t];
-          //console.log("PlateauJeu:drawTuiles>", tuile);
-          TuileDraw(tuile, xoffset + c*cell, yoffset + f*cell);
-          t++;
-        }
-      }
 
-      for (let c = 0; c < COLORS; c++ ) {
-        for (let r = 0; r < FORMES; r++ ) {
-          let x = c * cell;
-          let y = r * cell;
-          ctx.strokeStyle = "red";
-          ctx.beginPath();
-          ctx.strokeRect(xoffset + x, yoffset + y, cell, cell);
-          ctx.stroke();
-        }
-      }
+      let t = 0;
+
+      let cs = range(COLORS);
+      let fs = range(FORMES);
+
+      cs.forEach(c => fs.forEach(f => {
+        //console.log("PlateauJeu:drawTuiles> ", Jeu);
+        let tuile = this.tuiles[t];
+        //console.log("PlateauJeu:drawTuiles>", tuile);
+        TuileDraw(tuile, xoffset + c*cell, yoffset + f*cell);
+        t++;
+      }));
+
+      cs.forEach(c => fs.forEach(f => {
+        let x = c * cell;
+        let y = f * cell;
+        ctx.strokeStyle = "red";
+        ctx.beginPath();
+        ctx.strokeRect(xoffset + x, yoffset + y, cell, cell);
+        ctx.stroke();
+      });
     }
   }
 
@@ -1238,7 +1239,7 @@ function clear() {
   Jeu.draw();
   // Jeu.drawTuiles();
 
-  for (u = 0; u < Users.length; u++) Users[u].draw();
+  Users.forEach(u => draw(u));
 }
 
 function observation(x, y) {
@@ -1263,7 +1264,7 @@ function observation(x, y) {
     where = "commande";
   }
   else {
-    for (let u = 0; u < Users.length; u++) {
+    Users.forEach(u => {
       let user = Users[u];
       let tuileIndice = user.findUCell(x, y);
       if (tuileIndice >= 0) {
@@ -1280,7 +1281,7 @@ function observation(x, y) {
         where = "user poubelle";
         break;
       }
-    }
+    });
   }
 
   // console.log("mousemove> 2", found, "where=", where, "position=", Jeu.positionSelected);
@@ -1390,8 +1391,8 @@ canvas.addEventListener('mouseup', (e) => {
   }
 })
 
-for (u = 0; u < Users.length; u++) Users[u].draw();
-for (u = 0; u < Users.length; u++) Users[u].play();
+Users.forEach(u => draw(u))
+Users.forEach(u => play(u))
 
 clear();
 
