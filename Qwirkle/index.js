@@ -63,7 +63,8 @@ const W_EXTERIEUR = -10;
 const COMMANDES = [TuileZoomin, TuileZoomout, TuileUndo, TuileOk, TuileSave, TuileRestore, TuileSimulation];
 
 const range = (max) => Array.from({ length: max}, (_, i) => i);
-const range2 = (min, max) => Array.from({ length: max - min }, (_, i) => min + i);
+// const range2 = (min, max) => Array.from({ length: max - min }, (_, i) => min + i);
+const range2 = (min, max) => Array.from({ length: Math.abs(max - min) }, (_, i) => (max >= min) ? min + i: min - i )
 
 localStorage.setItem("key", "valeur");
 
