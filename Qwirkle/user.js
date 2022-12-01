@@ -76,12 +76,14 @@ class Ligne {
   }
 
   aligné(column, row) {
+    // console.log("Ligne:aligné>", this, "c=", column, "r=", row, "c0=", Jeu.working.c0, "r0=", Jeu.working.r0);
     if (this.orientation == HORIZONTAL) {
       if (this.ancrage + Jeu.working.r0 == row) return GOOD;
     }
     else {
       if (this.ancrage + Jeu.working.c0 == column) return GOOD;
     }
+    // console.log("Ligne:aligné> BAD");
     return BAD
   }
 
@@ -104,6 +106,19 @@ class Ligne {
         [c1, c2] = [c2, c1];
       }
 
+      let statut = range(c1, c2 + 1).every(c => {
+        // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
+        if (!Jeu.working.compatible(c, r0, forme, color)) return false;
+        // console.log("Ligne:compatible>", "ok compatible");
+        let t = Jeu.working.getElement(c, r0);
+        // console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        // console.log("Ligne:compatible>", "ok compatible et différent");
+        return true;
+      }) ? GOOD: BAD;
+      if (statut == BAD) return BAD;
+
+      /*
       for (let c = c1; c <= c2; c++) {
         // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
         if (!Jeu.working.compatible(c, r0, forme, color)) return BAD;
@@ -113,6 +128,7 @@ class Ligne {
         if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
         // console.log("Ligne:compatible>", "ok compatible et différent");
       }
+      */
     }
     else {
       let c0 = this.ancrage + Jeu.working.c0;
@@ -125,6 +141,18 @@ class Ligne {
 
       // console.log("Ligne:compatible> VERTICAL", "r1=", r1, "r2=", r2);
 
+      let statut = range(r1, r2 + 1).every(r => {
+        if (!Jeu.working.compatible(c0, r, forme, color)) return false;
+        let t = Jeu.working.getElement(c0, r);
+        // console.log("Ligne:compatible>", "forme=", forme, "color=", color, "c=", c0, "r=", r, "t=", t);
+        // console.log("Ligne:compatible> A");
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        // console.log("Ligne:compatible> B");
+        return true;
+      }) ? GOOD: BAD;
+      if (statut == BAD) return BAD;
+
+      /*
       for (let r = r1; r <= r2; r++) {
         if (!Jeu.working.compatible(c0, r, forme, color)) return BAD;
         let t = Jeu.working.getElement(c0, r);
@@ -133,6 +161,7 @@ class Ligne {
         if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
         // console.log("Ligne:compatible> B");
       }
+      */
     }
 
     return GOOD;
@@ -168,11 +197,22 @@ class Ligne {
         c4 = this.p2 + Jeu.working.c0;
       }
 
+      let statut = range2(c1, c4 + 1).every(c => {
+        // si on est strictement entre ] ligne1 et ligne2 [ on contnue
+        if (c > c2 && c < c3) return true;
+        let t = Jeu.working.getElement(c, r0);
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        return true;
+      }) ? GOOD: BAD;
+      if (statut == BAD) return BAD;
+
+      /*
       for (let c = c1; c >= c4; c--) {
         if (c > c2 && c < c3) continue;
         let t = Jeu.working.getElement(c, r0);
         if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
       }
+      */
     }
     else if (this.orientation == VERTICAL && other.orientation == VERTICAL) {
       let c0 = this.ancrage + Jeu.working.c0;
@@ -195,11 +235,21 @@ class Ligne {
         r4 = this.p2 + Jeu.working.r0;
       }
 
+      let statut = range2(r1, r4 + 1).every(r => {
+        if (r > r2 && r < r3) return true;
+        let t = Jeu.working.getElement(c0, r);
+        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return false;
+        return true;
+      }) ? GOOD: BAD;
+      if (statut == BAD) return BAD;
+
+      /*
       for (let r = r1; r >= r2; r--) {
         if (r > r2 && r < r3) continue;
         let t = Jeu.working.getElement(c0, r);
         if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
       }
+      */
     }
     return GOOD
   }
@@ -212,9 +262,9 @@ class User {
     this.name = name;
     this.jeu = [];
     this.score = 0;
-    for (let t = 0; t < 6; t++) this.jeu.push(TuileVide);
+    range(6).forEach(t => this.jeu.push(TuileVide));
     this.poubelle = [];
-    for (let t = 0; t < 6; t++) this.poubelle.push(TuileVide);
+    range(6).forEach(t => this.poubelle.push(TuileVide));
     this.partie = [];
     this.historique = [];
     this.tourPrécédent = [];
@@ -225,9 +275,7 @@ class User {
   tuilesJouées(jeu) {
     // on compte toutes les tuiles vides du jeu
     let jouées = 0;
-    for (let t of jeu) {
-      if (TuileTestVide(t)) jouées++;
-    }
+    jeu.map(t => {if (TuileTestVide(t)) jouées++});
     return jouées;
   }
 
@@ -241,17 +289,14 @@ class User {
     ctx.font = '30px san-serif';
     ctx.fillText(this.name, 0, yoffset + cell);
 
-    for (let c = 0; c < 6; c++)
-    {
+    range(6).map(c => {
       let t = this.jeu[c];
       // console.log(t, "xoffset=", xoffset + c*cell, yoffset, c);
       TuileDraw(t, xoffset + c*cell, yoffset);
-    }
+    });
 
     let poubelles = 0;
-    for (let t = 0; t < 6; t++) {
-      if (!TuileTestVide(this.poubelle[t])) poubelles++;
-    }
+    this.poubelle.map(p => {if (!TuileTestVide(p)) poubelles++;});
 
     TuileDraw(TuilePoubelle, xoffset + 7*cell, yoffset);
     ctx.fillStyle = 'Blue';
@@ -278,6 +323,23 @@ class User {
     let xoffset = offsetJeu();
     let yoffset = yoffsetJoueurs() + 2 * this.numéro * cell;
 
+    range(6).map(t => {
+      let tuile = Jeu.pioche[0];
+      Jeu.pioche.splice(0, 1);
+
+      // console.log('User:play> ', tuile);
+
+      TuileShow(tuile);
+
+      this.jeu[t] = tuile;
+
+      let x = xoffset + t*cell;
+      let y = yoffset;
+      // console.log('play> tuile=', tuile, TuileGetForme(tuile), TuileGetColor(tuile), x, y);
+      TuileDraw(tuile, x, y);
+    });
+
+    /*
     for (let t = 0; t < 6; t++) {
       let tuile = Jeu.pioche[0];
       Jeu.pioche.splice(0, 1);
@@ -293,6 +355,8 @@ class User {
       // console.log('play> tuile=', tuile, TuileGetForme(tuile), TuileGetColor(tuile), x, y);
       TuileDraw(tuile, x, y);
     }
+    */
+
     // console.log('play> pioche=', Jeu.pioche.length);
   }
 
