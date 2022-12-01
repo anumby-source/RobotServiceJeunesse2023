@@ -585,13 +585,14 @@ class WorkingGrille {
       // console.log("checkRuleG> test vertical haut");
       vhaut = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 - 1, row - Jeu.working.r0 - 1);
       vhaut.extend();
+      // console.log("checkRuleG>", tuile, "vhaut=", vhaut);
       if (vhaut.compatible(tuile) == BAD) return BAD;
     }
     if (!Jeu.working.vide(column, row + 1)) {
       // console.log("checkRuleG> test vertical bas");
       vbas = new Ligne(VERTICAL, column - Jeu.working.c0, row - Jeu.working.r0 + 1, row - Jeu.working.r0 + 1);
       vbas.extend();
-      // console.log("checkRuleG>", tuile,  vbas);
+      // console.log("checkRuleG>", tuile, vbas);
       if (vbas.compatible(tuile) == BAD) return BAD;
     }
 

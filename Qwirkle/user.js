@@ -106,7 +106,7 @@ class Ligne {
         [c1, c2] = [c2, c1];
       }
 
-      let statut = range(c1, c2 + 1).every(c => {
+      let statut = range2(c1, c2 + 1).every(c => {
         // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
         if (!Jeu.working.compatible(c, r0, forme, color)) return false;
         // console.log("Ligne:compatible>", "ok compatible");
@@ -117,18 +117,6 @@ class Ligne {
         return true;
       }) ? GOOD: BAD;
       if (statut == BAD) return BAD;
-
-      /*
-      for (let c = c1; c <= c2; c++) {
-        // console.log("Ligne:compatible>", "r0=", r0, "c1=", c1, "c2=", c2, "c=", c);
-        if (!Jeu.working.compatible(c, r0, forme, color)) return BAD;
-        // console.log("Ligne:compatible>", "ok compatible");
-        let t = Jeu.working.getElement(c, r0);
-        // console.log("Ligne:compatible>", "t=", t, "t.forme=", TuileGetForme(t), "t.color=", TuileGetColor(t));
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
-        // console.log("Ligne:compatible>", "ok compatible et différent");
-      }
-      */
     }
     else {
       let c0 = this.ancrage + Jeu.working.c0;
@@ -141,7 +129,8 @@ class Ligne {
 
       // console.log("Ligne:compatible> VERTICAL", "r1=", r1, "r2=", r2);
 
-      let statut = range(r1, r2 + 1).every(r => {
+      let statut = range2(r1, r2 + 1).every(r => {
+        // console.log("Ligne:compatible>", "forme=", forme, "color=", color, "c=", c0, "r=", r);
         if (!Jeu.working.compatible(c0, r, forme, color)) return false;
         let t = Jeu.working.getElement(c0, r);
         // console.log("Ligne:compatible>", "forme=", forme, "color=", color, "c=", c0, "r=", r, "t=", t);
@@ -151,17 +140,6 @@ class Ligne {
         return true;
       }) ? GOOD: BAD;
       if (statut == BAD) return BAD;
-
-      /*
-      for (let r = r1; r <= r2; r++) {
-        if (!Jeu.working.compatible(c0, r, forme, color)) return BAD;
-        let t = Jeu.working.getElement(c0, r);
-        // console.log("Ligne:compatible>", "forme=", forme, "color=", color, "c=", c0, "r=", r, "t=", t);
-        // console.log("Ligne:compatible> A");
-        if (TuileGetColor(t) == color && TuileGetForme(t) == forme) return BAD;
-        // console.log("Ligne:compatible> B");
-      }
-      */
     }
 
     return GOOD;
