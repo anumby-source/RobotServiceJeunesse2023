@@ -68,6 +68,21 @@ const range2 = (min, max) => Array.from({ length: Math.abs(max - min) }, (_, i) 
 
 localStorage.setItem("key", "valeur");
 
+function test1() {
+  // test pour comparer forEch et map
+  const myAwesomeArray = range(1000000)
+
+  const startForEach = performance.now()
+  myAwesomeArray.forEach(x => (x + x) * 1000000000000)
+  const endForEach = performance.now()
+  console.log(`Vitesse ​​[forEach]: ${endForEach - startForEach} millisecondes`)
+
+  const startMap = performance.now()
+  myAwesomeArray.map(x => (x + x) * 1000000000000)
+  const endMap = performance.now()
+  console.log(`Vitesse [map]: ${endMap - startMap} millisecondes`)
+}
+
 function getCellSize() {
   return cellSize;
 }
@@ -682,6 +697,20 @@ class WorkingGrille {
       // console.log("checkRules> deuxième tuile F", tuile, column, row);
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
       // console.log("CheckRules> deuxième tuile règles OK", tuile, column, row);
+      {
+        let e0 = user.historique[0];
+        let e1 = user.historique[1];
+        if (e1) {
+          console.log("checkRules> deuxième tuile add ligne", "e0=", e0, "e1=", e1);
+
+          if (e0.c == e1.c) {
+            user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
+          }
+          else {
+            user.ligne = new Ligne(HORIZONTAL, e0.r, e0.c, e1.c);
+          }
+        }
+      }
     }
     else {
       // au moins 2 tuiles ont été posées, ce qui définit "la ligne courante"
@@ -700,17 +729,17 @@ class WorkingGrille {
       if (this.checkRuleE(tuile, column, row) == BAD) return BAD;
       // console.log("checkRules> tuile suivante E", tuile, column, row);
       if (this.checkRuleF(tuile, column, row) == BAD) return BAD;
-      // console.log("checkRules> tuile suivante F", tuile, column, row);
+      console.log("checkRules> tuile suivante F", tuile, column, row);
       if (this.checkRuleG(tuile, column, row, user) == BAD) return BAD;
-      // console.log("checkRules> tuile suivante G", tuile, column, row);
+      console.log("checkRules> tuile suivante G", tuile, column, row);
 
-      // console.log("checkRules> tuile suivante", "historique=", user.historique, "ligne=", user.ligne);
+      console.log("checkRules> tuile suivante", "historique=", user.historique, "ligne=", user.ligne);
 
       if (!user.ligne) {
         let e0 = user.historique[0];
         let e1 = user.historique[1];
         if (e1) {
-          // console.log("checkRules> test ligne", "e0=", e0, "e1=", e1);
+          console.log("checkRules> tuile suivante add ligne", "e0=", e0, "e1=", e1);
 
           if (e0.c == e1.c) {
             user.ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
@@ -723,11 +752,11 @@ class WorkingGrille {
       else {
         user.ligne.extend();
       }
-      // console.log("checkRules> tuile suivante", user.ligne);
+      console.log("checkRules> tuile suivante", user.ligne);
       // on doit vérifier que la [column, row] testée est compatible avec cette ligne
 
       if (user.ligne.aligné(column, row) == BAD) return BAD;
-      // console.log("checkRules> tuile suivante après test alignement", user.ligne);
+      console.log("checkRules> tuile suivante après test alignement", user.ligne);
       return GOOD;
     }
 
@@ -981,10 +1010,8 @@ class PanneauCommandes {
             break;
           case 6:
             // ok
-            let j = [...Users[0].jeu];
-            let n = 0;
-            // console.log("executeCommande> simulation", j, n);
-            Users[0].simulation(j, n);
+            // console.log("executeCommande> simulation");
+            Users[0].startSimulation();
             Users[0].jouables.length = 0;
             break;
         }

@@ -361,7 +361,7 @@ class User {
     let ligne;
     if (this.historique.length == 0) return 0;
 
-    // console.log("---------------User:getScore> A", this.historique);
+    console.log("---------------User:getScore> A", this.historique);
 
     if (this.historique.length == 1) {
       let evt = this.historique[0];
@@ -384,7 +384,7 @@ class User {
         }
       }
 
-      // console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
+      console.log("User:getScore> B", h, hlen, v, vlen, "n=", n);
 
       return n;
     }
@@ -399,7 +399,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        // console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        console.log("User:getScore> C ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -410,7 +410,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          console.log("User:getScore> D ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
       else if (evt1.c == evt2.c) {
@@ -419,7 +419,7 @@ class User {
         let local = ligne.length();
         if (local == QWIRKLE) local *= 2;
         n = local;
-        // console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
+        console.log("User:getScore> E ligne de base ", ligne, ligne.length(), evt1, evt2, "n=", n);
 
         for (let ievt = 0; ievt < this.historique.length; ievt++) {
           let evt = this.historique[ievt];
@@ -430,7 +430,7 @@ class User {
             if (local == QWIRKLE) local *= 2;
             n += local;
           }
-          // console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
+          console.log("User:getScore> F ligne transverse ", l, l.length(), "local=", local, "n=", n);
         }
       }
     }
@@ -564,7 +564,31 @@ class User {
     this.historique.push(new Evenement(position, tuile, c, r));
   }
 
-  simulation(jeu, niveau) {
+  startSimulation() {
+    let bonScore = [];
+    let res = this.simulation([...this.jeu], bonScore, 0);
+    let scores = structuredClone(JSON.parse(res));
+    console.log("startSimulation> résultats=", scores.length, scores);
+    let score = scores[0];
+    let A = JSON.parse(score);
+    let B = structuredClone(JSON.parse(score));
+    console.log("startSimulation> score=", score, typeof(score), A, B, B[0]);
+    let evts = B[0];
+    evts.forEach(e => console.log("startSimulation> e=", e));
+
+    evts.forEach(evt => {
+      let tuile = this.jeu[evt.position];
+      let c = evt.c + Jeu.working.c0;
+      let r = evt.r + Jeu.working.r0;
+      this.jeu[evt.position] = TuileVide;
+      Jeu.working.grid.setElement(c, r);
+    });
+
+    this.ok();
+    clear();
+  }
+
+  simulation(jeu, bonScores, niveau) {
     // on doit commencer par duppliquer la zone de travail puisqu'on va la changer pendant la simulatioon
     // il faut aussi trouver toutes les cellules jouables = celles qui sont sont contiguës aux cellules déjà jouées
 
@@ -572,98 +596,152 @@ class User {
     let pre = prefix.slice(0, 2*niveau);
     console.log(pre, "........simulation>", "jeu=", jeu, "niveau=", niveau);
 
-    this.jouables = [];
+    let jouables = [];
     let tuile;
     let c;
     let r;
     if (Jeu.working.checkRuleA(tuile, c, r) == GOOD) {
       // this.jouables.push([Jeu.working.c0, Jeu.working.r0]);
-      this.jouables.push([0, 0]);
-      // console.log(pre, "simulation> set jouable A", "c=", Jeu.working.c0, "r=", Jeu.working.r0);
+      jouables.push([0, 0]);
+      // console.log(pre, "simulation> set jouable A", "c=", 0, "r=", 0, jouables);
     }
     else {
-      for (let c = Jeu.working.cmin; c <= Jeu.working.cmax; c++)
-        for (let r = Jeu.working.rmin; r <= Jeu.working.rmax; r++) {
-          let tuile = Jeu.working.grid.getElement(c - Jeu.working.cmin, r - Jeu.working.rmin);
-          if (tuile >= 0 && TuileTestVide(tuile)) {
-            if (Jeu.working.checkRuleD(tuile, c, r) == GOOD) {
-              // console.log(pre, "simulation> set jouable", "c=", c, "r=", r);
-              this.jouables.push([c - Jeu.working.c0, r - Jeu.working.r0]);
-            }
+      let cs = range2(Jeu.working.cmin, Jeu.working.cmax + 1);
+      let rs = range2(Jeu.working.rmin, Jeu.working.rmax + 1);
+
+      cs.forEach(c => rs.forEach(r => {
+        let tuile = Jeu.working.grid.getElement(c - Jeu.working.cmin, r - Jeu.working.rmin);
+        if (tuile >= 0 && TuileTestVide(tuile)) {
+          if (Jeu.working.checkRuleD(tuile, c, r) == GOOD) {
+            // console.log(pre, "simulation> set jouable AA", "c=", c, "r=", r);
+            jouables.push([c - Jeu.working.c0, r - Jeu.working.r0]);
           }
         }
+      }));
     }
 
-    let bonScores = [];
-    if (this.jouables.length > 0) {
-      console.log(pre, "simulation> scan jouables", "jeu=", jeu, "jouables=", this.jouables);
+    /*
+    console.log(pre, "simulation> scan jouables", "jouables=", jouables);
+    for (let ijouable = 0; ijouable < jouables.length; ijouable++) {
+      let jouable = jouables[ijouable];
+      let [c, r] = jouable;
+      c += Jeu.working.c0;
+      r += Jeu.working.r0;
+      console.log(pre, "===simulation> test jouable", "jouable=", jouable, "c=", c, "r=", r);
+
       for (let ijeu = 0; ijeu < jeu.length; ijeu++) {
         let t = jeu[ijeu];
         if (TuileTestVide(t)) continue;
+        {
+          jeu[ijeu] = TuileVide;
+        */
+
+
+    for (let ijeu = 0; ijeu < jeu.length; ijeu++) {
+      let t = jeu[ijeu];
+      if (TuileTestVide(t)) continue;
+      {
+        console.log(pre, "simulation> scan jeu", "ijeu=", ijeu, "t=", t);
         jeu[ijeu] = TuileVide;
-        console.log(pre, "simulation> scan jeu", "ijeu=", ijeu, "t=", t, "c0=", Jeu.working.c0, "r0=", Jeu.working.r0);
-        for (let ijouable = 0; ijouable < this.jouables.length; ijouable++) {
-          let c;
-          let r;
-          [c, r] = Users[0].jouables[ijouable];
-          c += Jeu.working.c0;
-          r += Jeu.working.r0;
-          console.log(pre, "===================simulation> test jouable", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
-          if (Jeu.working.checkRules(this, jeu, t, c, r) == GOOD) {
+
+        this.historique.forEach(e => console.log(pre, "===simulation> avant scan jouable historique", "e=", e));
+
+        let ligne;
+        if (this.historique.length >= 2) {
+          let e0 = this.historique[0];
+          let e1 = this.historique[1];
+          if (e1) {
+            console.log("===simulation> deuxième tuile add ligne", "e0=", e0, "e1=", e1);
+
+            if (e0.c == e1.c) {
+              ligne = new Ligne(VERTICAL, e0.c, e0.r, e1.r);
+            }
+            else {
+              ligne = new Ligne(HORIZONTAL, e0.r, e0.c, e1.c);
+            }
+          }
+          ligne.extend();
+        }
+        if (ligne) console.log(pre, "===simulation> avant scan jouables historique", "ligne=", ligne);
+
+        // console.log(pre, "simulation> scan jouables", "jouables=", jouables);
+        for (let ijouable = 0; ijouable < jouables.length; ijouable++) {
+          let jouable = jouables[ijouable];
+          let [cRel, rRel] = jouable;
+          c = cRel + Jeu.working.c0;
+          r = rRel + Jeu.working.r0;
+          if (ligne) {
+            if (ligne.aligné(c, r) == BAD) continue;
+          }
+          console.log(pre, "===simulation> test jouable", "ijouable=", ijouable, "jouable=", jouable, "t=", t, "c=", c, "r=", r);
+
+          if (Jeu.working.checkRules(this, jeu, t, c, r) == BAD) {
+            jeu[ijeu] = t;
+            continue;
+          }
+          // console.log(pre, "simulation> scan jeu", "ijeu=", ijeu, "t=", t, "c0=", Jeu.working.c0, "r0=", Jeu.working.r0);
+          {
             console.log(pre, "===================simulation> tuile OK ", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
             let i;
             [c, r, i] = Jeu.working.addTuile(t, c, r);
+            Jeu.working.grid.show(pre + "grid");
             console.log(pre, "simulation> install tuile valide", "t=", t, "c=", c, "r=", r);
-            // Jeu.working.grid.setElement(c, r, t);
+            this.addEvenement(ijeu, t, c - Jeu.working.c0, r - Jeu.working.r0);
             {
-              this.addEvenement(ijeu, t, c - Jeu.working.c0, r - Jeu.working.r0);
-              {
-                let evts = this.historique.length;
-                let n = this.getScore();
-                if (n > 0) {
-                  bonScores.push([JSON.stringify([this.historique, ijeu, c, r]), n]);
-                  for (let e of this.historique) {
-                    console.log(pre, "===================simulation> after push bonScore", "e=", e);
-                  }
-                  console.log(pre, "===================simulation> after push bonScore", "ijeu=", ijeu, "c=", c, "r=", r, "t=", t, "n=", n);
-                  console.log(pre, "simulation> start simulation niveau + 1", [...jeu], niveau + 1)
-                  clear();
-                  let quit = confirm("quit");
-                  if (quit) return BAD;
-                  let subScores = this.simulation([...jeu], niveau + 1);
-                  console.log(pre, "simulation> after simulation subScores=", subScores)
-                  if (subScores == BAD) return BAD;
-                  subScores = structuredClone(JSON.parse(subScores));
-                  bonScores = [...bonScores, ...subScores];
+              let evts = this.historique.length;
+              let n = this.getScore();
+              if (n > 0) {
+                console.log(pre, "simulation> une tuile a été ajouée nouveau score => n=", n);
+                let h = [...this.historique];
+                h.forEach(e => console.log(pre, "===================simulation> historique", "e=", e));
+
+                bonScores.push(JSON.stringify([h, ijeu, c, r, n]));
+                // console.log(pre, "===================simulation> after push bonScore=", bonScores);
+                bonScores.forEach(b => console.log(pre, "===================simulation> after push bonScore", "b=", b));
+
+                // ===========> poursuivre avec le niveau suivant
+                console.log(pre, "simulation> start simulation niveau suivant", "ijouable=", ijouable, "ijeu=", ijeu, "prochain niveau", niveau + 1);
+                // clear();
+                // let quit = confirm("quit");
+                // if (quit) return BAD;
+
+                {
+                  let res = this.simulation([...jeu], bonScores, niveau + 1);
+                  // console.log(pre, "simulation> after simulation res=", res)
+                  // console.log(pre, "simulation> after simulation previous bonScores=", bonScores)
+                  let subScores = structuredClone(JSON.parse(res));
+                  // console.log(pre, "simulation> after simulation subScores=", subScores)
+                  if (subScores.length > 0) bonScores = [...bonScores, ...subScores];
+                  // console.log(pre, "simulation> after simulation previous bonScores=", bonScores)
+                  bonScores.forEach(b => console.log(pre, "===================simulation> after simulation bonScore", "b=", b));
                 }
+                console.log(pre, "simulation> retour du niveau + 1", ijouable, ijeu, niveau + 1)
               }
-              this.historique.pop();
             }
-            Jeu.working.grid.setElement(c, r, TuileVide);
-          }
-          else {
-            console.log(pre, "===================simulation> tuile BAD ", "ijeu=", ijeu, "ijouable=", ijouable, "c=", c, "r=", r);
+            console.log(pre, "simulation> un-install tuile", "t=", t, "c=", c, "r=", r);
+            this.historique.pop();
+            Jeu.working.addTuile(TuileVide, cRel + Jeu.working.c0, rRel + Jeu.working.r0);
           }
         }
         jeu[ijeu] = t;
       }
-    }
+    };
 
-    bonScores = bonScores.sort((a,b) => a[3] - b[3]);
-    console.log(pre, "***simulation> END", bonScores)
-      /*
-    for (let score of bonScores) {
-      console.log(pre, "***simulation>", score)
-      let h;
-      let ijeu;
-      let c;
-      let r;
-      let n;
-      [h, ijeu, c, r] = structuredClone(JSON.parse(y));
-      console.log(pre, "***simulation> bons scores: ", "h=", h, "ijeu=", ijeu, "c=", c, "r=", r, "n=", n);
-    }
-      */
-    return JSON.stringify(bonScores);
+    // console.log(pre, "***simulation> END", bonScores);
+    let resultatsBruts = bonScores.map(b => structuredClone(JSON.parse(b)));
+    let resultats = resultatsBruts.sort((x,y) => x[4] - y[4]);
+    let maxScore = Math.max(...resultats.map(x => x[4]));
+    console.log(pre, "***simulation> END max score", maxScore);
+    let topResults = resultats.filter(x => x[4] == maxScore);
+    let selectResult = Math.trunc(topResults.length*Math.random());
+    console.log(pre, "---- selected best score=", topResults.length, selectResult, topResults[selectResult]);
+    let res = [JSON.stringify(topResults[selectResult])];
+
+    console.log(">>>>>> res=", res);
+
+    res = JSON.stringify(res);
+    console.log(">>>>>> res=", res);
+    return res;
   }
 }
 

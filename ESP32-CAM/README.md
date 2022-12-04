@@ -23,3 +23,7 @@ OpenCV
 apprentissage pour le reconnaissance d'objets
 
 - https://docs.opencv.org/3.4/dc/d88/tutorial_traincascade.html
+
+WEb server avec Camera
+
+https://randomnerdtutorials.com/esp32-cam-access-point-ap-web-server/
