@@ -33,4 +33,8 @@ Classification with tensorflow/keras
 
 - https://www.youtube.com/watch?v=t0EzVCvQjGE
 - https://github.com/NeuralNine
-- 
+
+Flasher l'ESP32-CAM pour installer MicroPython:
+
+- >esptool --chip esp32 --port COM10 -b 115200 erase_flash
+- >esptool --chip esp32 --port COM10 write_flash -z 0x1000 d:\workspace\RobotServiceJeunesse2023\ESP32-CAM\GENERIC_S2-20220618-v1.19.1.uf2
