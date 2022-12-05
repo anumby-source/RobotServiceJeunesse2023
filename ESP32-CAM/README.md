@@ -28,3 +28,9 @@ WEb server avec Camera
 
 https://randomnerdtutorials.com/esp32-cam-access-point-ap-web-server/
 https://randomnerdtutorials.com/installing-esp32-arduino-ide-2-0/
+
+Classification with tensorflow/keras
+
+- https://www.youtube.com/watch?v=t0EzVCvQjGE
+- https://github.com/NeuralNine
+- 
