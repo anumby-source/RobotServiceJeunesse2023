@@ -27,3 +27,4 @@ apprentissage pour le reconnaissance d'objets
 WEb server avec Camera
 
 https://randomnerdtutorials.com/esp32-cam-access-point-ap-web-server/
+https://randomnerdtutorials.com/installing-esp32-arduino-ide-2-0/
