@@ -72,13 +72,11 @@ for k in range(20):
     kernel = np.ones((5, 5), np.float32) / 25
     dst = cv.filter2D(testimg, -1, kernel)
 
-    """
     plt.subplot(121), plt.imshow(testimg), plt.title('Original')
     plt.xticks([]), plt.yticks([])
     plt.subplot(122), plt.imshow(dst), plt.title('Averaging')
     plt.xticks([]), plt.yticks([])
     plt.show()
-    """
 
     prediction = clf.predict([testimg2])
 
