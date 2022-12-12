@@ -1,31 +1,38 @@
 import requests
 
-# Import the required Libraries
-from tkinter import *
+import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
+import cv2 as cv
+import numpy as np
+
 
 # Create an instance of tkinter frame
-root = Tk()
+root = tk.Tk()
 
 # Set the geometry of tkinter frame
 root.geometry("800x600")
 root.title("Capture")
 root.resizable(0, 0)
 
-button = Button(root, text="Update", command=lambda:update_image())
+button = tk.Button(root, text="Update", command=lambda:update_image())
 button.grid(column=0, row=0, columnspan=3)
 
-
 # Create a canvas widget
-canvas= Canvas(root, width=400, height=296)
+canvas = tk.Canvas(root, width=400, height=296)
 canvas.grid(column=0, row=1, columnspan=3)
+
+def convert_image(content):
+    url_image = np.asarray(bytearray(content), dtype="uint8")
+    cv_image = cv.imdecode(url_image, cv.IMREAD_COLOR)
+    color_coverted = cv.cvtColor(cv_image, cv.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(color_coverted)
+    photo = ImageTk.PhotoImage(image=pil_image)
+    return photo
 
 def update_image():
     r = requests.get("http://192.168.4.1:80/capture")
-    file = open("capture.jpg", "wb")
-    file.write(r.content)
-    file.close()
-    img = ImageTk.PhotoImage(Image.open("capture.jpg"))
+    img = convert_image(r.content)
     canvas.itemconfig(container, image=img)
     canvas.image = img
 
@@ -36,17 +43,17 @@ def save_image():
     file = open(text + ".jpg", "wb")
     file.write(r.content)
     file.close()
-    img = ImageTk.PhotoImage(Image.open(text + ".jpg"))
+    img = convert_image(r.content)
     canvas.itemconfig(container, image=img)
     canvas.image = img
 
-save = Button(root, text="Sauvegarde", command=lambda:save_image())
+save = tk.Button(root, text="Sauvegarde", command=lambda:save_image())
 save.grid(column=0, row=2)
 
-name = Entry(root)
+name = tk.Entry(root)
 name.grid(column=1, row=2)
 
-label = Label(root, text="============================================")
+label = tk.Label(root, text="============================================")
 label.grid(column=0, row=3, columnspan=3)
 
 
