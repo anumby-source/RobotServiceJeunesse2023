@@ -1,13 +1,13 @@
 # Une application Python pour lire les photos à partir l'ESP32-CAM et sauvegarder les images sur le PC
 
-- installer Python
-- pour ajouter les librairies nécessaires:
-  - lancer "cmd.exe" sur le PC, ouis exécuter:
+- installer Python (si nécessaire)
+- ajouter les librairies nécessaires (si ça n'est pas déjà fait):
+  - lancer "cmd.exe" sur le PC, puis exécuter:
     - ``> pip install numpy``
     - ``> pip install opencv-python``
     - ``> pip install tk``
     - ``> pip install pillow``
-- télécharger l'application canvas.py à partir de github:
+- télécharger l'application "canvas.py" à partir de github:
     - https://github.com/anumby-source/RobotServiceJeunesse2023/blob/main/client/canvas.py
 - se connecter sur le réseau local de l'ESP32-CAM
 - à partir de "cmd.exe", lancer l'application python
