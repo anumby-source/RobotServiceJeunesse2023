@@ -16,5 +16,5 @@
 ![image](https://user-images.githubusercontent.com/1872702/207544681-f2de8a03-370a-4124-88c8-f6536075dd3f.png)
 
 - Le bouton "update" parmet de rafraichir une image de l'ESP32-CAM
-- Le bouton permet de sauvegarder une image sous le nom que vous indiquez, dans un fichier au format ``*.jpg``
+- Le bouton "Sauvegarder" permet de sauvegarder une image sous le nom que vous indiquez, dans un fichier au format ``*.jpg``
 
