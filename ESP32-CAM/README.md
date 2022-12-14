@@ -6,12 +6,13 @@
 - configurer les librairies
   - dans les préférences installer l'URL :
       - https://dl.espressif.com/dl/package_esp32_index.json
-  - gestionnaires de cartes installer ESP32 (si ça n'est pas encore fait)
-  - Sélectionner le gestionnaire tools/type de carte/ESP32 Arduino/ESP32 Wrover module
+  - utiliser les gestionnaires de cartes "ESP32" (si ça n'est pas encore fait)
+  - Sélectionner le gestionnaire "tools/Type de carte/ESP32 Arduino/ESP32 Wrover module"
 - A partir de GitHub:
-  - https://github.com/anumby-source/RobotServiceJeunesse2023/tree/main/ESP32-CAM/CameraWebServer_Access_Point
   - télecharger tout le dossier "CameraWebServer_Access_Point"
-  - flasher "CameraWebServer_Access_Point.ino" ceci lance le réseau local "ESP32-CAM Access Point" avec le mot de passe "123456789"
+    - https://github.com/anumby-source/RobotServiceJeunesse2023/tree/main/ESP32-CAM/CameraWebServer_Access_Point
+  - flasher "CameraWebServer_Access_Point.ino" 
+  - ceci lance le réseau local "ESP32-CAM Access Point" avec le mot de passe "123456789"
   - faire un "reset" sur la carte ESP32-CAM
 - Se connecter au réseau local "ESP32-CAM Access Point" sur le PC
 - Ouvrir Chrome (ou un autre navigateur) à l'adresse: "http://192.168.4.1/"
