@@ -18,6 +18,8 @@
 - Ouvrir Chrome (ou un autre navigateur) à l'adresse: "http://192.168.4.1/"
 - Ceci active le panneau de contrôle de la caméra
 
+## Différents liens 
+
 Connection vers un Arduino:
 
 - https://www.raspberryme.com/telecharger-le-code-sur-esp32-cam-a-laide-desp32-cam-mb-usb/
