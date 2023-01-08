@@ -39,8 +39,8 @@ img = cv.imread('shapes.jpg')
 
 originalshape = img.shape
 
-s = 400
-img = cv.resize(img, (s, s), 0, 0, cv.INTER_AREA)
+w, h, _ = img.shape
+img = cv.resize(img, (w, h), 0, 0, cv.INTER_AREA)
 
 
 def apply_brightness_contrast(input_img, brightness=0, contrast=0):
@@ -94,11 +94,13 @@ def contours(img):
             cv.putText(out, "{}".format(A), (x+10, y+20), font, .4, (0, 0, 0), 1, cv.LINE_AA)
 
             # extraction de la forme détectée
+            """
             zone = img[x:x+w-1, y:y+h-1, :]
             testimg = cv.resize(zone, (50, 50, 3), interpolation=cv.INTER_AREA)
             testimg2 = testimg.reshape(7500)
             prediction = clf.predict([testimg2])
             print("predict = ", prediction)
+            """
 
 
     """
@@ -109,33 +111,39 @@ def contours(img):
     cv.drawContours(img, contours, -1, (0, 255, 0), 1)
     """
 
-
 font = cv.FONT_HERSHEY_SIMPLEX
 fcolor = (0, 0, 0)
 
 blist = [0, -127, 127, 0, 0, 64]  # list of brightness values
 clist = [0, 0, 0, -64, 64, 64]  # list of contrast values
 
-out = np.zeros((s * 2, s * 3, 3), dtype=np.uint8)
+#out = np.zeros((s * 2, s * 3, 3), dtype=np.uint8)
+out = np.zeros((h, w, 3), dtype=np.uint8)
 
-for i, b in enumerate(blist):
-    c = clist[i]
-    print('b, c:  ', b, ', ', c)
-    row = s * int(i / 3)
-    col = s * (i % 3)
+#for i, b in enumerate(blist):
+i = 5
+b = blist[i]
+c = clist[i]
+print('b, c:  ', b, ', ', c)
+# row = s * int(i / 3)
+# col = s * (i % 3)
+row = 0
+col = 0
 
-    print('row, col:   ', row, ', ', col)
+print('row, col:   ', row, ', ', col)
 
-    out[row:row + s, col:col + s] = apply_brightness_contrast(img, b, c)
-    # out[row:row + s, col:col + s] = 0
-    msg = 'b %d' % b
-    cv.putText(out, msg, (col, row + s - 22), font, .7, fcolor, 1, cv.LINE_AA)
-    msg = 'c %d' % c
-    cv.putText(out, msg, (col, row + s - 4), font, .7, fcolor, 1, cv.LINE_AA)
+# out[row:row + s, col:col + s] = apply_brightness_contrast(img, b, c)
+# out[row:row + s, col:col + s] = 0
+out[:, :] = apply_brightness_contrast(img, b, c)
+msg = 'b %d' % b
+# cv.putText(out, msg, (col, row + s - 22), font, .7, fcolor, 1, cv.LINE_AA)
+cv.putText(out, msg, (0, 0 - 22), font, .7, fcolor, 1, cv.LINE_AA)
+msg = 'c %d' % c
+cv.putText(out, msg, (0, 0 - 4), font, .7, fcolor, 1, cv.LINE_AA)
 
-    cv.putText(out, 'OpenCV', (260, 30), font, 1.0, fcolor, 2, cv.LINE_AA)
+cv.putText(out, 'OpenCV', (260, 30), font, 1.0, fcolor, 2, cv.LINE_AA)
 
-    #contours(out)
+contours(out)
 
 # cv2.imwrite('out.png', out)
 

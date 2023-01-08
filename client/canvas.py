@@ -39,7 +39,7 @@ def update_image():
 def save_image():
     text = name.get()
     print("save", text + ".jpg")
-    r = requests.get("http://192.168.4.1:80/capture")
+    r = requests.get("h#ttp://192.168.4.1:80/capture")
     file = open(text + ".jpg", "wb")
     file.write(r.content)
     file.close()
@@ -59,7 +59,8 @@ label.grid(column=0, row=3, columnspan=3)
 
 # Add image to the Canvas Items
 img2 = ImageTk.PhotoImage(Image.open("capture.jpg"))
-container = canvas.create_image(100, 100, image=img2)
+container = canvas.create_image(
+    0, 0, image=img2)
 canvas.image = img2
 
 root.mainloop()
