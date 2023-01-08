@@ -2,7 +2,9 @@ from random import *
 
 def mm(niveau = 4, couleurs = 6):
   coup = 1
-  secret = [str(randint(1, couleurs)) for i in range(niveau)]
+  secret_any = [str(randint(1, couleurs)) for i in range(niveau)]
+  secret_no_double = sample(range(1, couleurs + 1), niveau)
+  secret = secret_no_double
   print("secret=", secret)
   while True:
     code = list(secret)
