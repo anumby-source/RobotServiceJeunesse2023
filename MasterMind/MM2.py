@@ -1,15 +1,15 @@
 from random import *
 
-def mm(niv = 4, coul = 6):
+def mm(niveau = 4, couleurs = 6):
   coup = 1
-  secret = [str(randint(1,coul)) for i in range(niv)]
+  secret = [str(randint(1, couleurs)) for i in range(niveau)]
   print("secret=", secret)
   while True:
     code = list(secret)
     print("code=", code)
     jeu = input("Coup {} : ".format(coup))
     valeurs = list(jeu)
-    if len(valeurs) != niv: continue
+    if len(valeurs) != niveau: continue
     coup += 1
     trouvés, existent = 0, 0
 
