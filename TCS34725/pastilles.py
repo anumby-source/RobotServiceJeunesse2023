@@ -4,9 +4,9 @@ top = tk.Tk()
 
 c = tk.Canvas(top, bg="white", height=1000, width=1600)
 
-N = 2
-diam = 180
-espace = 20
+N = 1
+diam = 220
+espace = 60
 
 row = 0
 column = 0
