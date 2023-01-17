@@ -13,7 +13,6 @@ capteurRGB.integration_time(2.4)  # 2.4 24 101 154 700
 
 pastilles = dict()
 
-
 def configure_pastilles(nombre_pastilles):
     p = 0
     while True:
@@ -35,7 +34,7 @@ def configure_pastilles(nombre_pastilles):
             break
 
         print("pastille=", pastille)
-
+        
         p += 1
 
         r, g, b, c = capteurRGB.read(True)
@@ -48,7 +47,6 @@ def configure_pastilles(nombre_pastilles):
             break
 
     return pastilles
-
 
 def check_pastille(r, g, b):
     found = False
@@ -64,37 +62,34 @@ def check_pastille(r, g, b):
     if not found:
         # print("???", r, g, b)
         pastille = None
-
+        
     return pastille
-
 
 def test_lecture():
     old = None
     while True:
         while True:
             r, g, b, _ = capteurRGB.read(True)
-            # lux = capteurRGB.read(False)
+            #lux = capteurRGB.read(False)
             if old == None:
                 old = (r, g, b)
-
+                
             if r == old[0] and g == old[1] and b == old[2]:
                 continue
-
+            
             break
 
         pastille = check_pastille(r, g, b)
-        if pastille != None:
+        if pastille != None: 
             print("OK", pastille, "(", r, g, b, ")")
 
         # print(r, g, b)
         old = (r, g, b)
-
-
+                            
 def save_configuration(fname, pastilles):
     with open(fname, "w") as f:
         for p in pastilles:
             f.write("{}[{},{},{}]\n".format(p, pastilles[p][0], pastilles[p][1], pastilles[p][2]))
-
 
 def read_configuration(fname):
     data = dict()
@@ -103,14 +98,13 @@ def read_configuration(fname):
             line = f.readline()
             if len(line) == 0:
                 break
-
+            
             # print("line = ", line)
-
+            
             m = re.match("(\d+).(\d+).(\d+).(\d+).", line)
             # print(m.group(1), m.group(2), m.group(3), m.group(4))
             data[int(m.group(1))] = (int(m.group(2)), int(m.group(3)), int(m.group(4)))
     return data
-
 
 n = 8
 fname = "pastilles{}.data".format(n)
@@ -122,7 +116,7 @@ try:
     has_data = True
     pastilles = read_configuration(fname)
 except:
-    print("Data not ok !!")
+    print("Data not ok !!")    
 
 if not has_data:
     pastilles = configure_pastilles(8)
@@ -131,5 +125,4 @@ if not has_data:
 print("pastilles=", pastilles)
 
 test_lecture()
-
 
