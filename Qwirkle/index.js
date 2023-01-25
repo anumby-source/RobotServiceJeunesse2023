@@ -33,6 +33,7 @@ mode initial "observation"
 // Constantes générales et accesseurs
 
 const canvas = document.getElementById('canvas');
+
 let cellSize = 20;
 
 const QWIRKLE = 6;
@@ -239,7 +240,7 @@ class Matrix {
 }
 
 // Une fonction de test pour tester la classe Matrix
-function tm() {
+function test_matrix() {
   /*
   m1 = new Matrix ();
   m1.fillNumbers(3, 4, 0);

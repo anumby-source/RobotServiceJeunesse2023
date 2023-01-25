@@ -30,6 +30,9 @@ Installation MicroPython avec Thonny
 - https://www.youtube.com/watch?v=7ya4PIeUBmA
 - https://github.com/lemariva/micropython-camera-driver
 
+installer micropython avec firmware pour la caméra
+- https://www.youtube.com/watch?v=436VDF-rk4w
+
 OpenCV
 
 - https://randomnerdtutorials.com/esp32-cam-robotics-opencv-autonomous/

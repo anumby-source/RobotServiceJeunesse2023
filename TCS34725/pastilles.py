@@ -16,10 +16,10 @@ si rgb = (255,255,255) alors on utilise un gris (max, max, max)
 
 N = 1
 diam = 220
-espace = 60
+espace = 80
 
-min = 40
-max = 220
+min = espace
+max = 256 - espace
 
 row = 0
 column = 0
