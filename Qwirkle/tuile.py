@@ -107,6 +107,7 @@ forms = ["Rond", "Square", "Losange", "Cross", "Trefle", "Star"]
 
 for x, color in enumerate(colors):
     for y, drawer in enumerate(draw_forms):
+
         print(color, x * cell + margin, y * cell + margin)
         drawer(canvas, color, margin + x * (cell + margin), margin + y * (cell + margin))
 
