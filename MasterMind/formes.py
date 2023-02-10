@@ -3,7 +3,7 @@ from tkinter import *
 from PIL import ImageGrab
 import numpy as np
 
-cell = 100
+cell = 50
 cell2 = cell / 2
 cell4 = cell2 / 2
 margin = 10
@@ -14,6 +14,17 @@ def rad2deg(alpha):
 
 def deg2rad(alpha):
     return np.pi*alpha/180
+
+def drawGrille(canvas):
+    for row in range(11):
+        canvas.create_line(margin, row*cell/10 + margin,
+                           margin + cell, row*cell/10 + margin,
+                           fill="red")
+        for col in range(11):
+            canvas.create_line(col*cell/10 + margin, margin,
+                               col*cell/10 + margin, margin + cell,
+                               fill="red")
+
 
 def drawPolygone(canvas, pointes, x, y):
     radius = cell2
@@ -157,6 +168,30 @@ def drawCoeur(canvas, x, y):
     canvas.create_line(x + cell2, y + cell, p21x, p21y, fill="black")
 
 
+def drawEclair(canvas, x, y):
+    print("éclair")
+
+    #canvas.create_line(x, y + cell*0.2, x + cell, y + cell*0.8, fill="green")
+    #canvas.create_line(x, y + cell*0.55, x + cell, y, fill="green")
+
+    pts = []
+    pts.append((x, y + cell*0.2))                 # 1
+    pts.append((x + cell*0.305, y + cell*0.38))   # 2
+    pts.append((x + cell*0.22, y + cell*0.43))    # 3
+    pts.append((x + cell*0.53, y + cell*0.63))    # 4
+    pts.append((x + cell*0.44, y + cell*0.69))    # 5
+
+    pts.append((x + cell, y + cell))              # 6
+
+    pts.append((x + cell*0.595, y + cell*0.60))    # 7
+    pts.append((x + cell*0.67, y + cell*0.55))   # 8
+    pts.append((x + cell*0.43, y + cell*0.31))     # 9
+    pts.append((x + cell*0.515, y + cell*0.265))    # 10
+    pts.append((x + cell*0.35, y + cell*0.01))     # 11
+    pts.append((x, y + cell*0.2))                  # 1
+    canvas.create_polygon(pts, fill="white", outline="black")
+
+
 def drawLune(canvas, x, y):
     print("lune")
 
@@ -183,9 +218,6 @@ def drawLune(canvas, x, y):
         0 = (x1 - x)^2 + (y1 - y)^2 - r1^2
         0 = x1^2 + x^2 + 2*x1*x + y1^2 + y^2 - 2*y1*y - r1^2
         0 = y^2 - 2*y1*y + (x1^2 + x^2 - 2*x1*x + y1^2 - r1^2)
-
-
-
         """
         y0 = y1
         x = (r1*r1 - r0*r0 - x1*x1 + x0*x0) / (2*(x0 - x1))
@@ -241,6 +273,10 @@ def drawD(canvas, x, y):
     canvas.create_arc(coord, outline="black", start=-90, extent=180, style=ARC)
 
 
+def drawAll(canvas, y):
+    for x, drawer in enumerate(draw_forms):
+        print(forms[x], x * cell + margin, y)
+        drawer(canvas, margin + x * (cell + margin), y)
 
 
 top = tk.Tk()
@@ -248,17 +284,35 @@ top.overrideredirect(1) # FRAMELESS CANVAS WINDOW
 
 draw_forms = [drawRond, drawSquare, drawTriangle, drawStar5,
               drawStar4, drawHexagone, drawLogo, drawPentagone,
-              drawCoeur, drawLune, drawD]
+              drawCoeur, drawEclair, drawLune, drawD]
 forms = ["Rond", "Square", "Triangle", "Star5",
          "Star4", "Hexagone", "Logo", "Pentagone",
-         "Coeur", "Lune", "D"]
+         "Coeur", "Eclair", "Lune", "D"]
 
-canvas = tk.Canvas(top, bg="white", height=(cell + margin) + margin, width=len(forms) * (cell + margin) + margin)
+canvas = tk.Canvas(top, bg="white",
+                   height=3*(cell + margin) + margin,
+                   width=len(forms) * (cell + margin) + margin)
+
+# drawGrille(canvas)
 
 y = margin
-for x, drawer in enumerate(draw_forms):
-    print(forms[x], x * cell + margin, y)
-    drawer(canvas, margin + x * (cell + margin), y)
+drawAll(canvas, y)
+
+y += cell + margin
+cell = 20
+cell2 = cell / 2
+cell4 = cell2 / 2
+margin = 10
+d = cell * 0.1
+drawAll(canvas, y)
+
+y += cell + margin
+cell = 10
+cell2 = cell / 2
+cell4 = cell2 / 2
+margin = 10
+d = cell * 0.1
+drawAll(canvas, y)
 
 canvas.pack()
 
