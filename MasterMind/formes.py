@@ -3,11 +3,17 @@ from tkinter import *
 from PIL import ImageGrab
 import numpy as np
 
-cell = 50
-cell2 = cell / 2
-cell4 = cell2 / 2
-margin = 10
-d = cell * 0.1
+def set_zoom(c):
+    global cell, cell2, cell4
+    global margin, d
+
+    cell = c
+    cell2 = cell / 2
+    cell4 = cell2 / 2
+    margin = 10
+    d = cell * 0.1
+
+set_zoom(50)
 
 def rad2deg(alpha):
     return 180*alpha/np.pi
@@ -296,36 +302,33 @@ canvas = tk.Canvas(top, bg="white",
 # drawGrille(canvas)
 
 y = margin
+set_zoom(50)
 drawAll(canvas, y)
 
 y += cell + margin
-cell = 20
-cell2 = cell / 2
-cell4 = cell2 / 2
-margin = 10
-d = cell * 0.1
+set_zoom(20)
 drawAll(canvas, y)
 
 y += cell + margin
-cell = 10
-cell2 = cell / 2
-cell4 = cell2 / 2
-margin = 10
-d = cell * 0.1
+set_zoom(10)
 drawAll(canvas, y)
 
 canvas.pack()
 
-"""
+canvas.delete("all")
+
+y = margin
+set_zoom(20)
+drawAll(canvas, y)
+
+y = margin
 for x, drawer in enumerate(draw_forms):
     top.update()
     X = margin + x * (cell + margin)
     Y = y
-    ImageGrab.grab((X,
-                    Y,
-                    X + cell,
-                    Y + cell)).save('tuiles/image_{}_{}.jpg'.format(forms[y], purecolors[x]))
-"""
+    ImageGrab.grab((X - 1,
+                    Y - 1,
+                    X + cell + 2,
+                    Y + cell + 2)).save('formes/image_{}.jpg'.format(forms[x]))
 
 top.mainloop()
-
