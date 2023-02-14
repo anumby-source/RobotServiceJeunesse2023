@@ -580,23 +580,21 @@ forms = ["Rond", "Square", "Triangle", "Star5",
          "Star4", "Hexagone", "Logo", "Pentagone",
          "Coeur", "Eclair", "Lune", "D"]
 
-canvas = tk.Canvas(top, bg="white",
-                   height=3*(cell + margin) + margin,
-                   width=len(forms) * (cell + margin) + margin)
-canvas.pack()
-
-# drawGrille(canvas)
-
-y = margin
-drawAll(canvas, y)
-
-images = prepare_source_images(canvas)
-
-os.makedirs("./data", mode=0o750, exist_ok=True)
-
 use_data = True
 
+os.makedirs("./data", mode=0o750, exist_ok=True)
 if not use_data:
+    canvas = tk.Canvas(top, bg="white",
+                       height=3 * (cell + margin) + margin,
+                       width=len(forms) * (cell + margin) + margin)
+    canvas.pack()
+
+    # drawGrille(canvas)
+
+    y = margin
+    drawAll(canvas, y)
+
+    images = prepare_source_images(canvas)
     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Generating data from images")
     x_train, y_train, x_test, y_test = build_data(1000, images)
 else:
