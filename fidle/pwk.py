@@ -546,7 +546,7 @@ def plot_confusion_matrix(y_true, y_pred,
         try:
             cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         except:
-            cm = cm.astype('float') / 0.001[:, np.newaxis]
+            cm = cm.astype('float') / 0.001
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
@@ -890,12 +890,16 @@ def end():
     global _end_time
     _end_time = datetime.datetime.now()
     end_time = time.strftime("%A %d %B %Y, %H:%M:%S")
-    duration = hdelay_ms(_end_time - _start_time)
-    site_url = "https://fidle.cnrs.fr"
-    md = f'**End time :** {end_time}  \n'
-    md += f'**Duration :** {duration}  \n'
-    md += f'This notebook ends here :-)  \n'
-    md += f'[{site_url}]({site_url})'
-    display_md(md)
+    try:
+        duration = hdelay_ms(_end_time - _start_time)
+        site_url = "https://fidle.cnrs.fr"
+        md = f'**End time :** {end_time}  \n'
+        md += f'**Duration :** {duration}  \n'
+        md += f'This notebook ends here :-)  \n'
+        md += f'[{site_url}]({site_url})'
+        display_md(md)
+    except:
+        pass
+
 
 
