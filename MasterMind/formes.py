@@ -43,11 +43,11 @@ class Figures(object):
         self.top.overrideredirect(1)  # FRAMELESS CANVAS WINDOW
 
         self.draw_forms = [self.drawRond, self.drawSquare, self.drawTriangle, self.drawStar5,
-                           self.drawStar4, self.drawHexagone, self.drawLogo, self.drawPentagone,
-                           self.drawCoeur, self.drawEclair, self.drawLune, self.drawD]
+                           self.drawStar4, self.drawEclair, self.drawCoeur, self.drawLune,
+                           self.drawHexagone, self.drawPentagone, self.drawLogo, self.drawD]
         self.forms = ["Rond", "Square", "Triangle", "Star5",
-                      "Star4", "Hexagone", "Logo", "Pentagone",
-                      "Coeur", "Eclair", "Lune", "D"]
+                      "Star4", "Eclair", "Coeur", "Lune",
+                      "Hexagone", "Pentagone", "Logo", "D"]
 
     def run(self):
         self.top.mainloop()
@@ -377,7 +377,6 @@ class Figures(object):
         return images
 
 
-
 def change_perpective(image):
     def f(x, y, width, height):
         sigma = 1.3
@@ -487,6 +486,18 @@ def change_perpective(image):
     return img_finale
 
 
+def change_rotation(image):
+    height, width = image.shape[:2]
+    center = (width/2, height/2)
+
+    # print("change_rotation> ", height, width, center)
+
+    rotate_matrix = cv.getRotationMatrix2D(center=center, angle=randrange(360), scale=1.)
+    img_finale = cv.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
+
+    return img_finale
+
+
 def build_data(data_size, images):
     # on sauvegarde les data non normlisées
 
@@ -511,16 +522,15 @@ def build_data(data_size, images):
 
             # print(raw_img.shape)
 
-            data1 = change_perpective(raw_img)
+            data1 = change_rotation(raw_img)
+            data2 = change_perpective(data1)
 
             """
-            data2 = np.ones_like(data1) * 255.
+            data2 = np.ones_like(data2) * 255.
             data2[:, :, 0] = vf(data1[:, :, 0])
             data2[:, :, 1] = vf(data1[:, :, 1])
             data2[:, :, 2] = vf(data1[:, :, 2])
             """
-
-            data2 = data1
 
             """
             # visualisation de l'image finale
@@ -748,9 +758,9 @@ version = "v1"
 model, x_train, y_train, x_test, y_test = run(figures,
                                               form_number = 8,
                                               zoom = 20,
-                                              data_size = 5000,
+                                              data_size = 7500,
                                               version=version,
-                                              rebuild_data = False,
+                                              rebuild_data = True,
                                               rebuild_model = False)
 
 # figures.run()
