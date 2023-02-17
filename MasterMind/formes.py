@@ -364,7 +364,9 @@ class Figures(object):
 
             pix = np.array(img.getdata())
 
-            cvimg = pix.reshape(img.size[0], img.size[1], 3)
+            cvimg = pix.reshape(img.size[0], img.size[1], 3).astype(np.float32)
+            print(cvimg[0:3, 0:3, :])
+            cv.imwrite("RawImages{}.jpg".format(self.forms[form]), cvimg)
 
             data = np.zeros([img.size[0], img.size[1]])
             for i in range(3):
@@ -750,7 +752,9 @@ def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_mo
 figures = Figures()
 
 # ============ generlal parameters=================
-# images = figures.prepare_source_images(zoom=50)
+images = figures.prepare_source_images(zoom=20, form_number=8)
+
+exit()
 
 version = "v1"
 # version = "v2"
