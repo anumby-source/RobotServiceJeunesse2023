@@ -48,6 +48,9 @@ class Help(object):
         draw_text("A-", 0, 0)
         draw_text("A+", 0, 2)
 
+        draw_text("Avance", 2, 2)
+        draw_text("Recule", 2, 0)
+
     def xy(self, row, col, dy, dx):
         y = row * self.cell + self.margin + int(self.cell/2)
         x = col * self.cell + self.margin + int((self.cell - dx) / 2)
@@ -58,8 +61,8 @@ class Help(object):
 
 class Table(object):
     def __init__(self):
-        self.width = 500
-        self.height = 200
+        self.width = 800
+        self.height = 600
 
         self.image = np.zeros((self.height, self.width, 3), np.float32)
 
@@ -88,23 +91,69 @@ class Table(object):
             img2 = cv.warpAffine(src=img, M=rotate_matrix, dsize=(w, h))
 
             while True:
-                x = randrange(self.width - w)
-                y = randrange(self.height - h)
+                x = randrange(self.width - caméra.width - w) + int(caméra.width/2 + w/2)
+                y = randrange(self.height - caméra.height - h) + int(caméra.height/2 + h/2)
 
                 if not test_occupé(zones, w, h, x, y): break
 
             zones.append((x, y))
             print(self.image.shape, img2.shape, w, h, x, y)
-            self.image[y:y+h, x:x+w, :] = img2[:, :, :]
+            self.image[y-int(h/2):y+int(h/2)+1, x-int(h/2):x+int(w/2)+1, :] = img2[:, :, :]
 
 class Caméra(object):
     def __init__(self):
-        self.width = 80
-        self.height = 80
+        self.width = 120
+        self.height = 120
+        self.margin = 60
+        self.w2 = int(self.width/2)
+        self.h2 = int(self.height/2)
 
         self.fond = cv.imread("fond.jpg", cv.IMREAD_COLOR)
 
-    def draw(self, table, x, y):
+    def thresh_callback(self, val):
+        threshold = val
+        # Detect edges using Canny
+        canny_output = cv.Canny(self.src_gray, threshold, threshold * 2)
+        # Find contours
+        contours, hierarchy = cv.findContours(canny_output, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        # Draw contours
+        drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
+        for i in range(len(contours)):
+            color = (randint(0, 256), randint(0, 256), randint(0, 256))
+            cv.drawContours(drawing, contours, i, color, 2, cv.LINE_8, hierarchy, 0)
+        # Show in a window
+        cv.imshow('Contours', drawing)
+
+    def draw(self, table, x, y, alpha, d):
+        x0 = int(x - self.width/2)
+        if x0 < 0 : x0 = 0
+        x1 = int(x + self.width/2)
+        if x1 >= table.width: x1 = table.width - 1
+        y0 = int(y - self.height/2)
+        if y0 < 0 : y0 = 0
+        y1 = int(y + self.height/2)
+        if y1 >= table.height: y1 = table.height - 1
+        t = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
+        print("extract from table>  x0, y0=", x0, y0, "x1, y1=", x1, y1, "shape=3", t.shape)
+        caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3))
+        shape = t.shape
+        caméra[:,:,:] = t
+
+        cv.rectangle(caméra, (10, 10), (10 + self.width, 10 + self.height), G, 1)
+        cv.imshow("extract", caméra)
+        # cv.waitKey()
+        return
+        self.src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
+        self.src_gray = cv.blur(self.src_gray, (3, 3))
+        # Create Window
+        source_window = 'Source'
+        cv.namedWindow(source_window)
+        cv.imshow(source_window, src)
+        max_thresh = 255
+        thresh = 100  # initial threshold
+        cv.createTrackbar('Canny Thresh:', source_window, thresh, max_thresh, self.thresh_callback)
+        self.thresh_callback(thresh)
+
         x = randrange(self.fond.shape[1] - self.width)
         y = randrange(self.fond.shape[0] - self.height)
         print("fond", self.fond.shape, "x=", x, "y=", y)
@@ -121,10 +170,12 @@ for n, form in enumerate(forms):
     raw_images.append(cv.imread("RawImages{}.jpg".format(form), cv.IMREAD_COLOR))
 
 table = Table()
-table.add_images(raw_images)
-
 caméra = Caméra()
 help = Help()
+
+cv.rectangle(table.image, (caméra.w2, caméra.h2), (table.width - caméra.w2, table.height - caméra.h2), Y, 1)
+
+table.add_images(raw_images)
 
 x = table.width/2.
 y = table.height/2.
@@ -134,6 +185,11 @@ v = 0
 a = 1
 t = 0
 dt = 1
+d = 1
+
+raw_w, raw_h = raw_images[0].shape[0:2]
+raw_w2 = int(raw_w/2)
+raw_h2 = int(raw_h/2)
 
 while True:
     cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
@@ -152,22 +208,26 @@ while True:
     if k == zéro + 8: v += a
     elif k == zéro + 2: v -= a
 
+    if k == zéro + 1: d = -1
+    elif k == zéro + 3: d = 1
+
     if k == zéro + 5:
         a = 1
         v = 0
 
     if v > 0:
-        x += v * dt * np.cos(deg2rad(alpha))
-        if x < 0 : x = 0
-        if x >= table.width: x = table.width - 1
+        x += d * v * dt * np.cos(deg2rad(alpha))
+        if x < (caméra.w2 + raw_w2) : x = caméra.w2 + raw_w2
+        if x >= table.width - caméra.w2 - raw_w2: x = table.width - caméra.w2 - raw_w2 - 1
 
-        y += v * dt * np.sin(deg2rad(alpha))
-        if y < 0 : y = 0
-        if y >= table.height: y = table.height - 1
+        y += d * v * dt * np.sin(deg2rad(alpha))
+        if y < (caméra.h2 + raw_h2) : y = caméra.h2 + raw_h2
+        if y >= table.height - caméra.h2 - raw_h2: y = table.height - caméra.h2 - raw_h2 - 1
 
     print("t=", t, "(x, y)=", x, y, "v=", v, "alpha=", alpha, "a=", a)
     table.draw()
-    caméra.draw(table, x, y)
+    caméra.draw(table, x, y, alpha, d)
+
     help.draw()
 
     t += dt

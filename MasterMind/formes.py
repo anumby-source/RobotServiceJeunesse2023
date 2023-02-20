@@ -752,7 +752,7 @@ def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_mo
 figures = Figures()
 
 # ============ generlal parameters=================
-images = figures.prepare_source_images(zoom=20, form_number=8)
+images = figures.prepare_source_images(zoom=40, form_number=8)
 
 exit()
 
