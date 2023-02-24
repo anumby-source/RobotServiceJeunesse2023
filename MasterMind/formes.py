@@ -364,9 +364,28 @@ class Figures(object):
 
             pix = np.array(img.getdata())
 
-            cvimg = pix.reshape(img.size[0], img.size[1], 3).astype(np.float32)
-            print(cvimg[0:3, 0:3, :])
-            cv.imwrite("RawImages{}.jpg".format(self.forms[form]), cvimg)
+            cvimg = pix.reshape((img.size[0], img.size[1], 3)).astype(np.float32)
+
+            """
+            black = np.zeros((img.size[0], img.size[1]), np.float32)
+            print(cvimg.shape, black.shape)
+
+            for c in range(2):
+                black += cvimg[:,:,0]
+            black /= 3.0
+            # black = black.astype(np.int8)
+
+            bbb = (black < 255.0)*1*black
+            """
+
+            # print(cvimg[0:3, 0:3, :])
+            os.makedirs("./data/{}".format(self.forms[form]), mode=0o750, exist_ok=True)
+            filename = "./data/{}/RawImages{}.jpg".format(self.forms[form], self.forms[form])
+            cv.waitKey()
+            cv.imshow(filename, cvimg)
+            cv.waitKey()
+            cv.imwrite(filename, cvimg)
+            # cv.imwrite("BlackImages{}.jpg".format(self.forms[form]), black)
 
             data = np.zeros([img.size[0], img.size[1]])
             for i in range(3):
@@ -752,6 +771,8 @@ def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_mo
 figures = Figures()
 
 # ============ generlal parameters=================
+os.makedirs("./data", mode=0o750, exist_ok=True)
+
 images = figures.prepare_source_images(zoom=40, form_number=8)
 
 exit()

@@ -71,14 +71,14 @@ class Table(object):
 
     def add_images(self, raw_images):
 
-        def test_occupé(zones, w, h, x, y):
+        def test_occupé(w, h, x, y):
             margin = 20
-            for zone in zones:
-                xx, yy = zone
+            for zone in self.zones:
+                xx, yy, _ = zone
                 if (x > (xx - margin) and x < (xx + w + margin)) and (y > (yy - margin) and y < (yy + h + margin)): return True
             return False
 
-        zones = []
+        self.zones = []
         for img in raw_images:
             w, h = img.shape[0:2]
             print(img.shape, w, h)
@@ -94,9 +94,9 @@ class Table(object):
                 x = randrange(self.width - caméra.width - w) + int(caméra.width/2 + w/2)
                 y = randrange(self.height - caméra.height - h) + int(caméra.height/2 + h/2)
 
-                if not test_occupé(zones, w, h, x, y): break
+                if not test_occupé(w, h, x, y): break
 
-            zones.append((x, y))
+            self.zones.append((x, y, img2))
             print(self.image.shape, img2.shape, w, h, x, y)
             self.image[y-int(h/2):y+int(h/2)+1, x-int(h/2):x+int(w/2)+1, :] = img2[:, :, :]
 
@@ -124,7 +124,12 @@ class Caméra(object):
         # Show in a window
         cv.imshow('Contours', drawing)
 
-    def draw(self, table, x, y, alpha, d):
+    def draw(self, table, x, y):
+
+        raw_w, raw_h = raw_images[0].shape[0:2]
+        raw_w2 = int(raw_w / 2)
+        raw_h2 = int(raw_h / 2)
+
         x0 = int(x - self.width/2)
         if x0 < 0 : x0 = 0
         x1 = int(x + self.width/2)
@@ -134,15 +139,55 @@ class Caméra(object):
         y1 = int(y + self.height/2)
         if y1 >= table.height: y1 = table.height - 1
         t = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
-        print("extract from table>  x0, y0=", x0, y0, "x1, y1=", x1, y1, "shape=3", t.shape)
-        caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3))
+        # caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3))
+        caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3), np.uint8)
+
+
+        xf = randrange(self.fond.shape[1] - self.width - 2*10)
+        yf = randrange(self.fond.shape[0] - self.height - 2*10)
+        xf0 = xf
+        yf0 = yf
+        xf1 = xf0 + self.width + 2*10
+        yf1 = yf0 + self.height + 2*10
+        print("fond", self.fond.shape, "xf=", xf, "yf=", yf,
+              "xf0=", xf0, "yf0=", yf0, "xf1=", xf1, "yf1=", yf1,
+              "wf=", self.width + 2*10,
+              "hf=", self.height + 2*10)
+        ff = self.fond[yf0:yf1 + 1, xf0:xf1 + 1, :]
+        # fond = np.zeros_like(ff, np.float32)
+        fond = np.zeros_like(ff)
+        fond[:,:,:] = ff[:,:,:]
+        # cv.imshow("fond", fond)
+
+        cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
+
+        print("extract from table>  (x0, y0)=", x0, y0, "(x1, y1)=", x1, y1, "w=", x1 - x0, "h=", y1 - y0, " t.shape=", t.shape, "caméra.shape=", caméra.shape, "fond.shape=", fond.shape)
+
+        caméra = fond[:self.height + 2*10 + 1, :self.width + 2*10 + 1, :]
+        cv.circle(img=caméra, center=(int(self.w2 + 10), int(self.h2 + 10)), radius=3, color=R, lineType=cv.FILLED)
+
         shape = t.shape
-        caméra[:,:,:] = t
+        # t = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
+        caméra[:,:,:] += t.astype(np.uint8)
+
+        z1 = (t == 255)*255
+        z2 = (t != 255)*1*t
+        Z = z1 + z2
+        Zff = fond*z2
+
+        cv.imshow("ff", Zff)
+
+        """
+            self.zones.append((x, y, img2))
+            self.image[y-int(h/2):y+int(h/2)+1, x-int(h/2):x+int(w/2)+1, :] = img2[:, :, :]
+        """
 
         cv.rectangle(caméra, (10, 10), (10 + self.width, 10 + self.height), G, 1)
+
         cv.imshow("extract", caméra)
         # cv.waitKey()
         return
+
         self.src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
         self.src_gray = cv.blur(self.src_gray, (3, 3))
         # Create Window
@@ -192,8 +237,6 @@ raw_w2 = int(raw_w/2)
 raw_h2 = int(raw_h/2)
 
 while True:
-    cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
-
     k = cv.waitKey(0)
     print("k=", k)
 
@@ -226,7 +269,7 @@ while True:
 
     print("t=", t, "(x, y)=", x, y, "v=", v, "alpha=", alpha, "a=", a)
     table.draw()
-    caméra.draw(table, x, y, alpha, d)
+    caméra.draw(table, x, y)
 
     help.draw()
 
