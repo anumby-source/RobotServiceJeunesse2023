@@ -384,8 +384,8 @@ class Figures(object):
             """
 
             # print(cvimg[0:3, 0:3, :])
-            os.makedirs("./data/{}".format(self.forms[form]), mode=0o750, exist_ok=True)
-            filename = "./data/{}/RawImages{}.jpg".format(self.forms[form], self.forms[form])
+            os.makedirs("./dataset/{}".format(self.forms[form]), mode=0o750, exist_ok=True)
+            filename = "./dataset/{}/RawImages{}.jpg".format(self.forms[form], self.forms[form])
             cv.waitKey()
             cv.imshow(filename, cvimg)
             cv.waitKey()
