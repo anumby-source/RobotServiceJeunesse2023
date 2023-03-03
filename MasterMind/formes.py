@@ -48,6 +48,7 @@ class Figures(object):
         self.forms = ["Rond", "Square", "Triangle", "Star5",
                       "Star4", "Eclair", "Coeur", "Lune",
                       "Hexagone", "Pentagone", "Logo", "D"]
+        self.line_width = 4
 
     def run(self):
         self.top.mainloop()
@@ -91,7 +92,7 @@ class Figures(object):
 
             pts.append((px, py))
 
-        self.canvas.create_polygon(pts, fill="white", outline="black", width=3)
+        self.canvas.create_polygon(pts, fill="white", outline="black", width=self.line_width)
 
 
     def drawStar(self, pointes, x, y):
@@ -117,12 +118,12 @@ class Figures(object):
 
             pts.append((px, py))
 
-        self.canvas.create_polygon(pts, fill="white", outline="black", width=3)
+        self.canvas.create_polygon(pts, fill="white", outline="black", width=self.line_width)
 
 
     def drawRond(self, x, y):
         # print("rond")
-        self.canvas.create_oval(x, y, x + self.cell, y + self.cell, fill="white", outline="black", width=3)
+        self.canvas.create_oval(x, y, x + self.cell, y + self.cell, fill="white", outline="black", width=self.line_width)
 
 
     def drawSquare(self, x, y):
@@ -183,7 +184,7 @@ class Figures(object):
             py = cy + r * np.sin(alpha + dalpha)
             pts.append((px, py))
 
-        self.canvas.create_polygon(pts, fill="white", outline="black", width=3)
+        self.canvas.create_polygon(pts, fill="white", outline="black", width=self.line_width)
 
 
     def drawCoeur(self, x, y):
@@ -202,7 +203,7 @@ class Figures(object):
         self.canvas.create_arc(c1x - self.cell4, c1y - self.cell4,
                           c1x + self.cell4, c1y + self.cell4,
                           start=rad2deg(start1),
-                          extent=rad2deg(extent1), style=ARC, width=3)
+                          extent=rad2deg(extent1), style=ARC, width=self.line_width)
 
         c2x = x + self.cell2 + self.cell4
         c2y = c1y
@@ -218,10 +219,10 @@ class Figures(object):
         self.canvas.create_arc(c2x - self.cell4, c2y - self.cell4,
                                c2x + self.cell4, c2y + self.cell4,
                                start=rad2deg(start2),
-                               extent=rad2deg(extent2), style=ARC, width=3)
+                               extent=rad2deg(extent2), style=ARC, width=self.line_width)
 
-        self.canvas.create_line(p12x, p12y, x + self.cell2, y + self.cell, fill="black", width=3)
-        self.canvas.create_line(x + self.cell2, y + self.cell, p21x, p21y, fill="black", width=3)
+        self.canvas.create_line(p12x, p12y, x + self.cell2, y + self.cell, fill="black", width=self.line_width)
+        self.canvas.create_line(x + self.cell2, y + self.cell, p21x, p21y, fill="black", width=self.line_width)
 
 
     def drawEclair(self, x, y):
@@ -245,7 +246,7 @@ class Figures(object):
         pts.append((x + self.cell*0.515, y + self.cell*0.265))    # 10
         pts.append((x + self.cell*0.35, y + self.cell*0.01))     # 11
         pts.append((x, y + self.cell*0.2))                  # 1
-        self.canvas.create_polygon(pts, fill="white", outline="black", width=3)
+        self.canvas.create_polygon(pts, fill="white", outline="black", width=self.line_width)
 
 
     def drawLune(self, x, y):
@@ -312,21 +313,25 @@ class Figures(object):
         espace1 = rad2deg(alpha)
 
         coord1 = c1x - radius1, c1y - radius1, c1x + radius1, c1y + radius1
-        self.canvas.create_arc(coord1, outline="black", start=espace1, extent=(360. - 2 * espace1), style=ARC, width=3)
+        self.canvas.create_arc(coord1, outline="black",
+                               start=espace1, extent=(360. - 2 * espace1), style=ARC,
+                               width=self.line_width)
 
         coord2 = c2x - radius2, c2y - radius2, c2x + radius2, c2y + radius2
         alpha = np.arccos((x - c2x) / radius2)
         espace2 = rad2deg(alpha)
-        self.canvas.create_arc(coord2, outline="black", start=espace2, extent=(360. - 2 * espace2), style=ARC, width=3)
+        self.canvas.create_arc(coord2, outline="black",
+                               start=espace2, extent=(360. - 2 * espace2), style=ARC,
+                               width=self.line_width)
 
 
     def drawD(self, x, y):
         # print("d")
-        self.canvas.create_line(x + self.cell2, y, x, y, fill="black", width=3)
-        self.canvas.create_line(x, y, x, y + self.cell, fill="black", width=3)
-        self.canvas.create_line(x, y + self.cell, x + self.cell2, y + self.cell, fill="black", width=3)
+        self.canvas.create_line(x + self.cell2, y, x, y, fill="black", width=self.line_width)
+        self.canvas.create_line(x, y, x, y + self.cell, fill="black", width=self.line_width)
+        self.canvas.create_line(x, y + self.cell, x + self.cell2, y + self.cell, fill="black", width=self.line_width)
         coord = x, y, x + self.cell, y + self.cell
-        self.canvas.create_arc(coord, outline="black", start=-90, extent=180, style=ARC, width=3)
+        self.canvas.create_arc(coord, outline="black", start=-90, extent=180, style=ARC, width=self.line_width)
 
 
     def drawAll(self, y, form_number=None):
