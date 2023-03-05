@@ -11,6 +11,7 @@ FFC23D >>
 FF906F +
 FFA857 -
 
+dans le menu Outils > gerer les bibliothèques ajouter IRremoteESP8266 
 
  * IRremoteESP8266: IRrecvDemo - demonstrates receiving IR codes with IRrecv
  * This is very simple teaching code to show you how to use the library.
