@@ -3,11 +3,13 @@ import datetime
 import tkinter as tk
 from tkinter import *
 from PIL import ImageGrab
-import numpy as np
+from PIL import Image
 import cv2 as cv
+import tensorflow as tf
 from tensorflow import keras
 import pandas as pd
 from random import *
+import numpy as np
 
 import re
 import os
@@ -341,7 +343,7 @@ class Figures(object):
             drawer(self.margin + x * (self.cell + self.margin), y)
 
 
-    def prepare_source_images(self, zoom, form_number=None):
+    def prepare_source_images(self, zoom, form_number=None, rebuild_forme=None):
         if form_number is None: form_number = len(self.forms)
 
         self.set_zoom(zoom)
@@ -359,6 +361,11 @@ class Figures(object):
         y = self.margin
         for form, drawer in enumerate(self.draw_forms):
             if form >= form_number: break
+            if rebuild_forme is not None and rebuild_forme != form:
+                continue
+
+            print("prepare_source_images> form=", form)
+
             self.top.update()
             X = self.margin + form * (self.cell + self.margin)
             Y = y
@@ -397,6 +404,34 @@ class Figures(object):
                 data[:, :] += cvimg[:, :, i]
 
             data /= 3.0
+
+            images.append(data)
+
+        return images
+
+    def load_source_images(self, zoom, form_number=None, rebuild_forme=None):
+        if form_number is None: form_number = len(self.forms)
+
+        images = []
+
+        for nform, form in enumerate(self.forms):
+            if nform >= form_number: break
+
+            if rebuild_forme is not None and rebuild_forme != nform:
+                continue
+
+            print("load_source_images> nform=", nform)
+
+            filename = "./dataset/{}/RawImages{}.jpg".format(self.forms[nform], self.forms[nform])
+            img = Image.open(filename)
+            npimg = np.array(img)
+            data = np.zeros([img.size[0], img.size[1]])
+            for i in range(3):
+                data[:, :] += npimg[:, :, i]
+
+            data /= 3.0
+
+            # print("load_source_images> ", data.shape)
 
             images.append(data)
 
@@ -512,14 +547,48 @@ def change_perpective(image):
     return img_finale
 
 
+def rotation_model():
+    return tf.keras.Sequential([
+        keras.layers.RandomRotation(0.2),
+    ])
+
+
 def change_rotation(image):
+    # print("change_rotation> ", type(image), image.shape)
+
     height, width = image.shape[:2]
-    center = (width/2, height/2)
 
-    # print("change_rotation> ", height, width, center)
+    mode = "cv"
+    mode = "tf"
 
-    rotate_matrix = cv.getRotationMatrix2D(center=center, angle=randrange(360), scale=1.)
-    img_finale = cv.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
+    if mode == "cv":
+        center = (width/2, height/2)
+
+        # print("change_rotation> ", height, width, center)
+
+        rotate_matrix = cv.getRotationMatrix2D(center=center, angle=randrange(360), scale=1.)
+        img_finale = cv.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
+
+        print("change_rotation> ", img_finale.shape, type(img_finale))
+    else:
+        transform = rotation_model()
+
+        data = np.zeros([height, width, 3], np.float32)
+        data[:, :, 0] = image[:, :]
+        data[:, :, 1] = image[:, :]
+        data[:, :, 2] = image[:, :]
+
+        img = transform(data).numpy()
+        # print(img.shape, type(img))
+
+        # cv.imshow("F", img)
+        # cv.waitKey()
+
+        img_finale = np.zeros([img.shape[0], img.shape[1]])
+        for j in range(3):
+            img_finale[:, :] += img[:, :, j]
+
+        img_finale /= 3
 
     return img_finale
 
@@ -536,6 +605,7 @@ def build_data(data_size, images):
 
     vf = np.vectorize(f)
 
+    # print("build_data> ", images)
     shape = images[0].shape
     image_size = len(images)
     frac = 0.85
@@ -549,10 +619,11 @@ def build_data(data_size, images):
             # print(raw_img.shape)
 
             data1 = change_rotation(raw_img)
-            data2 = change_perpective(data1)
+            # data2 = change_perpective(data1)
+            data2 = data1
 
             """
-            data2 = np.ones_like(data2) * 255.
+            data2 = np.ones_like(data1) * 255.
             data2[:, :, 0] = vf(data1[:, :, 0])
             data2[:, :, 1] = vf(data1[:, :, 1])
             data2[:, :, 2] = vf(data1[:, :, 2])
@@ -564,21 +635,23 @@ def build_data(data_size, images):
             cv.waitKey(0)
             """
 
+            """
             # transformation de l'image finale en une matrice de points N&B
             data = np.zeros([data2.shape[0], data2.shape[1]])
             for j in range(3):
                 data[:, :] += data2[:, :, j]
 
             data /= 3
+            """
 
             if first:
-                shape = data.shape
+                shape = data2.shape
                 x_data = np.zeros([data_size * image_size, shape[0], shape[1], 1])
                 y_data = np.zeros([data_size * image_size])
                 first = False
 
             p = i*image_size + n
-            x_data[p, :, :, 0] = data[:, :]
+            x_data[p, :, :, 0] = data2[:, :]
             y_data[p] = n
 
             # print("build_data> p={} x_data={}".format(p, x_data[p, :, :, 0]))
@@ -589,7 +662,7 @@ def build_data(data_size, images):
 
     index = int(frac*data_size*image_size)
 
-    print("build_data> x_data.shape=", x_data.shape, "index=", index)
+    print("build_data> x_data.shape=", x_data.shape, "index=", index, "generated data=", k)
 
     # print("----------------------------------------------------------------------------------------------")
     # print("build_data> x_data={}".format(x_data[:, :, :, :]))
@@ -652,16 +725,16 @@ def build_model_v1(shape, form_number):
 
     model.add(keras.layers.Input((shape[1], shape[2], 1)))
 
-    model.add(keras.layers.Conv2D(8, (3, 3), activation='relu'))
+    model.add(keras.layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(keras.layers.MaxPooling2D((2, 2)))
     model.add(keras.layers.Dropout(0.2))
 
-    model.add(keras.layers.Conv2D(16, (3, 3), activation='relu'))
+    model.add(keras.layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(keras.layers.MaxPooling2D((2, 2)))
     model.add(keras.layers.Dropout(0.2))
 
     model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dense(100, activation='relu'))
+    model.add(keras.layers.Dense(128, activation='relu'))
     model.add(keras.layers.Dropout(0.5))
 
     model.add(keras.layers.Dense(form_number, activation='softmax'))
@@ -695,7 +768,7 @@ def build_model_v2(shape):
     return model
 
 
-def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_model):
+def run(figures, form_number, zoom, data_size, version, rebuild_forms, rebuild_data, rebuild_model, rebuild_forme=None):
     figures.set_zoom(zoom)
 
     os.makedirs("./data", mode=0o750, exist_ok=True)
@@ -703,12 +776,20 @@ def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_mo
     if rebuild_data:
         rebuild_model = True
 
-        images = figures.prepare_source_images(zoom, form_number)
+        if rebuild_forms:
+            images = figures.prepare_source_images(zoom=zoom, form_number= form_number, rebuild_forme=rebuild_forme)
+        else:
+            images = figures.load_source_images(zoom=zoom, form_number=form_number, rebuild_forme=rebuild_forme)
+
+        # print("run> ", type(images), images)
 
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Generating data from images")
         x_train, y_train, x_test, y_test = build_data(data_size, images)
     else:
         x_train, y_train, x_test, y_test = load_data()
+
+    if rebuild_forme is not None:
+        exit()
 
     print("run> x_train : ", x_train.shape)
     print("run> y_train : ", y_train.shape)
@@ -776,20 +857,18 @@ def run(figures, form_number, zoom, data_size, version, rebuild_data, rebuild_mo
 figures = Figures()
 
 # ============ generlal parameters=================
+os.makedirs("./dataset", mode=0o750, exist_ok=True)
 os.makedirs("./data", mode=0o750, exist_ok=True)
-
-images = figures.prepare_source_images(zoom=40, form_number=8)
-
-exit()
 
 version = "v1"
 # version = "v2"
 
 model, x_train, y_train, x_test, y_test = run(figures,
                                               form_number = 8,
-                                              zoom = 20,
-                                              data_size = 7500,
+                                              zoom = 40,
+                                              data_size = 10000,
                                               version=version,
+                                              rebuild_forms = False,
                                               rebuild_data = True,
                                               rebuild_model = False)
 

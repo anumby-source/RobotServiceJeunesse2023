@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 from random import *
+import math
 
 R = (0, 0, 255)
 G = (0, 255, 0)
@@ -16,6 +17,10 @@ def rad2deg(alpha):
 
 def deg2rad(alpha):
     return np.pi * alpha / 180
+
+
+def tuple_sum(t):
+    return np.sum(t)
 
 
 class Help(object):
@@ -64,41 +69,139 @@ class Table(object):
         self.width = 800
         self.height = 600
 
-        self.image = np.zeros((self.height, self.width, 3), np.float32)
+        self.reset_image()
+        self.zones = []
+
+    def reset_image(self):
+        self.zones = []
+        fond_origin = cv.imread('fond.jpg')
+        self.image = np.zeros((self.height, self.width, 3), np.uint8)
+        self.image[:, :, :] = fond_origin[:self.height, :self.width, :]
+        return self.image
 
     def draw(self):
         cv.imshow("Table", self.image)
 
-    def add_images(self, raw_images):
+    def test_occupé(self, W, H):
+        margin = 40
+        if len(self.zones) == 0:
+            self.zones.append((W, H))
+            return True
 
-        def test_occupé(w, h, x, y):
-            margin = 20
-            for zone in self.zones:
-                xx, yy, _ = zone
-                if (x > (xx - margin) and x < (xx + w + margin)) and (y > (yy - margin) and y < (yy + h + margin)): return True
-            return False
+        for i, zone in enumerate(self.zones):
+            Wz, Hz = zone
+            # print("test_occupé> ", i, W, H, Wz, Hz)
+            ok = True
+            if (W > (Wz - margin) and W <= (Wz + margin)) and (H > (Hz - margin) and H <= (Hz + margin)):
+                ok = False
+                break
 
-        self.zones = []
-        for img in raw_images:
-            w, h = img.shape[0:2]
-            print(img.shape, w, h)
+        if ok:
+            self.zones.append((W, H))
+            return True
 
-            center = (w / 2, h / 2)
+        return False
 
-            # print("change_rotation> ", height, width, center)
 
-            rotate_matrix = cv.getRotationMatrix2D(center=center, angle=randrange(360), scale=1.)
-            img2 = cv.warpAffine(src=img, M=rotate_matrix, dsize=(w, h))
+def crop(to_img, pos, img, seuil):
+    to_height, to_width = to_img.shape[:2]
+    height, width = img.shape[:2]
 
-            while True:
-                x = randrange(self.width - caméra.width - w) + int(caméra.width/2 + w/2)
-                y = randrange(self.height - caméra.height - h) + int(caméra.height/2 + h/2)
+    # print("crop> ", to_height, to_width, height, width)
 
-                if not test_occupé(w, h, x, y): break
+    seuil = tuple_sum(seuil)
 
-            self.zones.append((x, y, img2))
-            print(self.image.shape, img2.shape, w, h, x, y)
-            self.image[y-int(h/2):y+int(h/2)+1, x-int(h/2):x+int(w/2)+1, :] = img2[:, :, :]
+    y0, x0 = pos
+    y0 -= int(height/2)
+    x0 -= int(width/2)
+    if y0 < 0: y0 = 0
+    if x0 < 0: x0 = 0
+
+    y1 = y0 + int(height)
+    if y1 >= to_height: y1 = to_height - 1
+    x1 = x0 + int(width)
+    if x1 >= to_width: x1 = to_width - 1
+
+    mask = np.zeros_like(img)
+    mask[:,:,:] = img[:,:,:]
+
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            color = tuple_sum(mask[y-y0, x-x0, :])
+            if color > seuil:
+                mask[y-y0, x-x0, :] = 255
+                # res[y, x, :] = 0
+                c0 = img[y-y0, x-x0, 0]
+                c1 = img[y-y0, x-x0, 1]
+                c2 = img[y-y0, x-x0, 2]
+                if c0 < 5 and c1 < 5 and c2 > 5:
+                    table.image[y, x, :] = 0
+                else:
+                    table.image[y, x, :] = img[y-y0, x-x0, :]
+
+    return mask
+
+
+def install_form(form, image_origin):
+    height, width = image_origin.shape[:2]
+
+    # image = image_origin
+
+    x = (image_origin < 5) * 255
+    image_red = x.astype(np.uint8)
+
+    image_red[:, :, 0:2] = 0
+
+    # cv.rectangle(image_red, (0, 0), (width - 1, height - 1), (0, 255, 0), 1)
+
+    image = np.zeros_like(image_red)
+    image[:, :, :] = image_red[:, :, :]
+
+    for y in range(height):
+        for x in range(width):
+            color = tuple_sum(image_red[y, x, :])
+            if color < 3*5:
+                image[y, x, :] = 255
+            else:
+                image[y, x, :] = image_red[y, x, :]
+
+    center = (int(height / 2), int(width / 2))
+
+    while True:
+        angle = randrange(360)
+        rotate_matrix = cv.getRotationMatrix2D(center=center, angle=angle, scale=1.)
+        rad = math.radians(angle)
+        sin = math.sin(rad)
+        cos = math.cos(rad)
+        b_w = int((height * abs(sin)) + (width * abs(cos)))*2
+        b_h = int((height * abs(cos)) + (width * abs(sin)))*2
+
+        # print("b_w, b_h=", b_w, b_h, "center=", center)
+
+        rotate_matrix[0, 2] += ((b_w / 2) - center[0])
+        rotate_matrix[1, 2] += ((b_h / 2) - center[1])
+
+        rotated = cv.warpAffine(src=image, M=rotate_matrix, dsize=(b_w, b_h))
+
+        margin = 50
+        H = randrange(margin, table.height - margin)
+        W = randrange(margin, table.width - margin)
+        # print("fond size=", table.height, table.width, "H, W=", H, W, "b_w, b_h=", b_w, b_h, "center=", center)
+
+        test = table.test_occupé(W, H)
+        if test: break
+
+    # cv.rectangle(table.image, (W-center[0], H-center[0]), (W+center[0], H+center[0]), (0, 255, 255), 1)
+
+    crop(table.image, pos=(H, W), img=rotated, seuil=np.array([5, 5, 5]))
+
+    # cv.imshow("fond", table.image)
+    # cv.imshow("image_origin", image_origin)
+    # cv.imshow("image_red", image_red)
+    # cv.imshow("image", image)
+    # cv.imshow("rotated", rotated)
+    # cv.imshow("mask", mask)
+    # cv.imshow("table".format(form), table.image)
 
 class Caméra(object):
     def __init__(self):
@@ -126,7 +229,7 @@ class Caméra(object):
 
     def draw(self, table, x, y):
 
-        raw_w, raw_h = raw_images[0].shape[0:2]
+        raw_w, raw_h = images[0].shape[0:2]
         raw_w2 = int(raw_w / 2)
         raw_h2 = int(raw_h / 2)
 
@@ -138,49 +241,15 @@ class Caméra(object):
         if y0 < 0 : y0 = 0
         y1 = int(y + self.height/2)
         if y1 >= table.height: y1 = table.height - 1
-        t = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
-        # caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3))
-        caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3), np.uint8)
-
-
-        xf = randrange(self.fond.shape[1] - self.width - 2*10)
-        yf = randrange(self.fond.shape[0] - self.height - 2*10)
-        xf0 = xf
-        yf0 = yf
-        xf1 = xf0 + self.width + 2*10
-        yf1 = yf0 + self.height + 2*10
-        print("fond", self.fond.shape, "xf=", xf, "yf=", yf,
-              "xf0=", xf0, "yf0=", yf0, "xf1=", xf1, "yf1=", yf1,
-              "wf=", self.width + 2*10,
-              "hf=", self.height + 2*10)
-        ff = self.fond[yf0:yf1 + 1, xf0:xf1 + 1, :]
-        # fond = np.zeros_like(ff, np.float32)
-        fond = np.zeros_like(ff)
-        fond[:,:,:] = ff[:,:,:]
-        # cv.imshow("fond", fond)
 
         cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
 
-        print("extract from table>  (x0, y0)=", x0, y0, "(x1, y1)=", x1, y1, "w=", x1 - x0, "h=", y1 - y0, " t.shape=", t.shape, "caméra.shape=", caméra.shape, "fond.shape=", fond.shape)
+        caméra = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3), np.uint8)
+        caméra[:,:,:] = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
 
-        caméra = fond[:self.height + 2*10 + 1, :self.width + 2*10 + 1, :]
-        cv.circle(img=caméra, center=(int(self.w2 + 10), int(self.h2 + 10)), radius=3, color=R, lineType=cv.FILLED)
+        print("extract from table>  (x0, y0)=", x0, y0, "(x1, y1)=", x1, y1, "w=", x1 - x0, "h=", y1 - y0, "caméra.shape=", caméra.shape)
 
-        shape = t.shape
-        # t = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
-        caméra[:,:,:] += t.astype(np.uint8)
-
-        z1 = (t == 255)*255
-        z2 = (t != 255)*1*t
-        Z = z1 + z2
-        Zff = fond*z2
-
-        cv.imshow("ff", Zff)
-
-        """
-            self.zones.append((x, y, img2))
-            self.image[y-int(h/2):y+int(h/2)+1, x-int(h/2):x+int(w/2)+1, :] = img2[:, :, :]
-        """
+        # cv.circle(img=caméra, center=(int(self.w2 + 10), int(self.h2 + 10)), radius=3, color=R, lineType=cv.FILLED)
 
         cv.rectangle(caméra, (10, 10), (10 + self.width, 10 + self.height), G, 1)
 
@@ -188,39 +257,28 @@ class Caméra(object):
         # cv.waitKey()
         return
 
-        self.src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
-        self.src_gray = cv.blur(self.src_gray, (3, 3))
-        # Create Window
-        source_window = 'Source'
-        cv.namedWindow(source_window)
-        cv.imshow(source_window, src)
-        max_thresh = 255
-        thresh = 100  # initial threshold
-        cv.createTrackbar('Canny Thresh:', source_window, thresh, max_thresh, self.thresh_callback)
-        self.thresh_callback(thresh)
-
-        x = randrange(self.fond.shape[1] - self.width)
-        y = randrange(self.fond.shape[0] - self.height)
-        print("fond", self.fond.shape, "x=", x, "y=", y)
-        self.image = self.fond[y:y+self.height, x:x+self.width, :]
-        cv.imshow("Caméra", self.image)
-
 
 forms = ["Rond", "Square", "Triangle", "Star5",
          "Star4", "Eclair", "Coeur", "Lune"]
-
-raw_images = []
-
-for n, form in enumerate(forms):
-    raw_images.append(cv.imread("RawImages{}.jpg".format(form), cv.IMREAD_COLOR))
 
 table = Table()
 caméra = Caméra()
 help = Help()
 
-cv.rectangle(table.image, (caméra.w2, caméra.h2), (table.width - caméra.w2, table.height - caméra.h2), Y, 1)
+images = []
+for form in forms:
+    image = cv.imread('dataset/{}/RawImages{}.jpg'.format(form, form))
+    images.append(image)
 
-table.add_images(raw_images)
+table.reset_image()
+
+m = 20
+cv.rectangle(table.image, (20, 20), (table.width - 21, table.height - 21), (0, 255, 255), 1)
+
+for f, form in enumerate(forms):
+    install_form(form, images[f])
+
+# cv.waitKey()
 
 x = table.width/2.
 y = table.height/2.
@@ -232,7 +290,7 @@ t = 0
 dt = 1
 d = 1
 
-raw_w, raw_h = raw_images[0].shape[0:2]
+raw_w, raw_h = images[0].shape[0:2]
 raw_w2 = int(raw_w/2)
 raw_h2 = int(raw_h/2)
 
