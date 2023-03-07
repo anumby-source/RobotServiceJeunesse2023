@@ -107,6 +107,77 @@ def crop(to_img, pos, img, seuil):
     to_height, to_width = to_img.shape[:2]
     height, width = img.shape[:2]
 
+    # print("crop> ========================================================================")
+    for y in range(height):
+        for x in range(width):
+            c0 = img[y, x, 0]
+            c1 = img[y, x, 1]
+            c2 = img[y, x, 2]
+            if (c0 == 0 and c1 == 0 and c2 == 0):
+                # noir
+                pass
+            elif (c0 == 255 and c1 == 255 and c2 == 255):
+                # blanc
+                pass
+            elif (c0 == 0 and c1 == 0 and c2 == 255):
+                # rouge
+                img[y, x, 2] = 0
+            elif c2 == 255:
+                # presque rouge
+                img[y, x, :] = 0
+            elif c0 == 0 and c1 == 0:
+                # presque rouge
+                img[y, x, :] = 0
+            elif (c0 == c1 and c1 != c2):
+                # presque rouge
+                img[y, x, :] = 0
+            elif (c0 == c1 and c1 == c2 and c0 < 128):
+                # gris foncé
+                img[y, x, :] = 0
+            elif (c0 == c1 and c1 == c2 and c0 >= 128):
+                # gris clair
+                img[y, x, :] = 255
+            else:
+                print("crop> ", x, y, "color=", c0, c1, c2)
+
+    def thresh_callback(val):
+        threshold = val
+        # Detect edges using Canny
+        print("src_gray.shape=", src_gray.shape)
+        canny_output = cv.Canny(src_gray, threshold, threshold * 2)
+        # Find contours
+        contours, hierarchy = cv.findContours(canny_output, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        # Draw contours
+        drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
+        for i in range(len(contours)):
+            color = (randint(0, 256), randint(0, 256), randint(0, 256))
+            cv.drawContours(drawing, contours, i, color, 1, cv.LINE_8, hierarchy, 0)
+        # Show in a window
+        cv.imshow('Contours', drawing)
+        cv.waitKey()
+
+    """
+    src_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    src_gray = cv.blur(src_gray, (3, 3))
+    print("src_gray.shape=", src_gray.shape)
+    max_thresh = 255
+    threshold = 0  # initial threshold
+
+    # Show in a window
+
+    source_window = 'Source'
+    cv.namedWindow(source_window)
+    cv.imshow(source_window, img)
+
+    cv.createTrackbar('Canny Thresh:', source_window, threshold, max_thresh, thresh_callback)
+    thresh_callback(threshold)
+
+    """
+    # exit()
+
+    # cv.imshow("img", img)
+    # cv.waitKey()
+
     # print("crop> ", to_height, to_width, height, width)
 
     seuil = tuple_sum(seuil)
@@ -125,21 +196,39 @@ def crop(to_img, pos, img, seuil):
     mask = np.zeros_like(img)
     mask[:,:,:] = img[:,:,:]
 
+    # print("crop> ========================================================================")
     for y in range(y0, y1):
         for x in range(x0, x1):
-            color = tuple_sum(mask[y-y0, x-x0, :])
-            if color > seuil:
-                mask[y-y0, x-x0, :] = 255
-                # res[y, x, :] = 0
+            s = tuple_sum(mask[y-y0, x-x0, :])
+            # print("crop> ", x, y, "seuil=", seuil, "s=", s)
+            if s >= 15:
+                if s < 765:
+                    # print("crop> ", x - x0, y - y0, "seuil=", seuil, "s=", s)
+                    pass
+
+                # mask[y-y0, x-x0, :] = 255
+
                 c0 = img[y-y0, x-x0, 0]
                 c1 = img[y-y0, x-x0, 1]
                 c2 = img[y-y0, x-x0, 2]
+
                 if c0 < 5 and c1 < 5 and c2 > 5:
+                    # print("crop> A", x - x0, y - y0, "seuil=", seuil, "s=", s)
                     table.image[y, x, :] = 0
+                elif c0 < 5 and c1 < 5 and c2 < 5:
+                    # print("crop> B", x - x0, y - y0, "seuil=", seuil, "s=", s)
+                    table.image[y, x, :] = 0
+                elif s == 0:
+                    # print("crop> noir ", x - x0, y - y0, "seuil=", seuil, "s=", s)
+                    table.image[y, x, :] = 0  # img[y - y0, x - x0, :]
+                elif s == 765:
+                    # print("crop> blanc ", x - x0, y - y0, "seuil=", seuil, "s=", s)
+                    table.image[y, x, :] = 255 # img[y - y0, x - x0, :]
                 else:
+                    # print("crop> D", x - x0, y - y0, "seuil=", seuil, "s=", s)
                     table.image[y, x, :] = img[y-y0, x-x0, :]
 
-    return mask
+    # exit()
 
 
 def install_form(form, image_origin):
