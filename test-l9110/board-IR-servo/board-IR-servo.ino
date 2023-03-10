@@ -1,18 +1,9 @@
 /*
  * Arnaud https://github.com/arnaudrco/exemples/blob/main/Telecommande-IR-servomoteur/IR-esp-mp3-board-sleep/IR-esp-mp3-board-sleep.ino
  * ATTENTION rentrer les codes pour votre télécommande (emetteur IR)
-
-FF22DD >=
-FFE01F EQ
-
-FF02FD <<
-FFC23D >>
-
-FF906F +
-FFA857 -
-
-dans le menu Outils > gerer les bibliothèques ajouter IRremoteESP8266 
-
+ 
+ ajouter la bibliothèque IRremoteESP8266 dans outils > gérer les bibliothèque
+**********************************************************
  * IRremoteESP8266: IRrecvDemo - demonstrates receiving IR codes with IRrecv
  * This is very simple teaching code to show you how to use the library.
  * If you are trying to decode your Infra-Red remote(s) for later replay,
@@ -47,7 +38,12 @@ Servo servo1,servo2;
 
 #define GND D7
 
+
+#define TEMPO 500 // temporisation 
+
 int vitesse = 180;  // 0 à 255
+
+
 
 // An IR detector/demodulator is connected to GPIO pin 14(D5 on a NodeMCU
 // board).
@@ -64,6 +60,8 @@ const uint16_t kRecvPin = 14;
 
 IRrecv irrecv(D6);
 decode_results results;
+unsigned long mmm;
+int count=0; // nb d'impulsions IR reçues
 
 void setup() {
 //  ESP.lightSleep();
@@ -81,6 +79,7 @@ void setup() {
   Serial.println();
   Serial.print("IRrecvDemo is now running and waiting for IR message on Pin ");
   Serial.println(kRecvPin);
+  mmm = millis();
 }
 void bip_servo(){
    servo1.attach(servoPin1);
@@ -89,8 +88,8 @@ void bip_servo(){
          servo1.write(0);
      servo2.write(0);
               delay(500);
-               servo1.write(180);
-     servo2.write(180);
+               servo1.write(90);
+     servo2.write(90);
               delay(500);
 
  //                servo1.detach();
@@ -149,40 +148,56 @@ void loop() {
 /*  if ((mmm - millis()) > TEMPO){ // sommeil profond
     ESP.deepSleep(0);
   }*/
+  if ((millis()- mmm) > TEMPO){ // 
+    mmm= millis();
+    if(count > 0 ){
+      count --; 
+    } else {
+       stopM();
+    }
+
+  }
   if (irrecv.decode(&results)) {
+        mmm= millis();
     // print() & println() can't handle printing long longs. (uint64_t)
     serialPrintUint64(results.value, HEX);
     switch (results.value){
-//-----------------------------   moteur 1 et 2 ---------------------  <<  >>
+//-----------------------------   moteur 1 et 2 ensemble ---------------------  <<  >>
 
-      case 0xFF02FD :
-            moteur( 1,vitesse);          moteur( 2,vitesse); 
+
+      case 0xFFA05F :
+            moteur( 1,vitesse);          moteur( 2,vitesse); count++;
              break;
-            case 0xFFC23D :
-            moteur( 1,-vitesse);moteur( 2,-vitesse);
+      case 0xFF40BF :
+            moteur( 1,-vitesse);moteur( 2,-vitesse);count++;
              break;
-//-----------------------------   moteur 1 ou 2 ---------------------  +  -
-            case 0xFF906F :
-            moteur( 2,128);
+//-----------------------------   moteur 1 et 2 inversé ---------------------  +  -
+       case 0xFF7887 :
+            moteur( 1,vitesse);
+            moteur( 2,-vitesse);count++;
             break;
-                  case 0xFFA857 :
-            moteur( 2,-128);
+       case 0xFF50AF :
+            moteur( 1,-vitesse);count++;
+            moteur( 2,vitesse);
             break;
  
 //----------------------  servo --------------------   : 
-           case 0xFF22DD : // mp3 
+           case 0xFF32CD : // mp3 
            servo1.write(180);
                  servo2.write(180);
              break;
-            case 0xFFE01F : // mp3
+            case 0xFF30CF : // mp3
    servo1.write(0);
      servo2.write(0);
-   
+               break;
+            case 0xFF2AD5 : // mp3 
+           servo1.write(90);
+                 servo2.write(90);
              break;
+
    }
     Serial.println("");
     irrecv.resume();  // Receive the next value
   }
-  delay(500);
-  stopM();
+
 }
