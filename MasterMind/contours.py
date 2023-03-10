@@ -46,27 +46,6 @@ def ExtremePoints(cnt):
     topmost = tuple(cnt[cnt[:, :, 1].argmin()][0])
     bottommost = tuple(cnt[cnt[:, :, 1].argmax()][0])
 
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
-def a(cnt):
-    pass
-
 class TopHElement(object):
     def __init__(self):
         self.id = -1
