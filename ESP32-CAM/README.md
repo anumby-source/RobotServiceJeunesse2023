@@ -3,20 +3,29 @@
 ## configuration initiale de l'ESP32-CAM
 
 - mettre à jour l'Arduino-IDE avec la dernière release 2.0.3
+
 - configurer les librairies
   - dans les préférences installer l'URL :
       - https://dl.espressif.com/dl/package_esp32_index.json
   - utiliser les gestionnaires de cartes "ESP32" (si ça n'est pas encore fait)
   - Sélectionner le gestionnaire "tools/Type de carte/ESP32 Arduino/ESP32 Wrover module"
+  - Séléctionner 'Partition Scheme "Huge APP (3 MB No OTA /1MB SPIFFS)"'
+  
 - A partir de GitHub:
   - télecharger tout le dossier "CameraWebServer_Access_Point"
     - https://github.com/anumby-source/RobotServiceJeunesse2023/tree/main/ESP32-CAM/CameraWebServer_Access_Point
   - flasher "CameraWebServer_Access_Point.ino" 
   - ceci lance le réseau local "ESP32-CAM Access Point" avec le mot de passe "123456789"
   - faire un "reset" sur la carte ESP32-CAM
+
 - Se connecter au réseau local "ESP32-CAM Access Point" sur le PC
 - Ouvrir Chrome (ou un autre navigateur) à l'adresse: "http://192.168.4.1/"
 - Ceci active le panneau de contrôle de la caméra
+
+ou bien lancer l'application Python qui produit juste das images avec le bouton "Update"
+
+- https://github.com/anumby-source/RobotServiceJeunesse2023/tree/main/client/canvas.py
+
 
 ## Différents liens 
 
