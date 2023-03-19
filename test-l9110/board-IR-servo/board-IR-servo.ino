@@ -1,6 +1,6 @@
 /*
  * Arnaud https://github.com/arnaudrco/exemples/blob/main/Telecommande-IR-servomoteur/IR-esp-mp3-board-sleep/IR-esp-mp3-board-sleep.ino
- * ATTENTION rentrer les codes pour votre télécommande (emetteur IR)
+  rentrer les codes pour votre télécommande (emetteur IR)
  
  ajouter la bibliothèque IRremoteESP8266 dans outils > gérer les bibliothèque
 **********************************************************
@@ -22,7 +22,8 @@
  *     
  *     
  *    
- *    
+ *   
+MISE A JOUR SUIVANT TELECOMMANDE 
 FF629D haut
 FFA857 bas
 
