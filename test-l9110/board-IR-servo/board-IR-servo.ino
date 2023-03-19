@@ -19,6 +19,16 @@
  *     Changed the baud rate to 115200.
  *   Version 0.1 Sept, 2015
  *     Based on Ken Shirriff's IrsendDemo Version 0.1 July, 2009
+ *     
+ *     
+ *    
+ *    
+FF629D haut
+FFA857 bas
+
+FFC23D droite 
+FF22DD gauche
+
  */
 #include <Arduino.h>
 #include <IRremoteESP8266.h>
@@ -35,6 +45,11 @@ Servo servo1,servo2;
 #define moteur1B D2
 #define moteur2A D3
 #define moteur2B D4
+
+#define haut 0xFF629D
+#define bas 0xFFA857
+#define droite 0xFFC23D
+#define gauche 0xFF22DD
 
 #define GND D7
 
@@ -165,18 +180,18 @@ void loop() {
 //-----------------------------   moteur 1 et 2 ensemble ---------------------  <<  >>
 
 
-      case 0xFFA05F :
+      case haut :
             moteur( 1,vitesse);          moteur( 2,vitesse); count++;
              break;
-      case 0xFF40BF :
+      case bas :
             moteur( 1,-vitesse);moteur( 2,-vitesse);count++;
              break;
 //-----------------------------   moteur 1 et 2 inversé ---------------------  +  -
-       case 0xFF7887 :
+       case droite :
             moteur( 1,vitesse);
             moteur( 2,-vitesse);count++;
             break;
-       case 0xFF50AF :
+       case gauche :
             moteur( 1,-vitesse);count++;
             moteur( 2,vitesse);
             break;
