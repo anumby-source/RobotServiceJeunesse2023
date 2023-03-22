@@ -61,3 +61,11 @@ Flasher l'ESP32-CAM pour installer MicroPython:
 
 - ``> esptool --chip esp32 --port COM10 -b 115200 erase_flash``
 - ``> esptool --chip esp32 --port COM10 write_flash -z 0x1000 GENERIC_S2-20220618-v1.19.1.uf2``
+
+Comment installer MicroPython avec support Caméra sur ESP32-CAM
+
+- https://stackoverflow.com/questions/60029614/esp32-cam-stream-in-opencv-python
+- https://github.com/tsaarni/esp32-micropython-webcam
+- https://github.com/tsaarni/micropython-with-esp32-cam/wiki
+- https://how2electronics.com/esp32-cam-based-object-detection-identification-with-opencv/
+- 

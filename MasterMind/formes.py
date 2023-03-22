@@ -5,19 +5,19 @@ from tkinter import *
 from PIL import ImageGrab
 from PIL import Image
 import cv2 as cv
-import tensorflow as tf
-from tensorflow import keras
-import pandas as pd
 from random import *
 import numpy as np
 
 import re
 import os
 import sys
+
+import tensorflow as tf
+from tensorflow import keras
+import pandas as pd
 sys.path.append('..')
 import fidle.pwk as pwk
-from IPython.core.display import display
-
+from IPython.display import display
 
 """
 Insertion d'une entrée dans un DataFrame pandas
@@ -50,7 +50,7 @@ class Figures(object):
         self.forms = ["Rond", "Square", "Triangle", "Star5",
                       "Star4", "Eclair", "Coeur", "Lune",
                       "Hexagone", "Pentagone", "Logo", "D"]
-        self.line_width = 4
+        self.line_width = 2
 
     def run(self):
         self.top.mainloop()
@@ -65,7 +65,7 @@ class Figures(object):
     def set_canvas(self, form_number):
         self.canvas = tk.Canvas(self.top, bg="white",
                                 height=3 * (self.cell + self.margin) + self.margin,
-                                width=form_number * (self.cell + self.margin) + self.margin)
+                                width=form_number * (self.cell + 2*self.margin) + self.margin)
         self.canvas.pack()
 
 
@@ -80,7 +80,14 @@ class Figures(object):
                                         fill="red")
 
 
+    def drawFrame(self, x, y):
+        offset = 3
+        self.canvas.create_rectangle((x + 3, y + 3), (x + self.cell - 1 - offset + 2*self.margin, y + self.cell - 1 - offset + 2*self.margin), outline="black", width=self.line_width)
+        return x + self.margin, y + self.margin
+
+
     def drawPolygone(self, pointes, x, y):
+        x, y = self.drawFrame(x, y)
         radius = self.cell2
         pts = []
         for dalpha in range(pointes + 1):
@@ -98,6 +105,8 @@ class Figures(object):
 
 
     def drawStar(self, pointes, x, y):
+        x, y = self.drawFrame(x, y)
+
         radius = self.cell * 0.15
 
         pts = []
@@ -125,6 +134,7 @@ class Figures(object):
 
     def drawRond(self, x, y):
         # print("rond")
+        x, y = self.drawFrame(x, y)
         self.canvas.create_oval(x, y, x + self.cell, y + self.cell, fill="white", outline="black", width=self.line_width)
 
 
@@ -160,6 +170,7 @@ class Figures(object):
 
     def drawLogo(self, x, y):
         # print("logo")
+        x, y = self.drawFrame(x, y)
         pointes = 4
         radius = self.cell2
         pts = []
@@ -191,6 +202,8 @@ class Figures(object):
 
     def drawCoeur(self, x, y):
         # print("coeur")
+
+        x, y = self.drawFrame(x, y)
 
         radius = self.cell4
 
@@ -230,6 +243,8 @@ class Figures(object):
     def drawEclair(self, x, y):
         # print("éclair")
 
+        x, y = self.drawFrame(x, y)
+
         #self.canvas.create_line(x, y + self.cell*0.2, x + self.cell, y + self.cell*0.8, fill="green")
         #self.canvas.create_line(x, y + self.cell*0.55, x + self.cell, y, fill="green")
 
@@ -253,6 +268,8 @@ class Figures(object):
 
     def drawLune(self, x, y):
         # print("lune")
+
+        x, y = self.drawFrame(x, y)
 
         first = True
 
@@ -329,6 +346,9 @@ class Figures(object):
 
     def drawD(self, x, y):
         # print("d")
+
+        x, y = self.drawFrame(x, y)
+
         self.canvas.create_line(x + self.cell2, y, x, y, fill="black", width=self.line_width)
         self.canvas.create_line(x, y, x, y + self.cell, fill="black", width=self.line_width)
         self.canvas.create_line(x, y + self.cell, x + self.cell2, y + self.cell, fill="black", width=self.line_width)
@@ -340,7 +360,7 @@ class Figures(object):
         for x, drawer in enumerate(self.draw_forms):
             if form_number is not None and x >= form_number: break
             # print(self.forms[x], x * self.cell + self.margin, y)
-            drawer(self.margin + x * (self.cell + self.margin), y)
+            drawer(self.margin + x * (self.cell + 2*self.margin), y)
 
 
     def prepare_source_images(self, zoom, form_number=None, rebuild_forme=None):
@@ -367,12 +387,12 @@ class Figures(object):
             print("prepare_source_images> form=", form)
 
             self.top.update()
-            X = self.margin + form * (self.cell + self.margin)
+            X = self.margin + form * (self.cell + 2*self.margin)
             Y = y
             img = ImageGrab.grab((X - 1,
                                   Y - 1,
-                                  X + self.cell + 2,
-                                  Y + self.cell + 2))
+                                  X + self.cell + 2 + 2*self.margin,
+                                  Y + self.cell + 2 + 2*self.margin))
 
             pix = np.array(img.getdata())
 
@@ -788,7 +808,7 @@ def run(figures, form_number, zoom, data_size, version, rebuild_forms, rebuild_d
     else:
         x_train, y_train, x_test, y_test = load_data()
 
-    if rebuild_forme is not None:
+    if rebuild_forms:
         exit()
 
     print("run> x_train : ", x_train.shape)
@@ -866,11 +886,12 @@ version = "v1"
 model, x_train, y_train, x_test, y_test = run(figures,
                                               form_number = 8,
                                               zoom = 40,
-                                              data_size = 10000,
+                                              data_size = 5000,
                                               version=version,
-                                              rebuild_forms = False,
+                                              rebuild_forms = True,
                                               rebuild_data = True,
-                                              rebuild_model = False)
+                                              rebuild_model = False,
+                                              rebuild_forme=2)
 
 # figures.run()
 

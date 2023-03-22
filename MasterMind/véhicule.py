@@ -111,9 +111,9 @@ class Table(object):
         ok = True
         for i, zone in enumerate(self.zones):
             Wz, Hz = zone
-            # print("test_occupe> ", i, W, H, Wz, Hz)
             ok = True
             if (W > (Wz - margin) and W <= (Wz + margin)) and (H > (Hz - margin) and H <= (Hz + margin)):
+                print("test_occupe> ", i, W, H, Wz, Hz)
                 ok = False
                 break
 
@@ -235,6 +235,7 @@ def install_form(image_origin):
 
     def rotation_positionnement():
         # essai de rotation/positionnement de la figure
+        essai = 1
         while True:
             angle = randrange(360)
             rotate_matrix = cv.getRotationMatrix2D(center=center, angle=angle, scale=1.)
@@ -252,13 +253,17 @@ def install_form(image_origin):
             rotated = cv.warpAffine(src=image, M=rotate_matrix, dsize=(b_w, b_h))
 
             margin = 50
-            H = randrange(margin, table.height - margin)
-            W = randrange(margin, table.width - margin)
-            # print("fond size=", table.height, table.width, "H, W=", H, W, "b_w, b_h=", b_w, b_h, "center=", center)
+            y = randrange(margin, table.height - margin)
+            x = randrange(margin, table.width - margin)
+            # print("fond size=", table.height, table.width, "y, x=", y, x, "b_w, b_h=", b_w, b_h, "center=", center)
 
-            test = table.test_occupe(W, H)
+            test = table.test_occupe(y, x)
             if test:
-                return rotated, H, W
+                print(essai, "libre", "y, x=", y, x)
+                return rotated, y, x
+            else:
+                print(essai, "occupé", "y, x=", y, x)
+                essai += 1
 
     height, width = image_origin.shape[:2]
 

@@ -6,27 +6,44 @@ rng.seed(12345)
 top = None
 
 def AspectRatio(cnt):
-    x, y, w, h = cv.boundingRect(cnt)
-    aspect_ratio = float(w) / h
+    try:
+        x, y, w, h = cv.boundingRect(cnt)
+        aspect_ratio = float(w) / h
+    except:
+        aspect_ratio = 0
+    return aspect_ratio
 
 def Extent(cnt):
-    area = cv.contourArea(cnt)
-    x, y, w, h = cv.boundingRect(cnt)
-    rect_area = w * h
-    extent = float(area) / rect_area
+    try:
+        area = cv.contourArea(cnt)
+        x, y, w, h = cv.boundingRect(cnt)
+        rect_area = w * h
+    except:
+        area = 0
+        rect_area = 0
+    return area, rect_area
 
 def Solidity(cnt):
-    area = cv.contourArea(cnt)
-    hull = cv.convexHull(cnt)
-    hull_area = cv.contourArea(hull)
-    solidity = float(area) / hull_area
+    try:
+        area = cv.contourArea(cnt)
+        hull = cv.convexHull(cnt)
+        hull_area = cv.contourArea(hull)
+        solidity = float(area) / hull_area
+    except:
+        solidity = 0
+    return solidity
 
 def EquivalentDiameter(cnt):
-    area = cv.contourArea(cnt)
-    equi_diameter = np.sqrt(4 * area / np.pi)
+    try:
+        area = cv.contourArea(cnt)
+        equi_diameter = np.sqrt(4 * area / np.pi)
+    except:
+        equi_diameter = 0
+    return equi_diameter
 
 def Orientation(cnt):
     (x,y),(MA,ma),angle = cv.fitEllipse(cnt)
+
 
 def MaskandPixelPoints(cnt, imgray):
     mask = np.zeros(imgray.shape, np.uint8)
@@ -134,23 +151,47 @@ threshold = 60
 print("src_gray.shape=", src_gray.shape)
 # canny_output = cv.Canny(src_gray, threshold, threshold * 2)
 
-ret,thresh = cv.threshold(src_gray, 127, 255, cv.THRESH_BINARY)
+ret, thresh = cv.threshold(src_gray, 127, 255, cv.THRESH_BINARY)
 contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-"""
 # Find contours
-contours, hierarchy = cv.findContours(canny_output, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+# contours, hierarchy = cv.findContours(canny_output, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-for i, h in enumerate(hierarchy[0]):
+for i, cnt in enumerate(contours):
     # print(i, "next=", h[0], "previous=", h[1], "first=", h[2], "parent=", h[3])
-    e = HElement(i, h[0], h[1], h[2], h[3])
-    e.print()
-"""
 
+    x, y, w, h = cv.boundingRect(cnt)
+
+    c = (0,255,0)
+    v1 = AspectRatio(cnt)
+    if v1 > 2: c = (0, 0, 255)
+    if v1 < 0.5: c = (255, 0, 0)
+
+    area, rect_area = Extent(cnt)
+    if area < 10: continue
+    if area > 1000: continue
+
+    v3 = Solidity(cnt)
+    v4 = EquivalentDiameter(cnt)
+    # v5 = Orientation(h)
+    # v6 = MaskandPixelPoints(cnt, imgray)
+    # v7 = MaximumValueMinimumValueLocations(imgray, mask)
+    # v8 = MeanColorMeanIntensity(im, mask)
+    # v9 = ExtremePoints(h)
+
+    print("AspectRatio=", v1, "area", area, "rect_area", rect_area, "solidity", v3, "diam", v4, x, y, w, h)
+
+    cv.drawContours(src, contours, i, c, 1)
+
+    pass
+
+"""
 for data in contours:
     print("The contours have this data ", data)
 
 cv.drawContours(src,contours,-1,(0,255,0),1)
+"""
+
 cv.imshow('output', src)
 cv.waitKey()
 
