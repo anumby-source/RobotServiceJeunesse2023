@@ -50,7 +50,7 @@ class Figures(object):
         self.forms = ["Rond", "Square", "Triangle", "Star5",
                       "Star4", "Eclair", "Coeur", "Lune",
                       "Hexagone", "Pentagone", "Logo", "D"]
-        self.line_width = 2
+        self.line_width = 1
 
     def run(self):
         self.top.mainloop()
@@ -82,7 +82,13 @@ class Figures(object):
 
     def drawFrame(self, x, y):
         offset = 3
-        self.canvas.create_rectangle((x + 3, y + 3), (x + self.cell - 1 - offset + 2*self.margin, y + self.cell - 1 - offset + 2*self.margin), outline="black", width=self.line_width)
+        corner1 = (x + offset, y + offset)
+        corner2 = (x + self.cell - 1 - offset + 2*self.margin, y + self.cell - 1 - offset + 2*self.margin)
+        self.canvas.create_rectangle(corner1,
+                                     corner2,
+                                     outline="black",
+                                     width=2)
+                                     # width = self.line_width)
         return x + self.margin, y + self.margin
 
 
@@ -808,9 +814,6 @@ def run(figures, form_number, zoom, data_size, version, rebuild_forms, rebuild_d
     else:
         x_train, y_train, x_test, y_test = load_data()
 
-    if rebuild_forms:
-        exit()
-
     print("run> x_train : ", x_train.shape)
     print("run> y_train : ", y_train.shape)
     print("run> x_test : ", x_test.shape)
@@ -880,18 +883,25 @@ figures = Figures()
 os.makedirs("./dataset", mode=0o750, exist_ok=True)
 os.makedirs("./data", mode=0o750, exist_ok=True)
 
+form_number = 8
+zoom = 40
+
+#figures.prepare_source_images(zoom=zoom, form_number=form_number)
+figures.prepare_source_images(zoom=zoom, form_number=form_number, rebuild_forme=2)
+
+exit()
+
 version = "v1"
 # version = "v2"
 
 model, x_train, y_train, x_test, y_test = run(figures,
-                                              form_number = 8,
-                                              zoom = 40,
+                                              form_number = form_number,
+                                              zoom = zoom,
                                               data_size = 5000,
                                               version=version,
-                                              rebuild_forms = True,
+                                              rebuild_forms = False,
                                               rebuild_data = True,
-                                              rebuild_model = False,
-                                              rebuild_forme=2)
+                                              rebuild_model = False)
 
 # figures.run()
 

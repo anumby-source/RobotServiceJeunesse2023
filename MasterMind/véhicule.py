@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 from random import *
+import random as rng
 import math
 
 # les couleurs de base
@@ -26,6 +27,24 @@ def deg2rad(angle):
 def tuple_sum(x):
     return np.sum(x)
 
+
+def AspectRatio(cnt):
+    try:
+        x, y, w, h = cv.boundingRect(cnt)
+        aspect_ratio = float(w) / h
+    except:
+        aspect_ratio = 0
+    return aspect_ratio
+
+def Extent(cnt):
+    try:
+        area = cv.contourArea(cnt)
+        x, y, w, h = cv.boundingRect(cnt)
+        rect_area = w * h
+    except:
+        area = 0
+        rect_area = 0
+    return area, rect_area
 
 # Montrer les commandes actionnées par le clavier numérique
 class Help(object):
@@ -289,6 +308,7 @@ class Camera(object):
         self.margin = 60
         self.w2 = int(self.width/2)
         self.h2 = int(self.height/2)
+        self.camera = None
 
     def draw(self, table, x, y):
         x0 = int(x - self.width/2)
@@ -304,17 +324,19 @@ class Camera(object):
         if y1 >= table.height:
             y1 = table.height - 1
 
-        cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
+        # cv.circle(img=table.image, center=(int(x), int(y)), radius=3, color=R, lineType=cv.FILLED)
 
-        camera = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3), np.uint8)
-        camera[:, :, :] = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
+        self.camera = np.zeros((self.height + 2*10 + 1, self.width + 2*10 + 1, 3), np.uint8)
+        self.camera[:, :, :] = table.image[y0 - 10:y1 + 11, x0 - 10:x1 + 11, :]
 
         # print("extract from table>  (x0, y0)=", x0, y0, "(x1, y1)=", x1, y1,
-        # "w=", x1 - x0, "h=", y1 - y0, "camera.shape=", camera.shape)
+        # "w=", x1 - x0, "h=", y1 - y0, "self.camera.shape=", self.camera.shape)
 
-        cv.rectangle(camera, (10, 10), (10 + self.width, 10 + self.height), G, 1)
+        cv.rectangle(self.camera, (10, 10), (10 + self.width, 10 + self.height), G, 1)
 
-        cv.imshow("extract", camera)
+        find_figures(self.camera)
+
+        cv.imshow("extract", self.camera)
         # cv.waitKey()
         return
 
@@ -332,11 +354,47 @@ for form in forms:
 
 table.reset_image()
 
+def draw_text(img, text, x, y, color):
+    coordinates = (x, y)
+    font = cv.FONT_HERSHEY_SIMPLEX
+    fontScale = 0.5
+
+    thickness = 1
+    cv.putText(img, text, coordinates, font, fontScale, color, thickness, cv.LINE_AA)
+
+def find_figures(src):
+    src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
+    src_gray = cv.blur(src_gray, (3, 3))
+    ret, thresh = cv.threshold(src_gray, 200, 255, cv.THRESH_BINARY)
+    contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    for i, cnt in enumerate(contours):
+        x, y, w, h = cv.boundingRect(cnt)
+
+        v1 = AspectRatio(cnt)
+        if v1 > 1.1: continue
+        if v1 < 0.9: c = (255, 0, 0)
+
+        area, rect_area = Extent(cnt)
+        if area < 2000: continue
+        if area > 3000: continue
+
+        print(i, "AspectRatio=", "{:2.2f}".format(v1), "area", area, "rect_area", rect_area, x, y, w, h)
+
+        color = (rng.randint(0 ,256), rng.randint(0 ,256), rng.randint(0 ,256))
+        color = (0, 0, 255)
+        # cv.drawContours(src, contours, i, color, 2)
+        m = 20
+        cv.rectangle(src, (x - m, y - m), (x + w + m, y + h + m), color, 1)
+        draw_text(src, "({:d},{:2.2f})".format(i, v1), x - m, y - m, color)
+
+
 m = 20
 cv.rectangle(table.image, (20, 20), (table.width - 21, table.height - 21), (0, 255, 255), 1)
 
 for f, form in enumerate(forms):
     install_form(images[f])
+
+# find_figures(table.image)
 
 # cv.waitKey()
 
@@ -401,6 +459,8 @@ while True:
     print("t=", t, "(x, y)=", x, y, "v=", v, "alpha=", alpha, "a=", a)
     table.draw()
     camera.draw(table, x, y)
+    # find_figures(image)
+    # cv.waitKey(0)
 
     help.draw()
 

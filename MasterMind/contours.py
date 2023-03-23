@@ -138,20 +138,27 @@ class HElement(TopHElement):
     def add(self, element):
         self.list[element.id] = element
 
+def draw_text(img, text, x, y, color):
+    coordinates = (x, y)
+    font = cv.FONT_HERSHEY_SIMPLEX
+    fontScale = 0.5
+
+    thickness = 1
+    cv.putText(img, text, coordinates, font, fontScale, color, thickness, cv.LINE_AA)
 
 src = cv.imread("Ecran.jpg")
 
 src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
 src_gray = cv.blur(src_gray, (3,3))
 
-cv.imshow('Contours', src_gray)
+# cv.imshow('Contours', src_gray)
 
 threshold = 60
 # Detect edges using Canny
 print("src_gray.shape=", src_gray.shape)
 # canny_output = cv.Canny(src_gray, threshold, threshold * 2)
 
-ret, thresh = cv.threshold(src_gray, 127, 255, cv.THRESH_BINARY)
+ret, thresh = cv.threshold(src_gray, 200, 255, cv.THRESH_BINARY)
 contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
 # Find contours
@@ -162,14 +169,15 @@ for i, cnt in enumerate(contours):
 
     x, y, w, h = cv.boundingRect(cnt)
 
-    c = (0,255,0)
+
+    c = (0, 0, 255)
     v1 = AspectRatio(cnt)
-    if v1 > 2: c = (0, 0, 255)
-    if v1 < 0.5: c = (255, 0, 0)
+    if v1 > 1.1: continue
+    if v1 < 0.9: c = (255, 0, 0)
 
     area, rect_area = Extent(cnt)
-    if area < 10: continue
-    if area > 1000: continue
+    if area < 2000: continue
+    if area > 3000: continue
 
     v3 = Solidity(cnt)
     v4 = EquivalentDiameter(cnt)
@@ -179,9 +187,13 @@ for i, cnt in enumerate(contours):
     # v8 = MeanColorMeanIntensity(im, mask)
     # v9 = ExtremePoints(h)
 
-    print("AspectRatio=", v1, "area", area, "rect_area", rect_area, "solidity", v3, "diam", v4, x, y, w, h)
+    print(i, "AspectRatio=", "{:2.2f}".format(v1), "area", area, "rect_area", rect_area, "solidity", v3, "diam", v4, x, y, w, h)
 
-    cv.drawContours(src, contours, i, c, 1)
+    color = (rng.randint(0 ,256), rng.randint(0 ,256), rng.randint(0 ,256))
+    # cv.drawContours(src, contours, i, color, 2)
+    m = 20
+    cv.rectangle(src, (x - m, y - m), (x + w + m, y + h + m), color, 2)
+    draw_text(src, "({:d},{:2.2f})".format(i, v1), x - m, y - m, color)
 
     pass
 
