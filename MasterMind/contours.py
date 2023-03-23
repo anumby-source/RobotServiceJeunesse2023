@@ -52,7 +52,7 @@ def MaskandPixelPoints(cnt, imgray):
     # pixelpoints = cv.findNonZero(mask)
 
 def MaximumValueMinimumValueLocations(imgray, mask):
-    min_val, max_val, min_loc, max_loc = cv.minMaxLoc(imgray,mask = mask)
+    min_val, max_val, min_loc, max_loc = cv.minMaxLoc(imgray, mask = mask)
 
 def MeanColorMeanIntensity(im, mask):
     mean_val = cv.mean(im, mask = mask)

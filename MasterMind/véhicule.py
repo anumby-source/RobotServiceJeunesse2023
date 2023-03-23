@@ -36,6 +36,7 @@ def AspectRatio(cnt):
         aspect_ratio = 0
     return aspect_ratio
 
+
 def Extent(cnt):
     try:
         area = cv.contourArea(cnt)
@@ -45,6 +46,15 @@ def Extent(cnt):
         area = 0
         rect_area = 0
     return area, rect_area
+
+
+def ExtremePoints(cnt):
+    leftmost = tuple(cnt[cnt[:, :, 0].argmin()][0])
+    rightmost = tuple(cnt[cnt[:, :, 0].argmax()][0])
+    topmost = tuple(cnt[cnt[:, :, 1].argmin()][0])
+    bottommost = tuple(cnt[cnt[:, :, 1].argmax()][0])
+    return [leftmost, topmost, rightmost, bottommost, leftmost]
+
 
 # Montrer les commandes actionnées par le clavier numérique
 class Help(object):
@@ -110,10 +120,13 @@ class Table(object):
 
     def reset_image(self):
         self.zones = []
-        fond_origin = cv.imread('fond.jpg')
-        self.image = np.zeros((self.height, self.width, 3), np.uint8)
+        # fond_origin = cv.imread('fond.jpg')
+        self.image = np.ones((self.height, self.width, 3), np.uint8)
         # on installe le fond clippé à la taille de la table
-        self.image[:, :, :] = fond_origin[:self.height, :self.width, :]
+        # self.image[:, :, :] = fond_origin[:self.height, :self.width, :]
+        self.image[:, :, 0] *= 127
+        self.image[:, :, 1] *= 127
+        self.image[:, :, 2] *= 127
         return self.image
 
     def draw(self):
@@ -121,23 +134,34 @@ class Table(object):
 
     # au fur et à mesure que l'on installe les figures, on vérifie si la position proposée
     # n'est pas trop proche d'aucune figure déjà installée
-    def test_occupe(self, W, H):
-        margin = 40
+    def test_occupe(self, n, y, x):
+        # print("test_occupe> 1 ================== est-ce que ", n, "(y, x)", y, x, "peut s'installer ?")
+        margin = 50
         if len(self.zones) == 0:
-            self.zones.append((W, H))
+            # print("test_occupe> 2 crée la première zone (n, y, x)", n, y, x)
+            self.zones.append((n, y, x))
             return True
 
         ok = True
         for i, zone in enumerate(self.zones):
-            Wz, Hz = zone
-            ok = True
-            if (W > (Wz - margin) and W <= (Wz + margin)) and (H > (Hz - margin) and H <= (Hz + margin)):
-                print("test_occupe> ", i, W, H, Wz, Hz)
+            nz, yz, xz = zone
+
+            # print("test_occupe> 3 teste la zone (n, y, x)", nz, yz, xz, yz - margin, yz + margin, xz - margin, xz + margin)
+
+            if ((y + margin) > (yz - margin)) and \
+                    ((y - margin) <= (yz + margin)) and \
+                    ((x + margin) > (xz - margin)) and \
+                    ((x - margin) <= (xz + margin)):
+                # print("test_occupe> 4-1", i, "test=(", n, y, x, ") conflit avec la zone=(", nz, yz, xz, ")")
                 ok = False
                 break
+            else:
+                # print("test_occupe> 4-2", i, "test=(", n, y, x, ") compatible avec la zone=(", nz, yz, xz, ")")
+                pass
 
         if ok:
-            self.zones.append((W, H))
+            # print("test_occupe> 3 crée une nouvelle zone (n, y, x)", n, y, x)
+            self.zones.append((n, y, x))
             return True
 
         return False
@@ -147,7 +171,7 @@ class Table(object):
 # chaque figure est tournée aléatoirement et donc elle est dessinée sur un fond noir
 # une figure est un carré blanc et la figure elle-même est tracée en rouge
 #
-def crop(to_img, pos, img):
+def crop(to_img, n, pos, img):
     to_height, to_width = to_img.shape[:2]
     height, width = img.shape[:2]
 
@@ -250,9 +274,9 @@ def crop(to_img, pos, img):
 #   on retrace la figure en rouge
 #   on fait tourner cette image : le carré (tourné) se retrouve au centre d'une image élargie à fond noir
 #   on recopie cette image sur la table en considéront que le fond noir est transparent
-def install_form(image_origin):
+def install_form(n, image_origin):
 
-    def rotation_positionnement():
+    def rotation_positionnement(n, image, center, height, width):
         # essai de rotation/positionnement de la figure
         essai = 1
         while True:
@@ -271,17 +295,17 @@ def install_form(image_origin):
 
             rotated = cv.warpAffine(src=image, M=rotate_matrix, dsize=(b_w, b_h))
 
-            margin = 50
+            margin = 80
             y = randrange(margin, table.height - margin)
             x = randrange(margin, table.width - margin)
             # print("fond size=", table.height, table.width, "y, x=", y, x, "b_w, b_h=", b_w, b_h, "center=", center)
 
-            test = table.test_occupe(y, x)
+            test = table.test_occupe(n, y, x)
             if test:
-                print(essai, "libre", "y, x=", y, x)
+                # print(essai, "rotation_positionnement> libre n=", n, "y, x=", y, x)
                 return rotated, y, x
             else:
-                print(essai, "occupé", "y, x=", y, x)
+                # print(essai, "rotation_positionnement> occupé n=", n, "y, x=", y, x)
                 essai += 1
 
     height, width = image_origin.shape[:2]
@@ -289,15 +313,17 @@ def install_form(image_origin):
     # image = image_origin
 
     # colorie la figure en rouge
-    x = (image_origin < 5) * 255
-    image = x.astype(np.uint8)
+    mask = (image_origin < 5) * 255
+    image = mask.astype(np.uint8)
     image[:, :, 0:2] = 0
     image = image | image_origin
 
     center = (int(height / 2), int(width / 2))
 
-    rotated, H, W = rotation_positionnement()
-    crop(table.image, pos=(H, W), img=rotated)
+    rotated, y, x = rotation_positionnement(n, image, center, height, width)
+    crop(table.image, n, pos=(y, x), img=rotated)
+    # draw_text(table.image, "{}".format(n), x, y, R)
+    print("rotation_positionnement> n=", n, "y, x=", y, x)
 
 
 # Simulation de la Camera: on recopie une partie de l'image de la table située à la position courante du robot
@@ -371,32 +397,81 @@ def find_figures(src):
         x, y, w, h = cv.boundingRect(cnt)
 
         v1 = AspectRatio(cnt)
-        if v1 > 1.1: continue
-        if v1 < 0.9: c = (255, 0, 0)
+        if v1 > 1.03: continue
+        if v1 < 0.97: continue
 
         area, rect_area = Extent(cnt)
         if area < 2000: continue
         if area > 3000: continue
 
-        print(i, "AspectRatio=", "{:2.2f}".format(v1), "area", area, "rect_area", rect_area, x, y, w, h)
+        # print(i, "AspectRatio=", "{:2.2f}".format(v1), "area", area, "rect_area", rect_area, x, y, w, h)
 
         color = (rng.randint(0 ,256), rng.randint(0 ,256), rng.randint(0 ,256))
-        color = (0, 0, 255)
+        # color = R
         # cv.drawContours(src, contours, i, color, 2)
-        m = 20
-        cv.rectangle(src, (x - m, y - m), (x + w + m, y + h + m), color, 1)
+        m = 10
+        # cv.rectangle(src, (x - m, y - m), (x + w + m, y + h + m), color, 1)
         draw_text(src, "({:d},{:2.2f})".format(i, v1), x - m, y - m, color)
+
+        corners = ExtremePoints(cnt)
+        print(i, "AspectRatio=", "{:2.2f}".format(v1), "area", area, "rect_area", rect_area, x, y, w, h,
+              corners)
+
+        xc = 0
+        yc = 0
+        alpha = 0
+        radius = 0
+        for i, corner in enumerate(range(4)):
+            x1 = corners[corner][0]
+            y1 = corners[corner][1]
+            x2 = corners[corner + 1][0]
+            y2 = corners[corner + 1][1]
+
+            xc += x1
+            yc += y1
+
+            radius += np.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1))
+            if int(x2) != int(x1):
+                t = (y2 - y1) / (x2 - x1)
+                a = rad2deg(np.arctan(t))
+            else:
+                a = 90.
+
+            a -= (i % 2) * 90.
+
+            print(i, "AspectRatio> ", i, a, radius, x1, y1)
+
+            alpha += a
+
+        alpha = alpha / 4.0
+        xc = xc / 4.0
+        yc = yc / 4.0
+        radius = radius / 4.0
+        print(i, "AspectRatio> moyenne", alpha, radius, x1, y1)
+
+        xcorner = [int(xc + radius*np.cos(deg2rad(alpha + 45 + 90*corner))) for corner in range(5)]
+        ycorner = [int(yc + radius*np.sin(deg2rad(alpha + 45 + 90*corner))) for corner in range(5)]
+
+        color = R
+        for corner in range(4):
+            cv.line(src, (xcorner[corner], ycorner[corner]), (xcorner[corner + 1], ycorner[corner + 1]), color, 2)
+
+        # cv.circle(img=src, center=(int(xc), int(yc)), radius=2, color=color, lineType=cv.FILLED)
+
 
 
 m = 20
 cv.rectangle(table.image, (20, 20), (table.width - 21, table.height - 21), (0, 255, 255), 1)
 
 for f, form in enumerate(forms):
-    install_form(images[f])
+    install_form(f, images[f])
 
 # find_figures(table.image)
 
+cv.imshow("table", table.image)
 # cv.waitKey()
+
+# exit()
 
 x = table.width/2.
 y = table.height/2.
@@ -471,3 +546,19 @@ while True:
         break
 
 cv.destroyAllWindows()
+
+
+
+"""
+rotation_positionnement> n= 0 y, x= 161 391
+
+x = 391
+y = 161
+
+                                                                   L        R           T         B
+32 AspectRatio= 1.00 area 2309.0 rect_area 2704 366 136 52 52 (366, 139) (417, 184) (405, 136) (369, 187)
+  T
+L   R
+  B
+
+"""

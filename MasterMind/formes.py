@@ -87,8 +87,7 @@ class Figures(object):
         self.canvas.create_rectangle(corner1,
                                      corner2,
                                      outline="black",
-                                     width=2)
-                                     # width = self.line_width)
+                                     width = self.line_width)
         return x + self.margin, y + self.margin
 
 
@@ -886,7 +885,7 @@ os.makedirs("./data", mode=0o750, exist_ok=True)
 form_number = 8
 zoom = 40
 
-#figures.prepare_source_images(zoom=zoom, form_number=form_number)
+# figures.prepare_source_images(zoom=zoom, form_number=form_number)
 figures.prepare_source_images(zoom=zoom, form_number=form_number, rebuild_forme=2)
 
 exit()
