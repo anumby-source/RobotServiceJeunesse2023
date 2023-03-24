@@ -87,7 +87,7 @@ class Figures(object):
         self.canvas.create_rectangle(corner1,
                                      corner2,
                                      outline="black",
-                                     width = self.line_width)
+                                     width = self.line_width + 1)
         return x + self.margin, y + self.margin
 
 
