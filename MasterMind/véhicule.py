@@ -29,6 +29,7 @@ def tuple_sum(x):
     return np.sum(x)
 
 
+# get aspect ratio from a contour
 def AspectRatio(cnt):
     try:
         x, y, w, h = cv.boundingRect(cnt)
@@ -38,6 +39,7 @@ def AspectRatio(cnt):
     return aspect_ratio
 
 
+# get area from a contour
 def Area(cnt):
     try:
         area = cv.contourArea(cnt)
@@ -47,6 +49,7 @@ def Area(cnt):
     return area
 
 
+# get enclosing rectangle corners from a contour
 def ExtremePoints(cnt):
     leftmost = tuple(cnt[cnt[:, :, 0].argmin()][0])
     rightmost = tuple(cnt[cnt[:, :, 0].argmax()][0])
@@ -449,6 +452,7 @@ class Camera(object):
         return
 
 
+# draw some texte upon an OpenCV image
 def draw_text(img, text, x, y, color):
     coordinates = (x, y)
     font = cv.FONT_HERSHEY_SIMPLEX
@@ -457,6 +461,9 @@ def draw_text(img, text, x, y, color):
     thickness = 1
     cv.putText(img, text, coordinates, font, fontScale, color, thickness, cv.LINE_AA)
 
+
+# Détecte contours des figures installées sur la table ou sur l'image de la caméra
+# ATTENTION: il reste à étalonner la taille typique "area"
 def find_figures(src):
     src_gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY)
     src_gray = cv.blur(src_gray, (3, 3))
@@ -559,19 +566,27 @@ for f, form in enumerate(forms):
 
 table.update_hidden()
 
+# dessine une barrière pour les limites de déplacement du véhicule sur la table
 m = 20
 cv.rectangle(table.image, (m, m), (table.width - m - 1, table.height - m - 1), (0, 255, 255), 1)
 
+# pour tester on cherche toutes les fiures installées sur la table
 # find_figures(table.image)
 
+# première visualisation de la table
 cv.imshow("table", table.image)
 # cv.waitKey()
 
-# exit()
-
+# gestion des déplacement du véhicule.
+# le véhicule est positionné au départ au milieu de la table
 x = table.width/2.
 y = table.height/2.
 
+# variables de contrôle du véhicule
+#  alpha: orientation du déplacement
+#  v:     vitesse
+#  a:     accélération
+#  t:     temps
 alpha = 0
 v = 0
 a = 1
@@ -590,13 +605,17 @@ while True:
 
     zero = 48
     if k == zero + 4:
+        # tourne à droite
         alpha -= 10
     elif k == zero + 6:
+        # tourne à gauche
         alpha += 10
 
     if k == zero + 7:
+        # freine
         a -= 1
     elif k == zero + 9:
+        # accélére
         a += 1
     if a < 0:
         a = 0
@@ -607,11 +626,14 @@ while True:
         v -= a
 
     if k == zero + 1:
+        # recule
         d = -1
     elif k == zero + 3:
+        # avance
         d = 1
 
     if k == zero + 5:
+        # stoppe
         a = 1
         v = 0
         alpha = 0
@@ -638,6 +660,8 @@ while True:
     help.draw()
 
     t += dt
+
+    # sortie de l'application
     if k == 27:
         break
     if k == 113:
