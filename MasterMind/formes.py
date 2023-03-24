@@ -885,10 +885,15 @@ os.makedirs("./data", mode=0o750, exist_ok=True)
 form_number = 8
 zoom = 40
 
-# figures.prepare_source_images(zoom=zoom, form_number=form_number)
-figures.prepare_source_images(zoom=zoom, form_number=form_number, rebuild_forme=2)
+# simple préparation des figures
 
-exit()
+build_figures = False
+
+if build_figures:
+    figures.prepare_source_images(zoom=zoom, form_number=form_number)
+    figures.prepare_source_images(zoom=zoom, form_number=form_number, rebuild_forme=2)
+    exit()
+
 
 version = "v1"
 # version = "v2"
