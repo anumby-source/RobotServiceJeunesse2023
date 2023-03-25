@@ -50,7 +50,7 @@ class Figures(object):
         self.forms = ["Rond", "Square", "Triangle", "Star5",
                       "Star4", "Eclair", "Coeur", "Lune",
                       "Hexagone", "Pentagone", "Logo", "D"]
-        self.line_width = 1
+        self.line_width = 2
 
     def run(self):
         self.top.mainloop()
@@ -572,48 +572,49 @@ def change_perpective(image):
     return img_finale
 
 
-def rotation_model():
+def transformation_model(height, width):
+    """
+    Crop(height, width)
+    Flip
+    Translation(height_factor, width_factor)
+    Rotation
+    Zoom(height_factor)
+    Height(factor)
+    Width(factor)
+    Contrast(factor)
+    """
+    scale = 0.5
     return tf.keras.Sequential([
-        keras.layers.RandomRotation(0.2),
+        keras.layers.RandomZoom((0.0, 0.7), fill_mode="nearest"),
+        keras.layers.RandomRotation(0.5),
+        keras.layers.RandomTranslation(0.5, 0.5, fill_mode="nearest"),
+        # keras.layers.RandomCrop(int(height*scale), int(width*scale)),
+        # keras.layers.RandomContrast(0.5),
     ])
 
 
-def change_rotation(image):
-    # print("change_rotation> ", type(image), image.shape)
+def transformation(image):
+    # print("transformation> ", type(image), image.shape)
 
     height, width = image.shape[:2]
 
-    mode = "cv"
     mode = "tf"
 
-    if mode == "cv":
-        center = (width/2, height/2)
+    transformed_image = transformation_model(height, width)
 
-        # print("change_rotation> ", height, width, center)
+    data = np.zeros([height, width, 3], np.float32)
+    data[:, :, 0] = image[:, :]
+    data[:, :, 1] = image[:, :]
+    data[:, :, 2] = image[:, :]
 
-        rotate_matrix = cv.getRotationMatrix2D(center=center, angle=randrange(360), scale=1.)
-        img_finale = cv.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
+    img = transformed_image(data).numpy()
+    # print(img.shape, type(img))
 
-        print("change_rotation> ", img_finale.shape, type(img_finale))
-    else:
-        transform = rotation_model()
+    img_finale = np.zeros([img.shape[0], img.shape[1]])
+    for j in range(3):
+        img_finale[:, :] += img[:, :, j]
 
-        data = np.zeros([height, width, 3], np.float32)
-        data[:, :, 0] = image[:, :]
-        data[:, :, 1] = image[:, :]
-        data[:, :, 2] = image[:, :]
-
-        img = transform(data).numpy()
-        # print(img.shape, type(img))
-
-        # cv.imshow("F", img)
-        # cv.waitKey()
-
-        img_finale = np.zeros([img.shape[0], img.shape[1]])
-        for j in range(3):
-            img_finale[:, :] += img[:, :, j]
-
-        img_finale /= 3
+    img_finale /= 3
 
     return img_finale
 
@@ -632,52 +633,37 @@ def build_data(data_size, images):
 
     # print("build_data> ", images)
     shape = images[0].shape
-    image_size = len(images)
+    image_number = len(images)
     frac = 0.85
     first = True
-    k = 0
-    for i in range(data_size):
-        for n, raw_img in enumerate(images):
-            if k % 1000 == 0: print("generate data k = ", k)
-            k += 1
+    data_id = 0
 
+    for i in range(data_size):
+        for image_id, raw_img in enumerate(images):
+            if data_id % 1000 == 0: print("generate data> data_id = ", data_id)
             # print(raw_img.shape)
 
-            data1 = change_rotation(raw_img)
-            # data2 = change_perpective(data1)
-            data2 = data1
-
-            """
-            data2 = np.ones_like(data1) * 255.
-            data2[:, :, 0] = vf(data1[:, :, 0])
-            data2[:, :, 1] = vf(data1[:, :, 1])
-            data2[:, :, 2] = vf(data1[:, :, 2])
-            """
+            # Change rotation
+            data = transformation(raw_img)
 
             """
             # visualisation de l'image finale
-            cv.imshow("output image", data2)
+            print("forme", image_id, "data_id=", data_id)
+            cv.imshow("input image", raw_img)
+            cv.imshow("output image", data)
             cv.waitKey(0)
             """
 
-            """
-            # transformation de l'image finale en une matrice de points N&B
-            data = np.zeros([data2.shape[0], data2.shape[1]])
-            for j in range(3):
-                data[:, :] += data2[:, :, j]
-
-            data /= 3
-            """
-
             if first:
-                shape = data2.shape
-                x_data = np.zeros([data_size * image_size, shape[0], shape[1], 1])
-                y_data = np.zeros([data_size * image_size])
+                shape = data.shape
+                x_data = np.zeros([data_size * image_number, shape[0], shape[1], 1])
+                y_data = np.zeros([data_size * image_number])
                 first = False
 
-            p = i*image_size + n
-            x_data[p, :, :, 0] = data2[:, :]
-            y_data[p] = n
+            x_data[data_id, :, :, 0] = data[:, :]
+            y_data[data_id] = image_id
+
+            data_id += 1
 
             # print("build_data> p={} x_data={}".format(p, x_data[p, :, :, 0]))
             # print("build_data> p={} y_data={}".format(p, y_data[p]))
@@ -685,9 +671,16 @@ def build_data(data_size, images):
 
     # x_data = x_data.reshape(-1, shape[0], shape[1], 1)
 
-    index = int(frac*data_size*image_size)
+    data_number = data_id
 
-    print("build_data> x_data.shape=", x_data.shape, "index=", index, "generated data=", k)
+    p = np.random.permutation(len(x_data))
+
+    x_data = x_data[p]
+    y_data = y_data[p]
+
+    index = int(frac*data_size*image_number)
+
+    print("build_data> x_data.shape=", x_data.shape, "index=", index, "generated data=", data_number)
 
     # print("----------------------------------------------------------------------------------------------")
     # print("build_data> x_data={}".format(x_data[:, :, :, :]))
@@ -890,7 +883,7 @@ zoom = 40
 build_figures = False
 
 if build_figures:
-    figures.prepare_source_images(zoom=zoom, form_number=form_number)
+    # figures.prepare_source_images(zoom=zoom, form_number=form_number)
     figures.prepare_source_images(zoom=zoom, form_number=form_number, rebuild_forme=2)
     exit()
 
@@ -910,32 +903,42 @@ model, x_train, y_train, x_test, y_test = run(figures,
 # figures.run()
 
 # pwk.plot_images(x_train, y_train, [27], x_size=5, y_size=5, colorbar=True, save_as='01-one-digit')
-pwk.plot_images(x_train, y_train, range(0,64), columns=8, save_as='02-many-digits')
+# pwk.plot_images(x_train, y_train, range(0,64), columns=8, save_as='02-many-digits')
 
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Predictions")
 
-test_number = 10
-x_test = x_test[0:test_number+1, :, :, :]
-y_test = y_test[0:test_number+1]
+"""
+test_number = 1
+for i in range(10):
+    n = randint(0, 6000)
+    A = x_test[n:n+1, :, :, :]
+    B = y_test[n:n+1]
 
-now = datetime.datetime.now()
-y_sigmoid = model.predict(x_test, verbose=2)
-y_pred    = np.argmax(y_sigmoid, axis=-1)
-t = datetime.datetime.now() - now
+    now = datetime.datetime.now()
+    # y_sigmoid = model.predict(A, verbose=0)
+    result = model(A)
+    y_pred = np.argmax(result, axis=-1)
+    t = datetime.datetime.now() - now
+    errors = [i for i in range(len(A)) if y_pred[i] != B[i]]
+    # print("errors", errors)
+    print("n=", n, "A", A.shape, B, "pred=", y_pred[0], "durée=", t)
 
-print("durée=", t)
 
-# print(y_pred)
+exit()
+"""
 
-# pwk.plot_images(x_test, y_test, range(0,200), columns=8, x_size=1, y_size=1, y_pred=y_pred, save_as='04-predictions')
 
 print("len(x_test)=", len(x_test))
+result = model(x_test)
+y_pred = np.argmax(result, axis=-1)
+pwk.plot_images(x_test, y_test, range(0,200), columns=8, x_size=1, y_size=1, y_pred=y_pred, save_as='04-predictions')
 errors=[i for i in range(len(x_test)) if y_pred[i] != y_test[i] ]
-errors=errors[:min(24,len(errors))]
+# print("errors", errors)
+# errors=errors[:min(24,len(errors))]
 # pwk.plot_images(x_test, y_test, errors[:15], columns=8, x_size=2, y_size=2, y_pred=y_pred, save_as='05-some-errors')
 
 pwk.plot_confusion_matrix(y_test, y_pred, range(8), normalize=True, save_as='06-confusion-matrix')
-pwk.end()
+#pwk.end()
 
 exit()
 

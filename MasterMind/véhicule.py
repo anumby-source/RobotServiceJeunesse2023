@@ -4,6 +4,10 @@ from random import *
 import random as rng
 import math
 
+import tensorflow as tf
+from tensorflow import keras
+
+
 # les couleurs de base
 R = (0, 0, 255)
 G = (0, 255, 0)
@@ -521,7 +525,6 @@ def find_figures(src):
         # extraction de ce rectangle
 
         extract = np.zeros((y2 - y1, x2 - x1, 3), np.uint8)
-        print(src.shape, "Y", y1, y2, y2-y1, "X", x1, x2, x2-x1, "extract", extract.shape)
 
         extract[:, :, :] = camera.hidden[y1:y2, x1:x2, :]
 
@@ -532,12 +535,27 @@ def find_figures(src):
 
         crop(extract, 0, (0, 0), extract)
 
+        resized = cv.resize(extract, (63, 63), interpolation=cv.INTER_LINEAR)
+
+        print(src.shape, "Y", y1, y2, y2-y1, "X", x1, x2, x2-x1, "extract", extract.shape, "resized", resized.shape)
+
         try:
             cv.destroyWindow("----extract----")
         except:
             pass
-        cv.imshow("----extract----", extract)
-        # cv.waitKey()
+        cv.imshow("----extract----", resized)
+
+        data = np.zeros([1, 63, 63, 1])
+        for j in range(3):
+            data[0, :, :, 0] += resized[:, :, j]
+
+        data /= 3
+
+        data /= 255.
+
+        pred = model(data)
+        prediction = np.argmax(pred, axis=-1)
+        print("data", data.shape, "pred=", prediction[0])
 
         # cv.circle(img=src, center=(int(xc), int(yc)), radius=2, color=color, lineType=cv.FILLED)
 
@@ -551,6 +569,9 @@ forms = ["Rond", "Square", "Triangle", "Star5", "Star4", "Eclair", "Coeur", "Lun
 table = Table()
 camera = Camera()
 help = Help()
+
+save_dir = "./run/models/best_model.h5"
+model = keras.models.load_model(save_dir)
 
 # initialisation des formes brutes
 images = []
