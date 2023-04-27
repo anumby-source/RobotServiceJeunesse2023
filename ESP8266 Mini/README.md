@@ -91,6 +91,13 @@ void loop() {
 # Montage moteur
 
 + un moteur soudé: un fil rouge (à droite) un fil noir (à gauche) 
-+ un pont H (moteur A moteur B) fil noir à droite rouge à gauche
++ un pont H (moteur A moteur B) 
+  + côté bornier: fil noir à droite - fil rouge à gauche
+  + côté CPU: fil rouge VCC | fil noir A-IA | fil blanc A-IB
++ CPU: 
+  + rouge: 5V
+  + noir: D1
+  + blanc: D2
+  
 
 
