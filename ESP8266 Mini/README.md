@@ -74,6 +74,8 @@ void loop() {
 09:29:39.075 -> BC43FF00  droite
 09:29:42.481 -> EA15FF00  bas
 
+                BF40FF00  OK
+
 09:33:18.071 -> E916FF00 1
 09:33:21.278 -> E619FF00 2
 09:33:23.903 -> F20DFF00 3
@@ -91,7 +93,7 @@ void loop() {
 # Montage moteur
 
 + un moteur soudé: un fil rouge (à droite) un fil noir (à gauche) 
-+ un pont H (moteur A moteur B) 
++ un pont H (moteur A) 
   + côté bornier: fil noir à droite - fil rouge à gauche
   + côté CPU: fil rouge VCC | fil noir A-IA | fil blanc A-IB
 + CPU: 
