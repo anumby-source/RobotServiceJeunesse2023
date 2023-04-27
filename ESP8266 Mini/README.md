@@ -88,5 +88,9 @@ void loop() {
 
 
 
+# Montage moteur
+
++ un moteur soudé: un fil rouge (à droite) un fil noir (à gauche) 
++ un pont H (moteur A moteur B) fil noir à droite rouge à gauche
 
 
