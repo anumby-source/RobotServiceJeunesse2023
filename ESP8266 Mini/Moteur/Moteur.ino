@@ -42,7 +42,9 @@ int vmax = 255;
   analogWrite(D1, 0);
   delay(1000);
   analogWrite(D2, 0);
-  analogWrite(D1, vmax);
+  for (int i = 0; i <= 255; i++) {
+    analogWrite(D1, i);
+  }  
   delay(1000);
   analogWrite(D2, vmax);
   analogWrite(D1, 0);
