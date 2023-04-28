@@ -33,20 +33,21 @@ void setup() {
 }
 
 void loop() {
-  analogWrite(D4, LOW);
-  analogWrite(D3, HIGH);
+int vmax = 255;
+  analogWrite(D4, 0);
+  analogWrite(D3, vmax);
 
   Serial.println("loop");
-  analogWrite(D2, LOW);
-  analogWrite(D1, LOW);
-  delay(3000);
-  analogWrite(D2, LOW);
-  analogWrite(D1, HIGH);
-  delay(3000);
-  analogWrite(D2, HIGH);
-  analogWrite(D1, LOW);
-  delay(3000);
-  analogWrite(D2, HIGH);
-  analogWrite(D1, HIGH);
-  delay(3000);
+  analogWrite(D2, 0);
+  analogWrite(D1, 0);
+  delay(1000);
+  analogWrite(D2, 0);
+  analogWrite(D1, vmax);
+  delay(1000);
+  analogWrite(D2, vmax);
+  analogWrite(D1, 0);
+  delay(1000);
+  analogWrite(D2, vmax);
+  analogWrite(D1, vmax);
+  delay(1000);
 }
