@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 import cv2 as cv
 import numpy as np
 
+import shutil
+
 
 # Create an instance of tkinter frame
 root = tk.Tk()
@@ -15,7 +17,8 @@ root.geometry("800x600")
 root.title("Capture")
 root.resizable(0, 0)
 
-button = tk.Button(root, text="Update", command=lambda:update_image())
+# button = tk.Button(root, text="Update", command=lambda:update_image())
+button = tk.Button(root, text="Update", command=lambda:update_stream())
 button.grid(column=0, row=0, columnspan=3)
 
 # Create a canvas widget
@@ -35,6 +38,15 @@ def update_image():
     img = convert_image(r.content)
     canvas.itemconfig(container, image=img)
     canvas.image = img
+
+def update_stream():
+    r = requests.get("http://192.168.4.1:80/stream", stream=True)
+
+    with open('img.png', 'wb') as out_file:
+        shutil.copyfileobj(r.raw, out_file)
+
+    # canvas.itemconfig(container, image=img)
+    # canvas.image = img
 
 def save_image():
     text = name.get()
