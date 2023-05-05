@@ -1,9 +1,17 @@
 #include <Arduino.h>
+// #include <IRremote.hpp>
+
+
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
+
 
 #define D3 0
 #define D4 2
-#define D7 13 
-#define D8 15 
+
+#define D7 13 // signal IR
+#define D8 15
 
 #define D6 12  // B-2A vert pont H pour le moteur Droite
 #define D5 14  // B-1A jaune
@@ -14,37 +22,18 @@
 #define D 1   // moteur Droite (A)
 #define G 2   // moteur Gauche (B)
 
+IRrecv irrecv(D7);
 
 int old_pin = 0;
 int vmax = 255;
+decode_results results;
 
-void stop() {
-  analogWrite(D1, LOW);  // moteur B
-  analogWrite(D2, LOW);
-  analogWrite(D5, LOW);  // moteur B
-  analogWrite(D6, LOW);
-}
-
-void avance(int moteur, int v) {
-  if (moteur == D) {
-    analogWrite(D5, 0);
-    analogWrite(D6, v);
-  }
-  else {
-    analogWrite(D1, 0);
-    analogWrite(D2, v);
-  }
-}
-
-void recule(int moteur, int v) {
-  if (moteur == D) {
-    analogWrite(D5, v);
-    analogWrite(D6, 0);
-  }
-  else {
-    analogWrite(D1, v);
-    analogWrite(D2, 0);
-  }
+void stop(){
+  analogWrite(D1, 0);
+  analogWrite(D2, 0);
+  analogWrite(D5, 0);
+  analogWrite(D6, 0);
+  //delay(500);
 }
 
 void setup() {
@@ -53,11 +42,16 @@ void setup() {
   pinMode(D2, OUTPUT);
   pinMode(D5, OUTPUT);
   pinMode(D6, OUTPUT);
+  stop ();
+
+  irrecv.enableIRIn();  // Start the receiver
+  // IrReceiver.begin(D7, ENABLE_LED_FEEDBACK); // Start the receiver
 }
 
 
 void loop() {
-
+    //Serial.println("Loop");
+    /*
     // recule  
     analogWrite(D1, vmax);
     analogWrite(D2, 0);
@@ -70,38 +64,47 @@ void loop() {
     analogWrite(D5, 0);
     analogWrite(D6, vmax);
     delay(5000);
+    */
 
+    /*
+    analogWrite(D1, 80);
+    analogWrite(D2, 0);
+    analogWrite(D5, 255);
+    analogWrite(D6, 0);
+    delay(5000);
+    analogWrite(D1, 255);
+    analogWrite(D2, 0);
+    analogWrite(D5, 80);
+    analogWrite(D6, 0);
+    delay(5000); 
+    */
 
-  // on avance les 2 moteurs à la même vitesse
-  // avance(A, vmax);
-  // avance(B, vmax);
+// 0xB946FF00 en avant
+// OxBC43FF00 à droite
+// 0xEA15FF00 en arrière
+// 0xBB44FF00 à gauche
+// 0xBF40FF00 OK
 
-  /*
-  delay(3000);
+  if (irrecv.decode(&results)) {
+  // if (IrReceiver.decode()) {
+      // int code = IrReceiver.decodedIRData.decodedRawData;
+      int code = results.value;
 
-  // on recule les 2 moteurs à la même vitesse
-  recule(A, vmax);
-  recule(B, vmax);
-
-  delay(3000);
-
-  // on avance pour tourner vers le moteur B
-  avance(A, 255);
-  avance(B, 100);
-
-  delay(3000);
-
-  // on avance pour tourner vers le moteur A
-  avance(A, 100);
-  avance(B, 255);
-
-  delay(3000);
-
-  // rampe
-  for (int i = 0; i <= 255; i++) {
-    avance(A, i);
-    avance(B, i);
-    delay(5);
+      Serial.println("Loop (decode)");
+      //IrReceiver.resume(); // Enable receiving of the next value
+      if (code != 0) {
+        Serial.println(code, HEX);
+        //IrReceiver.printIRResultShort(&Serial); // optional use new print version
+        if (code == 0xBB44FF00){
+          Serial.println("à gauche");
+          analogWrite(D1, 127);
+          analogWrite(D2, 0);
+          analogWrite(D5, 255);
+          analogWrite(D6, 0);
+          delay(2000);
+        }
+     }
   }
-  */
+  // IrReceiver.resume(); // Enable receiving of the next value
+  irrecv.resume(); // Enable receiving of the next value
 }

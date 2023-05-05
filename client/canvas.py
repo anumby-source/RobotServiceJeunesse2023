@@ -40,7 +40,7 @@ def update_image():
     canvas.image = img
 
 def update_stream():
-    r = requests.get("http://192.168.4.1:80/stream", stream=True)
+    r = requests.get("http://192.168.4.1:81/stream", stream=True)
 
     with open('img.png', 'wb') as out_file:
         shutil.copyfileobj(r.raw, out_file)
@@ -51,7 +51,7 @@ def update_stream():
 def save_image():
     text = name.get()
     print("save", text + ".jpg")
-    r = requests.get("h#ttp://192.168.4.1:80/capture")
+    r = requests.get("http://192.168.4.1:80/capture")
     file = open(text + ".jpg", "wb")
     file.write(r.content)
     file.close()
@@ -76,3 +76,12 @@ container = canvas.create_image(
 canvas.image = img2
 
 root.mainloop()
+
+"""
+while True:
+    r = requests.get("http://192.168.4.1:80/capture")
+    # img = convert_image(r.content)
+    image = np.asarray(bytearray(r.content), dtype="uint8")
+    cv_image = cv.imdecode(image, cv.IMREAD_COLOR)
+    cv.imshow("image", cv_image)
+"""

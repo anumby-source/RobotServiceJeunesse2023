@@ -103,3 +103,40 @@ void loop() {
   
 
 
+## Câblage
+
+````
+#include <Arduino.h>
+
+
+#define D6 12  // B-2A vert pont H pour le moteur Droite
+#define D5 14  // B-1A jaune
+
+#define D2 4   // A-1B vert pont H pour le moteur Gauche (B)
+#define D1 5   // A-1A jaune
+
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D5, OUTPUT);
+  pinMode(D6, OUTPUT);
+}
+
+void loop() {
+    // recule  
+    analogWrite(D1, vmax);
+    analogWrite(D2, 0);
+    analogWrite(D5, vmax);
+    analogWrite(D6, 0);
+    delay(10000);
+    // avance
+    analogWrite(D1, 0);
+    analogWrite(D2, vmax);
+    analogWrite(D5, 0);
+    analogWrite(D6, vmax);
+    delay(5000);
+}
+
+````

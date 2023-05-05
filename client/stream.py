@@ -1,4 +1,4 @@
-import cv2
+import cv2 as cv
 import numpy as np
 
 import requests
@@ -11,14 +11,9 @@ INFO SECTION
 
 #
 # ESP32 URL
-URL = "http://192.168.4.1:81/stream"
+URLSTREAM = "http://192.168.4.1:81/stream"
+URLSTATUS = "http://192.168.4.1:80/status"
 AWB = True
-
-# Face recognition and opencv setup
-cap = cv2.VideoCapture(URL)
-
-print(cap)
-# face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml') # insert the full path to haarcascade file if you encounter any problem
 
 def set_resolution(url: str, index: int=1, verbose: bool=False):
     try:
@@ -49,40 +44,25 @@ def set_awb(url: str, awb: int=1):
     return awb
 
 if __name__ == '__main__':
-    set_resolution(URL, index=8)
-
     while True:
-        if cap.isOpened():
-            ret, frame = cap.read()
+        r = requests.get("http://192.168.4.1:80/capture")
 
-            """
-            if ret:
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                gray = cv2.equalizeHist(gray)
+        image = np.asarray(bytearray(r.content), dtype=np.uint8)
+        cv_image = cv.imdecode(image, cv.IMREAD_COLOR)
+        cv.imshow('image', cv_image)
+        key = cv.waitKey(1)
+        if key == ord('r'):
+            idx = int(input("Select resolution index: "))
+            set_resolution(URL, index=idx, verbose=True)
 
-                faces = face_classifier.detectMultiScale(gray)
-                for (x, y, w, h) in faces:
-                    center = (x + w//2, y + h//2)
-                    frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 0), 4)
-            """
+        elif key == ord('q'):
+            val = int(input("Set quality (10 - 63): "))
+            set_quality(URL, value=val)
 
-            cv2.imshow("frame", frame)
+        elif key == ord('a'):
+            AWB = set_awb(URL, AWB)
 
-            key = cv2.waitKey(1)
+        elif key == 27:
+            break
 
-            if key == ord('r'):
-                idx = int(input("Select resolution index: "))
-                set_resolution(URL, index=idx, verbose=True)
-
-            elif key == ord('q'):
-                val = int(input("Set quality (10 - 63): "))
-                set_quality(URL, value=val)
-
-            elif key == ord('a'):
-                AWB = set_awb(URL, AWB)
-
-            elif key == 27:
-                break
-
-    cv2.destroyAllWindows()
-    cap.release()
+    cv.destroyAllWindows()

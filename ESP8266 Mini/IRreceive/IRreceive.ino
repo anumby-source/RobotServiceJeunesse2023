@@ -1,7 +1,7 @@
 
 #include <IRremote.hpp>
 
-int IR_RECEIVE_PIN = 4;
+int IR_RECEIVE_PIN = 13;
 
 decode_results results;
 
